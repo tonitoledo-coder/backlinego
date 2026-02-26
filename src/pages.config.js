@@ -51,6 +51,10 @@ import Home from './pages/Home';
 import Explore from './pages/Explore';
 import MapView from './pages/MapView';
 import Partners from './pages/Partners';
+import EquipmentDetail from './pages/EquipmentDetail';
+import AddEquipment from './pages/AddEquipment';
+import Profile from './pages/Profile';
+import Onboarding from './pages/Onboarding';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +63,10 @@ export const PAGES = {
     "Explore": Explore,
     "MapView": MapView,
     "Partners": Partners,
+    "EquipmentDetail": EquipmentDetail,
+    "AddEquipment": AddEquipment,
+    "Profile": Profile,
+    "Onboarding": Onboarding,
 }
 
 export const pagesConfig = {
