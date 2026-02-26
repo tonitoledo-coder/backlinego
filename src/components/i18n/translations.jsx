@@ -16,7 +16,6 @@ export const translations = {
     percusion: 'Percusión',
     dj_gear: 'DJ Gear',
     sonido_pa: 'Sonido P.A.',
-    atrezzo_cine: 'Atrezzo & Cine',
     
     // SOS Mode
     sosMode: 'Modo SOS 24h',
@@ -118,7 +117,6 @@ export const translations = {
     percusion: 'Percussion',
     dj_gear: 'DJ Gear',
     sonido_pa: 'P.A. Sound',
-    atrezzo_cine: 'Props & Cinema',
     
     // SOS Mode
     sosMode: 'SOS Mode 24h',

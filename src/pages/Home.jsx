@@ -27,7 +27,6 @@ const categories = [
   { id: 'percusion', icon: 'percusion', color: 'from-orange-500 to-orange-600' },
   { id: 'dj_gear', icon: 'dj_gear', color: 'from-pink-500 to-pink-600' },
   { id: 'sonido_pa', icon: 'sonido_pa', color: 'from-green-500 to-green-600' },
-  { id: 'atrezzo_cine', icon: 'atrezzo_cine', color: 'from-amber-500 to-amber-600' },
 ];
 
 export default function Home() {
@@ -160,7 +159,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+        <div className="grid grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
           {categories.map((cat) => (
             <Link 
               key={cat.id}

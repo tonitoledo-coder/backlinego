@@ -5,7 +5,7 @@ import CategoryIcon from '../ui/CategoryIcon';
 import { cn } from '@/lib/utils';
 
 const categories = [
-  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa', 'atrezzo_cine'
+  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa'
 ];
 
 export default function CategoryFilter({ selected, onChange }) {

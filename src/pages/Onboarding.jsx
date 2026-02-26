@@ -33,7 +33,7 @@ import CategoryIcon from '@/components/ui/CategoryIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const categories = [
-  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa', 'atrezzo_cine'
+  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa'
 ];
 
 const steps = [

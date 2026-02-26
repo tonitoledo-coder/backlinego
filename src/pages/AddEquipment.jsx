@@ -30,7 +30,7 @@ import {
 import CategoryIcon from '@/components/ui/CategoryIcon';
 
 const categories = [
-  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa', 'atrezzo_cine'
+  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa'
 ];
 
 export default function AddEquipment() {
@@ -294,18 +294,6 @@ export default function AddEquipment() {
                 className="py-4"
               />
             </div>
-
-            {formData.category === 'atrezzo_cine' && (
-              <div>
-                <Label className="text-zinc-300">{t('history')}</Label>
-                <Textarea
-                  value={formData.history}
-                  onChange={(e) => setFormData(prev => ({ ...prev, history: e.target.value }))}
-                  placeholder="Cuenta la historia de este objeto..."
-                  className="bg-zinc-800/50 border-zinc-700 text-white min-h-[100px]"
-                />
-              </div>
-            )}
           </CardContent>
         </Card>
 

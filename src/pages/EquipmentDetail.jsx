@@ -270,16 +270,6 @@ export default function EquipmentDetail() {
               </div>
             </div>
           )}
-
-          {/* History (for atrezzo) */}
-          {equipment.category === 'atrezzo_cine' && equipment.history && (
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-3">{t('history')}</h3>
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-                <p className="text-amber-200/80 leading-relaxed">{equipment.history}</p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right Column - Booking Card */}
