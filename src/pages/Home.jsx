@@ -1,0 +1,240 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from '@/components/i18n/translations';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Search, 
+  MapPin, 
+  Zap, 
+  ShieldCheck, 
+  CreditCard,
+  ArrowRight,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
+import CategoryIcon from '@/components/ui/CategoryIcon';
+import EquipmentCard from '@/components/equipment/EquipmentCard';
+import CategoryFilter from '@/components/equipment/CategoryFilter';
+
+const categories = [
+  { id: 'cuerdas', icon: 'cuerdas', color: 'from-blue-500 to-blue-600' },
+  { id: 'teclados', icon: 'teclados', color: 'from-purple-500 to-purple-600' },
+  { id: 'percusion', icon: 'percusion', color: 'from-orange-500 to-orange-600' },
+  { id: 'dj_gear', icon: 'dj_gear', color: 'from-pink-500 to-pink-600' },
+  { id: 'sonido_pa', icon: 'sonido_pa', color: 'from-green-500 to-green-600' },
+  { id: 'atrezzo_cine', icon: 'atrezzo_cine', color: 'from-amber-500 to-amber-600' },
+];
+
+export default function Home() {
+  const { t, lang } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const { data: equipment = [], isLoading } = useQuery({
+    queryKey: ['equipment', 'featured'],
+    queryFn: () => base44.entities.Equipment.filter({ status: 'available' }, '-created_date', 12),
+  });
+
+  const { data: sosEquipment = [] } = useQuery({
+    queryKey: ['equipment', 'sos'],
+    queryFn: () => base44.entities.Equipment.filter({ sos_available: true, status: 'available' }, '-created_date', 4),
+  });
+
+  const filteredEquipment = selectedCategory 
+    ? equipment.filter(e => e.category === selectedCategory)
+    : equipment;
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-green-500/20" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/30 rounded-full blur-[100px]" />
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-green-500/30 rounded-full blur-[100px]" />
+        
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20">
+          <div className="text-center max-w-3xl mx-auto">
+            <Badge className="mb-6 bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-1.5">
+              <Sparkles className="w-3.5 h-3.5 mr-2" />
+              Glocal Marketplace
+            </Badge>
+            
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              {t('heroTitle')}
+            </h1>
+            
+            <p className="text-lg lg:text-xl text-zinc-400 mb-8">
+              {t('heroSubtitle')}
+            </p>
+
+            {/* Search Bar */}
+            <div className="relative max-w-2xl mx-auto mb-8">
+              <div className="flex items-center bg-zinc-900/80 backdrop-blur-sm rounded-2xl border border-zinc-800 p-2">
+                <div className="flex items-center flex-1 px-4">
+                  <Search className="w-5 h-5 text-zinc-500 mr-3" />
+                  <Input 
+                    placeholder={t('search') + '...'}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="border-0 bg-transparent text-white placeholder:text-zinc-500 focus-visible:ring-0"
+                  />
+                </div>
+                <Link to={createPageUrl('Explore') + (searchQuery ? `?q=${searchQuery}` : '')}>
+                  <Button className="bg-blue-600 hover:bg-blue-700 rounded-xl px-6">
+                    {t('search')}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="flex flex-wrap justify-center gap-4 lg:gap-8">
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <ShieldCheck className="w-5 h-5 text-blue-500" />
+                <span>{t('idVerified')}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <CreditCard className="w-5 h-5 text-green-500" />
+                <span>{t('escrowPayment')}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <Zap className="w-5 h-5 text-amber-500" />
+                <span>{t('insuranceIncluded')}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SOS Mode Banner */}
+      {sosEquipment.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+          <Link to={createPageUrl('MapView') + '?sos=true'}>
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-500/20 to-green-600/10 border border-green-500/30 p-6 lg:p-8 group hover:border-green-500/50 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-[80px]" />
+              
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-green-500/20 flex items-center justify-center pulse-sos">
+                    <Zap className="w-7 h-7 text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">{t('sosMode')}</h3>
+                    <p className="text-green-400/80">{t('sosDescription')} • {t('sosRadius')}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="hidden lg:flex items-center gap-2">
+                    {sosEquipment.slice(0, 3).map((eq, i) => (
+                      <div key={eq.id} className="w-12 h-12 rounded-lg overflow-hidden border-2 border-green-500/50">
+                        {eq.images?.[0] ? (
+                          <img src={eq.images[0]} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-800" />
+                        )}
+                      </div>
+                    ))}
+                    <span className="text-green-400 font-semibold ml-2">+{sosEquipment.length}</span>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-green-400 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* Categories */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">{t('categories')}</h2>
+          <Link to={createPageUrl('Explore')} className="text-blue-500 hover:text-blue-400 flex items-center gap-1 text-sm font-medium">
+            {t('viewAll')}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+          {categories.map((cat) => (
+            <Link 
+              key={cat.id}
+              to={createPageUrl('Explore') + `?category=${cat.id}`}
+              className="group"
+            >
+              <div className={`aspect-square rounded-2xl bg-gradient-to-br ${cat.color} p-0.5 group-hover:scale-105 transition-transform duration-300`}>
+                <div className="w-full h-full rounded-2xl bg-zinc-900 flex flex-col items-center justify-center gap-2 group-hover:bg-zinc-900/80 transition-colors">
+                  <CategoryIcon category={cat.id} className="w-8 h-8 text-white" />
+                  <span className="text-xs lg:text-sm font-medium text-zinc-300">{t(cat.id)}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Featured Equipment */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">{t('nearYou')}</h2>
+          <Link to={createPageUrl('Explore')} className="text-blue-500 hover:text-blue-400 flex items-center gap-1 text-sm font-medium">
+            {t('viewAll')}
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="mb-6">
+          <CategoryFilter selected={selectedCategory} onChange={setSelectedCategory} />
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="aspect-[4/5] rounded-xl bg-zinc-800/50 animate-pulse" />
+            ))}
+          </div>
+        ) : filteredEquipment.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {filteredEquipment.map(eq => (
+              <EquipmentCard key={eq.id} equipment={eq} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-zinc-500">{t('noResults')}</p>
+          </div>
+        )}
+      </section>
+
+      {/* CTA Section */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-12">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 p-8 lg:p-12">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[100px]" />
+          
+          <div className="relative flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                {t('onboardingTitle')}
+              </h3>
+              <p className="text-blue-100/80">
+                {t('onboardingStep1')} → {t('onboardingStep2')} → {t('onboardingStep3')}
+              </p>
+            </div>
+            
+            <Link to={createPageUrl('Onboarding')}>
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8">
+                {t('getStarted')}
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
