@@ -67,11 +67,12 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop Header */}
       <header className="hidden lg:block fixed top-0 left-0 right-0 z-50 glass border-b border-zinc-800">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to={createPageUrl('Home')} className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center">
-              <Zap className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">BacklineGo</span>
+          <Link to={createPageUrl('Home')} className="flex items-center">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a08f2a394db4f3cafbc46f/0a293e3b0_Puedeshacerlaconcalidadmxima_1.png"
+              alt="BacklineGo"
+              className="h-10 w-auto object-contain"
+            />
           </Link>
 
           <nav className="flex items-center gap-1">
@@ -128,11 +129,12 @@ export default function Layout({ children, currentPageName }) {
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-zinc-800">
         <div className="px-4 h-14 flex items-center justify-between">
-          <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-lg font-bold text-white">BacklineGo</span>
+          <Link to={createPageUrl('Home')} className="flex items-center">
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a08f2a394db4f3cafbc46f/0a293e3b0_Puedeshacerlaconcalidadmxima_1.png"
+              alt="BacklineGo"
+              className="h-8 w-auto object-contain"
+            />
           </Link>
 
           <div className="flex items-center gap-2">
