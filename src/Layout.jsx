@@ -16,7 +16,8 @@ import {
   X,
   Zap,
   LogOut,
-  LogIn
+  LogIn,
+  Trophy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
