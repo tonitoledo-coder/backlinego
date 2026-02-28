@@ -47,10 +47,11 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
                 `⚡ Urgencia: ${data.urgency === 'urgente' ? 'URGENTE' : 'Normal'}\n\n` +
                 `📝 Descripción:\n${data.description}\n\n` +
                 `Accede a la app para ver las fotos y responder con tu presupuesto.\n\n` +
-                `BacklineGo Team`
-        });
-      }
-    },
+                         `BacklineGo Team`
+                });
+                }
+                return created;
+                },
     onSuccess: (createdRequest) => {
       setSuccess(true);
       // Navigate to chat after short delay
