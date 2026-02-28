@@ -36,6 +36,17 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
     mutationFn: async (data) => {
       // Save the request
       const created = await base44.entities.QuoteRequest.create(data);
+      // In-app notification for specialist
+      if (specialist.email) {
+        await createNotification({
+          user_email: specialist.email,
+          type: 'quote_request',
+          title: `Nueva solicitud de presupuesto de ${data.requester_name}`,
+          body: `${data.equipment_type} · ${data.urgency === 'urgente' ? '⚡ Urgente' : 'Normal'}`,
+          link_page: 'Chat',
+          link_params: `?id=${created.id}`,
+        });
+      }
       // Send email notification to specialist
       if (specialist.email) {
         await base44.integrations.Core.SendEmail({
