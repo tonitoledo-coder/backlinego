@@ -107,12 +107,13 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
               <CheckCircle className="w-8 h-8 text-green-500" />
             </div>
             <h3 className="text-lg font-bold text-white mb-2">¡Solicitud enviada!</h3>
-            <p className="text-zinc-400 text-sm mb-6">
-              {specialist?.name} ha recibido tu solicitud y te contactará pronto.
+            <p className="text-zinc-400 text-sm mb-4">
+              {specialist?.name} ha recibido tu solicitud. Abriendo chat...
             </p>
-            <Button onClick={handleClose} className="bg-purple-600 hover:bg-purple-700">
-              Cerrar
-            </Button>
+            <div className="flex items-center justify-center gap-2 text-purple-400 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Redirigiendo al chat
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 mt-2">
