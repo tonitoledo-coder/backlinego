@@ -71,17 +71,19 @@ export default function EquipmentDetail() {
 
   const handleBooking = async () => {
     if (!startDate || !endDate) return;
-    
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    setShowPayment(true);
+  };
+
+  const handlePaymentConfirm = async () => {
+    setShowPayment(false);
     setIsBooking(true);
     try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) {
-        base44.auth.redirectToLogin(window.location.href);
-        return;
-      }
-
       const user = await base44.auth.me();
-      // Notify the equipment owner
       if (equipment.created_by) {
         await createNotification({
           user_email: equipment.created_by,
@@ -102,7 +104,7 @@ export default function EquipmentDetail() {
         insurance_fee: insuranceFee,
         deposit: equipment.deposit || 0,
         total_price: totalPrice,
-        status: 'pending',
+        status: 'confirmed',
         escrow_status: 'held',
         delivery_qr: `BLG-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         is_sos: equipment.sos_available
