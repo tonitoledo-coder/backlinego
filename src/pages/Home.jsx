@@ -214,8 +214,47 @@ export default function Home() {
         )}
       </section>
 
+      {/* Specialists Banner */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-4">
+        <Link to={createPageUrl('Specialists')}>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600/20 to-purple-800/10 border border-purple-500/30 p-5 lg:p-6 group hover:border-purple-500/60 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-[60px]" />
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <Wrench className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Directorio de Luthiers & Técnicos</h3>
+                  <p className="text-purple-400/80 text-sm">Especialistas verificados · Presupuesto online con foto de avería</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
+      </section>
+
+      {/* Trust & QR Security Strip */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { icon: QrCode, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'QR de Entrega', desc: 'Confirmación segura con código único' },
+            { icon: ShieldCheck, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', title: 'Pago Escrow', desc: 'El dinero queda retenido hasta la entrega' },
+            { icon: CreditCard, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', title: 'Seguro incluido', desc: '8% cubre daños y robos' },
+            { icon: Star, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', title: 'Perfiles verificados', desc: 'ID verificado en cada arrendador' },
+          ].map((item) => (
+            <div key={item.title} className={`rounded-xl border p-4 ${item.bg}`}>
+              <item.icon className={`w-6 h-6 ${item.color} mb-2`} />
+              <p className="text-sm font-semibold text-white">{item.title}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-12">
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 p-8 lg:p-12">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[100px]" />
           
