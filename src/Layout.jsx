@@ -141,6 +141,7 @@ export default function Layout({ children, currentPageName }) {
           </Link>
 
           <div className="flex items-center gap-2">
+            {user && <NotificationBell userEmail={user.email} />}
             <Link to={createPageUrl('AddEquipment')}>
               <Button size="sm" className="bg-green-500 hover:bg-green-600 text-black">
                 <Plus className="w-4 h-4" />
