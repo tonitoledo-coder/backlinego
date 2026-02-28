@@ -11,7 +11,6 @@ import {
 import { cn } from '@/lib/utils';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
-import { createNotification } from '@/components/notifications/createNotification';
 
 function MessageBubble({ msg, isMine }) {
   return (
@@ -113,7 +112,25 @@ export default function Chat() {
   }, [messages]);
 
   const sendMutation = useMutation({
-    mutationFn: (msgData) => base44.entities.ChatMessage.create(msgData),
+    mutationFn: async (msgData) => {
+      const msg = await base44.entities.ChatMessage.create(msgData);
+      // Notify the other party
+      const recipientEmail = msgData.sender_role === 'specialist'
+        ? quote?.requester_email
+        : quote?.specialist_email;
+      if (recipientEmail) {
+        await base44.entities.Notification.create({
+          user_email: recipientEmail,
+          type: 'chat_message',
+          title: `Nuevo mensaje de ${msgData.sender_name}`,
+          body: msgData.type === 'quote_offer' ? `Presupuesto: €${msgData.quote_amount}` : (msgData.content || 'Foto recibida'),
+          link_page: 'Chat',
+          link_params: `id=${quoteId}`,
+          read: false,
+        });
+      }
+      return msg;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chat', quoteId] }),
   });
 
