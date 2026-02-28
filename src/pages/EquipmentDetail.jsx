@@ -147,6 +147,16 @@ export default function EquipmentDetail() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+      <PaymentModal
+        open={showPayment}
+        onClose={() => setShowPayment(false)}
+        onConfirm={handlePaymentConfirm}
+        equipment={equipment}
+        days={days}
+        basePrice={basePrice}
+        insuranceFee={insuranceFee}
+        totalPrice={totalPrice}
+      />
       {/* Back Button */}
       <Link to={createPageUrl('Explore')} className="inline-flex items-center text-zinc-400 hover:text-white mb-6">
         <ArrowLeft className="w-4 h-4 mr-2" />
