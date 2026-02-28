@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Upload, X, Loader2, CheckCircle, Wrench, Zap } from 'lucide-react';
 
 export default function QuoteRequestModal({ specialist, open, onClose }) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     requester_name: '',
     requester_email: '',
