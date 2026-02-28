@@ -51,7 +51,13 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
         });
       }
     },
-    onSuccess: () => setSuccess(true)
+    onSuccess: (createdRequest) => {
+      setSuccess(true);
+      // Navigate to chat after short delay
+      setTimeout(() => {
+        navigate(createPageUrl('Chat') + `?id=${createdRequest.id}`);
+      }, 1500);
+    }
   });
 
   const handlePhotoUpload = async (e) => {
