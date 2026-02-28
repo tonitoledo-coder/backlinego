@@ -50,7 +50,6 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Home', icon: Home, label: t('home') },
     { name: 'Explore', icon: Search, label: t('explore') },
     { name: 'MapView', icon: Map, label: t('map') },
-    { name: 'Partners', icon: Building2, label: t('partners') },
     { name: 'Specialists', icon: Wrench, label: 'Técnicos' },
     { name: 'Profile', icon: User, label: t('profile') },
   ];
