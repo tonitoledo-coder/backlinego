@@ -1,160 +1,152 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Bell, X, CheckCheck } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
-import { Bell, Calendar, MessageSquare, Package, Zap, Info, X, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
-const TYPE_ICON = {
-  quote_request:      { icon: Zap,            color: 'text-purple-400' },
-  booking_confirmed:  { icon: Calendar,        color: 'text-green-400' },
-  chat_message:       { icon: MessageSquare,   color: 'text-blue-400' },
-  equipment_available:{ icon: Package,         color: 'text-amber-400' },
-  general:            { icon: Info,            color: 'text-zinc-400' },
+const TYPE_ICONS = {
+  quote_request:      '🔧',
+  booking_confirmed:  '✅',
+  chat_message:       '💬',
+  equipment_available:'🎸',
 };
 
 export default function NotificationBell({ userEmail }) {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const panelRef = useRef(null);
+  const queryClient = useQueryClient();
 
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', userEmail],
+    queryFn: () => base44.entities.Notification.filter({ user_email: userEmail }, '-created_date', 30),
+    enabled: !!userEmail,
+    refetchInterval: 15000,
+  });
+
+  // Real-time
   useEffect(() => {
     if (!userEmail) return;
-    loadNotifications();
     const unsub = base44.entities.Notification.subscribe((event) => {
       if (event.data?.user_email === userEmail) {
-        loadNotifications();
+        queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] });
       }
     });
     return unsub;
-  }, [userEmail]);
+  }, [userEmail, queryClient]);
 
   // Close on outside click
   useEffect(() => {
     const handler = (e) => {
       if (panelRef.current && !panelRef.current.contains(e.target)) setOpen(false);
     };
-    if (open) document.addEventListener('mousedown', handler);
+    document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  }, []);
 
-  const loadNotifications = async () => {
-    const data = await base44.entities.Notification.filter(
-      { user_email: userEmail },
-      '-created_date',
-      30
-    );
-    setNotifications(data);
+  const markAllRead = useMutation({
+    mutationFn: async () => {
+      const unread = notifications.filter(n => !n.read);
+      await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { read: true })));
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] }),
+  });
+
+  const markOneRead = async (notif) => {
+    if (!notif.read) {
+      await base44.entities.Notification.update(notif.id, { read: true });
+      queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] });
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAllRead = async () => {
-    const unread = notifications.filter(n => !n.read);
-    await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { read: true })));
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const markRead = async (n) => {
-    if (!n.read) {
-      await base44.entities.Notification.update(n.id, { read: true });
-      setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x));
-    }
-  };
-
-  const dismiss = async (e, id) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await base44.entities.Notification.delete(id);
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  const timeAgo = (dateStr) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1) return 'ahora';
-    if (m < 60) return `${m}m`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h`;
-    return `${Math.floor(h / 24)}d`;
-  };
-
   return (
     <div className="relative" ref={panelRef}>
       <button
-        onClick={() => setOpen(v => !v)}
-        className="relative w-9 h-9 flex items-center justify-center rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+        onClick={() => setOpen(p => !p)}
+        className="relative w-10 h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center transition-colors"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-5 h-5 text-zinc-300" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-blue-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-blue-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white px-1">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 w-80 max-h-[420px] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900 shadow-xl z-50 flex flex-col">
+        <div className="absolute right-0 top-12 w-80 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 sticky top-0 bg-zinc-900">
-            <span className="text-sm font-semibold text-white">Notificaciones</span>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllRead}
-                className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1"
-              >
-                <Check className="w-3 h-3" /> Marcar todo leído
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+            <span className="font-semibold text-white text-sm">Notificaciones</span>
+            <div className="flex items-center gap-1">
+              {unreadCount > 0 && (
+                <button
+                  onClick={() => markAllRead.mutate()}
+                  className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-zinc-800 transition-colors"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  Leer todo
+                </button>
+              )}
+              <button onClick={() => setOpen(false)} className="p-1 text-zinc-500 hover:text-white">
+                <X className="w-4 h-4" />
               </button>
-            )}
+            </div>
           </div>
 
           {/* List */}
-          {notifications.length === 0 ? (
-            <div className="py-10 text-center text-zinc-500 text-sm">
-              <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              Sin notificaciones
-            </div>
-          ) : (
-            notifications.map(n => {
-              const { icon: Icon, color } = TYPE_ICON[n.type] || TYPE_ICON.general;
-              const href = n.link_page ? createPageUrl(n.link_page) + (n.link_params || '') : null;
-              const Inner = (
+          <div className="max-h-[360px] overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="py-10 text-center text-zinc-500 text-sm">
+                <Bell className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                Sin notificaciones
+              </div>
+            ) : (
+              notifications.map(notif => (
                 <div
+                  key={notif.id}
+                  onClick={() => { markOneRead(notif); setOpen(false); }}
                   className={cn(
-                    'flex items-start gap-3 px-4 py-3 hover:bg-zinc-800/60 transition-colors relative',
-                    !n.read && 'bg-blue-500/5'
+                    "flex gap-3 px-4 py-3 border-b border-zinc-800/60 cursor-pointer transition-colors hover:bg-zinc-800/60",
+                    !notif.read && "bg-blue-500/5"
                   )}
-                  onClick={() => markRead(n)}
                 >
-                  <div className={cn('mt-0.5 shrink-0', color)}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={cn('text-sm leading-tight', n.read ? 'text-zinc-300' : 'text-white font-medium')}>
-                      {n.title}
-                    </p>
-                    {n.body && <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{n.body}</p>}
-                    <p className="text-[10px] text-zinc-600 mt-1">{timeAgo(n.created_date)}</p>
-                  </div>
-                  {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />}
-                  <button
-                    onClick={(e) => dismiss(e, n.id)}
-                    className="shrink-0 text-zinc-600 hover:text-zinc-400 ml-1"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
+                  {notif.link_page ? (
+                    <Link
+                      to={`${createPageUrl(notif.link_page)}${notif.link_params ? '?' + notif.link_params : ''}`}
+                      className="flex gap-3 w-full"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <NotifContent notif={notif} />
+                    </Link>
+                  ) : (
+                    <NotifContent notif={notif} />
+                  )}
                 </div>
-              );
-
-              return href ? (
-                <Link key={n.id} to={href}>{Inner}</Link>
-              ) : (
-                <div key={n.id}>{Inner}</div>
-              );
-            })
-          )}
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+function NotifContent({ notif }) {
+  return (
+    <>
+      <span className="text-2xl flex-shrink-0 mt-0.5">{TYPE_ICONS[notif.type] || '🔔'}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-white leading-tight truncate">{notif.title}</p>
+        {notif.body && <p className="text-xs text-zinc-400 mt-0.5 line-clamp-2">{notif.body}</p>}
+        <p className="text-[10px] text-zinc-600 mt-1">
+          {new Date(notif.created_date).toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+        </p>
+      </div>
+      {!notif.read && <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-2" />}
+    </>
   );
 }
