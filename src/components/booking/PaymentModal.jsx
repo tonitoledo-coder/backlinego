@@ -3,20 +3,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ShieldCheck, CreditCard, Lock, CheckCircle } from 'lucide-react';
+import { ShieldCheck, CreditCard, Lock, CheckCircle, ChevronDown, ChevronUp, Info } from 'lucide-react';
 
-export default function PaymentModal({ open, onClose, onConfirm, equipment, days, basePrice, insuranceFee, totalPrice, isLoading }) {
+const PLATFORM_FEE_RATE = 0.12; // 12% comisión plataforma
+const INSURANCE_RATE = 0.08;    // 8% seguro
+const VAT_RATE = 0.21;          // 21% IVA sobre comisión
+
+export default function PaymentModal({ open, onClose, onConfirm, equipment, days, basePrice, insuranceFee, totalPrice }) {
   const [step, setStep] = useState('form'); // 'form' | 'processing' | 'success'
   const [card, setCard] = useState({ number: '', expiry: '', cvv: '', name: '' });
+  const [showBreakdown, setShowBreakdown] = useState(false);
+
+  // Commission breakdown
+  const platformFee = basePrice * PLATFORM_FEE_RATE;
+  const vatOnFee = platformFee * VAT_RATE;
+  const ownerReceives = basePrice - platformFee;
+  const deposit = equipment?.deposit || 0;
+  const grandTotal = totalPrice + deposit;
 
   const handlePay = async () => {
     setStep('processing');
-    // Simulate payment processing delay
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 2200));
     setStep('success');
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 1800));
     onConfirm();
     setStep('form');
+    setCard({ number: '', expiry: '', cvv: '', name: '' });
+    setShowBreakdown(false);
   };
 
   const formatCardNumber = (val) =>
@@ -25,14 +38,26 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
   const formatExpiry = (val) =>
     val.replace(/\D/g, '').slice(0, 4).replace(/(\d{2})(\d)/, '$1/$2');
 
+  const isCardValid = card.name && card.number.replace(/\s/g, '').length === 16 
+    && card.expiry.length === 5 && card.cvv.length === 3;
+
   if (step === 'processing') {
     return (
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-sm">
-          <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <div className="w-14 h-14 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
-            <p className="text-zinc-300 font-medium">Procesando pago...</p>
-            <p className="text-zinc-500 text-sm">No cierres esta ventana</p>
+          <div className="flex flex-col items-center justify-center py-14 gap-5">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full border-4 border-zinc-700" />
+              <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+            </div>
+            <div className="text-center">
+              <p className="text-white font-semibold text-lg">Procesando pago...</p>
+              <p className="text-zinc-500 text-sm mt-1">Verificando con la pasarela de pago</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <Lock className="w-3 h-3" />
+              <span>Conexión segura SSL/TLS</span>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -44,11 +69,23 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-sm">
           <div className="flex flex-col items-center justify-center py-12 gap-4">
-            <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-green-400" />
+            <div className="w-20 h-20 rounded-full bg-green-500/20 border-2 border-green-500/30 flex items-center justify-center animate-pulse">
+              <CheckCircle className="w-10 h-10 text-green-400" />
             </div>
-            <p className="text-white font-semibold text-lg">¡Pago confirmado!</p>
-            <p className="text-zinc-400 text-sm text-center">Tu reserva ha sido creada con éxito</p>
+            <div className="text-center">
+              <p className="text-white font-bold text-xl">¡Pago completado!</p>
+              <p className="text-zinc-400 text-sm mt-1">Reserva confirmada. Recibirás el QR de entrega en tu perfil.</p>
+            </div>
+            <div className="bg-zinc-800/60 rounded-lg p-3 w-full text-sm space-y-1">
+              <div className="flex justify-between text-zinc-400">
+                <span>Total cobrado</span>
+                <span className="text-white font-semibold">€{grandTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-zinc-500 text-xs">
+                <span>Fianza retenida (escrow)</span>
+                <span>€{deposit.toFixed(2)}</span>
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -57,43 +94,97 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md">
+      <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-white">
             <Lock className="w-4 h-4 text-green-400" />
-            Pago seguro simulado
+            Pago seguro
+            <span className="ml-auto text-xs text-zinc-500 font-normal bg-zinc-800 px-2 py-0.5 rounded">SIMULACIÓN</span>
           </DialogTitle>
         </DialogHeader>
 
         {/* Order Summary */}
-        <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2 text-sm">
-          <p className="font-medium text-white">{equipment?.title}</p>
+        <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2 text-sm border border-zinc-700/50">
+          <p className="font-semibold text-white">{equipment?.title}</p>
           <div className="flex justify-between text-zinc-400">
-            <span>€{equipment?.price_per_day}/día × {days} días</span>
+            <span>€{equipment?.price_per_day}/día × {days} día{days !== 1 ? 's' : ''}</span>
             <span>€{basePrice?.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-zinc-400">
-            <span>Seguro (8%)</span>
+            <span>Seguro BacklineGo (8%)</span>
             <span>€{insuranceFee?.toFixed(2)}</span>
           </div>
-          {equipment?.deposit > 0 && (
+          {deposit > 0 && (
             <div className="flex justify-between text-zinc-400">
               <span>Fianza (reembolsable)</span>
-              <span>€{equipment.deposit}</span>
+              <span>€{deposit.toFixed(2)}</span>
             </div>
           )}
           <Separator className="bg-zinc-700" />
-          <div className="flex justify-between text-white font-semibold">
+          <div className="flex justify-between text-white font-bold text-base">
             <span>Total a pagar</span>
-            <span>€{(totalPrice + (equipment?.deposit || 0)).toFixed(2)}</span>
+            <span>€{grandTotal.toFixed(2)}</span>
           </div>
         </div>
 
-        {/* Simulated Card Form */}
+        {/* Commission Breakdown (collapsible) */}
+        <button
+          className="w-full flex items-center justify-between text-xs text-zinc-500 hover:text-zinc-300 transition-colors bg-zinc-800/30 rounded-lg px-3 py-2"
+          onClick={() => setShowBreakdown(!showBreakdown)}
+        >
+          <span className="flex items-center gap-1.5">
+            <Info className="w-3 h-3" />
+            Ver desglose de comisiones
+          </span>
+          {showBreakdown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+
+        {showBreakdown && (
+          <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-2 text-xs">
+            <p className="text-blue-300 font-semibold text-sm mb-3">Distribución del pago</p>
+            <div className="flex justify-between text-zinc-400">
+              <span>Subtotal alquiler</span>
+              <span>€{basePrice?.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-orange-400">
+              <span>Comisión plataforma (12%)</span>
+              <span>−€{platformFee.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-zinc-500">
+              <span className="pl-3">IVA sobre comisión (21%)</span>
+              <span>€{vatOnFee.toFixed(2)}</span>
+            </div>
+            <Separator className="bg-zinc-700/50" />
+            <div className="flex justify-between text-green-400 font-semibold">
+              <span>Propietario recibe</span>
+              <span>€{ownerReceives.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-zinc-400">
+              <span>+ Seguro (BacklineGo)</span>
+              <span>€{insuranceFee?.toFixed(2)}</span>
+            </div>
+            {deposit > 0 && (
+              <div className="flex justify-between text-zinc-400">
+                <span>Fianza en escrow</span>
+                <span>€{deposit.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="mt-2 pt-2 border-t border-zinc-700/50 text-zinc-500 italic">
+              La fianza se libera al confirmar la devolución del equipo con el QR.
+            </div>
+          </div>
+        )}
+
+        {/* Card Form */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs text-zinc-500 mb-1">
+          <div className="flex items-center gap-2 text-xs text-zinc-500">
             <CreditCard className="w-3 h-3" />
-            <span>Datos de tarjeta (simulación)</span>
+            <span>Datos de tarjeta (entorno de prueba)</span>
+            <div className="ml-auto flex gap-1">
+              {['VISA', 'MC'].map(b => (
+                <span key={b} className="text-[10px] bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">{b}</span>
+              ))}
+            </div>
           </div>
 
           <Input
@@ -106,7 +197,7 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
             placeholder="1234 5678 9012 3456"
             value={card.number}
             onChange={e => setCard({ ...card, number: formatCardNumber(e.target.value) })}
-            className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 font-mono"
+            className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 font-mono tracking-wider"
           />
           <div className="grid grid-cols-2 gap-3">
             <Input
@@ -117,6 +208,7 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
             />
             <Input
               placeholder="CVV"
+              maxLength={3}
               value={card.cvv}
               onChange={e => setCard({ ...card, cvv: e.target.value.replace(/\D/g, '').slice(0, 3) })}
               className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 font-mono"
@@ -124,18 +216,23 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-zinc-500 bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-          <ShieldCheck className="w-4 h-4 text-green-400 flex-shrink-0" />
-          <span>Pago retenido en escrow hasta la devolución del equipo</span>
+        <div className="flex items-start gap-2 text-xs text-zinc-400 bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+          <ShieldCheck className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+          <span>El pago queda retenido en <strong className="text-green-400">escrow</strong> hasta que el propietario confirme la devolución del equipo con el código QR.</span>
         </div>
 
         <Button
-          className="w-full bg-blue-600 hover:bg-blue-700 font-semibold h-12"
+          className="w-full bg-blue-600 hover:bg-blue-700 font-semibold h-12 text-base disabled:opacity-40"
           onClick={handlePay}
-          disabled={!card.name || card.number.replace(/\s/g, '').length < 16 || card.expiry.length < 5 || card.cvv.length < 3}
+          disabled={!isCardValid}
         >
-          Confirmar pago · €{(totalPrice + (equipment?.deposit || 0)).toFixed(2)}
+          <Lock className="w-4 h-4 mr-2" />
+          Pagar €{grandTotal.toFixed(2)} de forma segura
         </Button>
+
+        <p className="text-center text-xs text-zinc-600">
+          Entorno simulado · Sin cargos reales · Stripe Connect™ próximamente
+        </p>
       </DialogContent>
     </Dialog>
   );
