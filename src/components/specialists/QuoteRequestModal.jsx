@@ -34,7 +34,7 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
   const mutation = useMutation({
     mutationFn: async (data) => {
       // Save the request
-      await base44.entities.QuoteRequest.create(data);
+      const created = await base44.entities.QuoteRequest.create(data);
       // Send email notification to specialist
       if (specialist.email) {
         await base44.integrations.Core.SendEmail({
