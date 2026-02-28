@@ -25,11 +25,13 @@ import {
   XCircle
 } from 'lucide-react';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
+import QRDeliveryModal from '@/components/qr/QRDeliveryModal';
 
 export default function Profile() {
   const { t, lang } = useTranslation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [qrBooking, setQrBooking] = useState(null);
 
   useEffect(() => {
     loadUser();
@@ -249,8 +251,13 @@ export default function Profile() {
                             {booking.status}
                           </Badge>
                           
-                          {booking.status === 'confirmed' && (
-                            <Button size="sm" variant="outline" className="border-zinc-700">
+                          {(booking.status === 'confirmed' || booking.status === 'active') && (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="border-blue-700 text-blue-400 hover:bg-blue-900/30"
+                              onClick={() => setQrBooking(booking)}
+                            >
                               <QrCode className="w-4 h-4 mr-2" />
                               {t('scanQR')}
                             </Button>
