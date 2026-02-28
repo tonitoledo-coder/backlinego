@@ -79,6 +79,16 @@ export default function EquipmentDetail() {
       }
 
       const user = await base44.auth.me();
+      // Notify the equipment owner
+      if (equipment.created_by) {
+        await createNotification({
+          user_email: equipment.created_by,
+          type: 'booking_confirmed',
+          title: `Nueva reserva: ${equipment.title}`,
+          body: `${format(startDate, 'dd MMM')} → ${format(endDate, 'dd MMM')} · €${totalPrice.toFixed(0)}`,
+          link_page: 'Profile',
+        });
+      }
       await bookingMutation.mutateAsync({
         equipment_id: equipmentId,
         renter_id: user.id,
