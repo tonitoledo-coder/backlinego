@@ -19,9 +19,9 @@ import {
   LogIn,
   Trophy
 } from 'lucide-react';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import NotificationBell from '@/components/notifications/NotificationBell';
 
 export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
@@ -102,8 +102,6 @@ export default function Layout({ children, currentPageName }) {
               </Button>
             </Link>
             
-            {user && <NotificationBell userEmail={user.email} />}
-
             {loading ? null : user ? (
               <div className="flex items-center gap-3">
                 <Link to={createPageUrl('Profile')}>
