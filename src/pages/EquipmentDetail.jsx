@@ -28,6 +28,7 @@ import {
 import { format, differenceInDays } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import CategoryIcon from '@/components/ui/CategoryIcon';
+import { createNotification } from '@/components/notifications/createNotification';
 
 export default function EquipmentDetail() {
   const { t, lang } = useTranslation();

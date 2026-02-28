@@ -11,6 +11,7 @@ import {
 import { cn } from '@/lib/utils';
 import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
+import { createNotification } from '@/components/notifications/createNotification';
 
 function MessageBubble({ msg, isMine }) {
   return (
