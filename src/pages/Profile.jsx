@@ -287,6 +287,13 @@ export default function Profile() {
           )}
         </TabsContent>
       </Tabs>
+      {qrBooking && (
+        <QRDeliveryModal
+          booking={qrBooking}
+          open={!!qrBooking}
+          onClose={() => setQrBooking(null)}
+        />
+      )}
     </div>
   );
 }
