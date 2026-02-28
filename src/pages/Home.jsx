@@ -15,7 +15,11 @@ import {
   CreditCard,
   ArrowRight,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Wrench,
+  QrCode,
+  Star,
+  CheckCircle
 } from 'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
