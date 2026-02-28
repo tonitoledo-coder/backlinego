@@ -102,6 +102,8 @@ export default function Layout({ children, currentPageName }) {
               </Button>
             </Link>
             
+            {user && <NotificationBell userEmail={user.email} />}
+
             {loading ? null : user ? (
               <div className="flex items-center gap-3">
                 <Link to={createPageUrl('Profile')}>
