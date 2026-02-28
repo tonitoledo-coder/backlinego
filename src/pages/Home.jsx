@@ -236,6 +236,27 @@ export default function Home() {
         </Link>
       </section>
 
+      {/* Rewards Banner */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-4">
+        <Link to={createPageUrl('Rewards')}>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500/20 to-yellow-600/10 border border-amber-500/30 p-5 lg:p-6 group hover:border-amber-500/60 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/20 rounded-full blur-[60px]" />
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <Trophy className="w-6 h-6 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Programa de Recompensas</h3>
+                  <p className="text-amber-400/80 text-sm">Gana puntos · Descuentos hasta -15% · Insignias de partner</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {/* Trust & QR Security Strip */}
       <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
