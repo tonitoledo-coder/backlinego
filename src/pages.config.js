@@ -56,6 +56,7 @@ import Onboarding from './pages/Onboarding';
 import Partners from './pages/Partners';
 import Profile from './pages/Profile';
 import Specialists from './pages/Specialists';
+import Chat from './pages/Chat';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +70,7 @@ export const PAGES = {
     "Partners": Partners,
     "Profile": Profile,
     "Specialists": Specialists,
+    "Chat": Chat,
 }
 
 export const pagesConfig = {
