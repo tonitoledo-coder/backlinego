@@ -57,6 +57,7 @@ import Partners from './pages/Partners';
 import Profile from './pages/Profile';
 import Specialists from './pages/Specialists';
 import Chat from './pages/Chat';
+import Rewards from './pages/Rewards';
 import __Layout from './Layout.jsx';
 
 
@@ -71,6 +72,7 @@ export const PAGES = {
     "Profile": Profile,
     "Specialists": Specialists,
     "Chat": Chat,
+    "Rewards": Rewards,
 }
 
 export const pagesConfig = {
