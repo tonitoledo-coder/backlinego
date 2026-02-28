@@ -52,6 +52,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Explore', icon: Search, label: t('explore') },
     { name: 'MapView', icon: Map, label: t('map') },
     { name: 'Specialists', icon: Wrench, label: 'Técnicos' },
+    { name: 'Rewards', icon: Trophy, label: 'Rewards' },
     { name: 'Profile', icon: User, label: t('profile') },
   ];
 
