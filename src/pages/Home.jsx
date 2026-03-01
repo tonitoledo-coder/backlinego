@@ -20,7 +20,8 @@ import {
   QrCode,
   Star,
   CheckCircle,
-  Trophy
+  Trophy,
+  Globe
 } from 'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
