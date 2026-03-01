@@ -497,7 +497,7 @@ export default function Onboarding() {
             className="flex-1 bg-blue-600 hover:bg-blue-700 h-12 font-semibold"
             disabled={!canProceed() || createMutation.isPending}
             onClick={() => {
-              if (currentStep === 3) {
+              if (currentStep === 4) {
                 handleSubmit();
               } else {
                 setCurrentStep(s => s + 1);
