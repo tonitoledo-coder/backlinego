@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AddEquipment from './pages/AddEquipment';
+import Chat from './pages/Chat';
 import EquipmentDetail from './pages/EquipmentDetail';
 import Explore from './pages/Explore';
 import Home from './pages/Home';
@@ -55,14 +56,15 @@ import MapView from './pages/MapView';
 import Onboarding from './pages/Onboarding';
 import Partners from './pages/Partners';
 import Profile from './pages/Profile';
-import Specialists from './pages/Specialists';
-import Chat from './pages/Chat';
 import Rewards from './pages/Rewards';
+import Specialists from './pages/Specialists';
+import Directory from './pages/Directory';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AddEquipment": AddEquipment,
+    "Chat": Chat,
     "EquipmentDetail": EquipmentDetail,
     "Explore": Explore,
     "Home": Home,
@@ -70,9 +72,9 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Partners": Partners,
     "Profile": Profile,
-    "Specialists": Specialists,
-    "Chat": Chat,
     "Rewards": Rewards,
+    "Specialists": Specialists,
+    "Directory": Directory,
 }
 
 export const pagesConfig = {
