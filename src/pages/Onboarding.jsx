@@ -149,7 +149,7 @@ export default function Onboarding() {
   };
 
   // Success screen
-  if (currentStep === 4) {
+  if (currentStep === 5) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 flex items-center justify-center p-4">
         <motion.div 
