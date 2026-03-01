@@ -20,6 +20,25 @@ const SERVICE_TAGS = {
 };
 
 const companies = [
+  // ESPAÑA
+  {
+    id: 0,
+    name: 'Call & Play',
+    logo: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=80&h=80&fit=crop',
+    country: 'España',
+    flag: '🇪🇸',
+    region: 'Europa',
+    city: 'España',
+    description: 'La empresa más grande de España especializada en alquiler de backline para conciertos, festivales y eventos. Referente nacional del sector.',
+    website: 'https://www.callandplay.com',
+    email: null,
+    phone: null,
+    services: ['rental', 'pa', 'festival', 'international'],
+    rating: 5.0,
+    reviews: 0,
+    verified: true,
+    featured: true,
+  },
   // EUROPE
   {
     id: 1,
