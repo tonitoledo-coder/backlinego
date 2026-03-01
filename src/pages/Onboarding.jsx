@@ -142,8 +142,9 @@ export default function Onboarding() {
   };
 
   const canProceed = () => {
-    if (currentStep === 1) return images.length > 0;
-    if (currentStep === 2) return formData.title && formData.category && formData.price_per_day;
+    if (currentStep === 1) return !!userType;
+    if (currentStep === 2) return images.length > 0;
+    if (currentStep === 3) return formData.title && formData.category && formData.price_per_day;
     return true;
   };
 
