@@ -41,10 +41,20 @@ const categories = [
   'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa'
 ];
 
+const USER_TYPES = [
+  { id: 'musico',    icon: Music,      label: { es: 'Músico',    en: 'Musician',  fr: 'Musicien',   de: 'Musiker',   it: 'Musicista', pt: 'Músico',    ja: 'ミュージシャン', zh: '音乐人', ar: 'موسيقي' } },
+  { id: 'artista',   icon: Mic2,       label: { es: 'Artista',   en: 'Artist',    fr: 'Artiste',    de: 'Künstler',  it: 'Artista',   pt: 'Artista',   ja: 'アーティスト', zh: '艺术家', ar: 'فنان' } },
+  { id: 'promotor',  icon: Star,       label: { es: 'Promotor',  en: 'Promoter',  fr: 'Promoteur',  de: 'Promoter',  it: 'Promotore', pt: 'Promotor',  ja: 'プロモーター', zh: '主办方', ar: 'مروج' } },
+  { id: 'manager',   icon: Briefcase,  label: { es: 'Manager',   en: 'Manager',   fr: 'Manager',    de: 'Manager',   it: 'Manager',   pt: 'Manager',   ja: 'マネージャー', zh: '经理人', ar: 'مدير' } },
+  { id: 'empresa',   icon: Building2,  label: { es: 'Empresa',   en: 'Company',   fr: 'Entreprise', de: 'Unternehmen', it: 'Azienda', pt: 'Empresa',  ja: '企業',       zh: '公司',  ar: 'شركة' } },
+  { id: 'contenedor',icon: Package,    label: { es: 'Contenedor',en: 'Venue/Container', fr: 'Salle', de: 'Veranstaltungsort', it: 'Venue', pt: 'Venue', ja: '会場',     zh: '场地',  ar: 'مكان' } },
+];
+
 const steps = [
-  { id: 1, icon: Camera, title: 'uploadPhotos' },
-  { id: 2, icon: DollarSign, title: 'setPrice' },
-  { id: 3, icon: Rocket, title: 'goLive' },
+  { id: 1, icon: Users,       title: 'Tipo' },
+  { id: 2, icon: Camera,      title: 'uploadPhotos' },
+  { id: 3, icon: DollarSign,  title: 'setPrice' },
+  { id: 4, icon: Rocket,      title: 'goLive' },
 ];
 
 export default function Onboarding() {
