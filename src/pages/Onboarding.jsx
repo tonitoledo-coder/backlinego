@@ -327,8 +327,8 @@ export default function Onboarding() {
               </motion.div>
             )}
 
-            {/* Step 2: Details */}
-            {currentStep === 2 && (
+            {/* Step 3: Details */}
+            {currentStep === 3 && (
               <motion.div
                 key="step2"
                 initial={{ x: 50, opacity: 0 }}
