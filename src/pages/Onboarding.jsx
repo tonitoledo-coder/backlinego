@@ -80,7 +80,7 @@ export default function Onboarding() {
       return base44.entities.Equipment.create(data);
     },
     onSuccess: () => {
-      setCurrentStep(4); // Success state
+      setCurrentStep(5); // Success state
     }
   });
 
