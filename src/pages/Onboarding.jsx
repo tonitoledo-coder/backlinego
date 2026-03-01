@@ -47,7 +47,7 @@ const USER_TYPES = [
   { id: 'promotor',  icon: Star,       label: { es: 'Promotor',  en: 'Promoter',  fr: 'Promoteur',  de: 'Promoter',  it: 'Promotore', pt: 'Promotor',  ja: 'プロモーター', zh: '主办方', ar: 'مروج' } },
   { id: 'manager',   icon: Briefcase,  label: { es: 'Manager',   en: 'Manager',   fr: 'Manager',    de: 'Manager',   it: 'Manager',   pt: 'Manager',   ja: 'マネージャー', zh: '经理人', ar: 'مدير' } },
   { id: 'empresa',   icon: Building2,  label: { es: 'Empresa',   en: 'Company',   fr: 'Entreprise', de: 'Unternehmen', it: 'Azienda', pt: 'Empresa',  ja: '企業',       zh: '公司',  ar: 'شركة' } },
-  { id: 'contenedor',icon: Package,    label: { es: 'Contenedor',en: 'Venue/Container', fr: 'Salle', de: 'Veranstaltungsort', it: 'Venue', pt: 'Venue', ja: '会場',     zh: '场地',  ar: 'مكان' } },
+  { id: 'coleccionista', icon: Package, label: { es: 'Coleccionista', en: 'Collector', fr: 'Collectionneur', de: 'Sammler', it: 'Collezionista', pt: 'Colecionador', ja: 'コレクター', zh: '收藏家', ar: 'هاوٍ' } },
 ];
 
 const steps = [
