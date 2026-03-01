@@ -128,6 +128,9 @@ export default function Onboarding() {
       }
     }
 
+    // Save user type to profile
+    await base44.auth.updateMe({ user_type: userType });
+
     await createMutation.mutateAsync({
       ...formData,
       images,
