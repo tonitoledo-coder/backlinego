@@ -165,7 +165,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-4">
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
           {categories.map((cat) => (
             <Link 
               key={cat.id}
@@ -180,6 +180,16 @@ export default function Home() {
               </div>
             </Link>
           ))}
+
+          {/* Directorio Internacional */}
+          <Link to={createPageUrl('Directory')} className="group">
+            <div className="aspect-square rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 p-0.5 group-hover:scale-105 transition-transform duration-300">
+              <div className="w-full h-full rounded-2xl bg-zinc-900 flex flex-col items-center justify-center gap-2 group-hover:bg-zinc-900/80 transition-colors">
+                <Globe className="w-8 h-8 text-teal-400" />
+                <span className="text-xs lg:text-sm font-medium text-zinc-300 text-center leading-tight">Directorio<br/>Global</span>
+              </div>
+            </div>
+          </Link>
         </div>
       </section>
 
