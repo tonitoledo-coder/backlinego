@@ -506,7 +506,7 @@ export default function Onboarding() {
           >
             {createMutation.isPending ? (
               <Loader2 className="w-5 h-5 animate-spin" />
-            ) : currentStep === 3 ? (
+            ) : currentStep === 4 ? (
               <>
                 {t('goLive')}
                 <Rocket className="w-5 h-5 ml-2" />
