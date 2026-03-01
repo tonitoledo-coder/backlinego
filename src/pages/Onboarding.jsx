@@ -21,13 +21,18 @@ import {
   Camera, 
   DollarSign, 
   Rocket,
-  Upload,
   X,
   ArrowRight,
   ArrowLeft,
   Loader2,
   CheckCircle,
-  Music
+  Music,
+  Mic2,
+  Star,
+  Building2,
+  Users,
+  Briefcase,
+  Package
 } from 'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import { motion, AnimatePresence } from 'framer-motion';
