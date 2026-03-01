@@ -62,6 +62,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   
   const [currentStep, setCurrentStep] = useState(1);
+  const [userType, setUserType] = useState('');
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
