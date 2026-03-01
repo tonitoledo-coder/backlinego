@@ -230,8 +230,48 @@ export default function Onboarding() {
       <div className="px-4 pb-32">
         <div className="max-w-md mx-auto">
           <AnimatePresence mode="wait">
-            {/* Step 1: Photos */}
+            {/* Step 1: User Type */}
             {currentStep === 1 && (
+              <motion.div
+                key="step0"
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -50, opacity: 0 }}
+                className="space-y-6"
+              >
+                <div className="text-center mb-8">
+                  <h1 className="text-2xl font-bold text-white mb-2">
+                    {lang === 'es' ? '¿Quién eres?' : lang === 'fr' ? 'Qui êtes-vous ?' : lang === 'de' ? 'Wer bist du?' : lang === 'it' ? 'Chi sei?' : lang === 'pt' ? 'Quem é você?' : lang === 'ja' ? 'あなたは誰ですか？' : lang === 'zh' ? '您是谁？' : lang === 'ar' ? 'من أنت؟' : 'Who are you?'}
+                  </h1>
+                  <p className="text-zinc-400">
+                    {lang === 'es' ? 'Selecciona tu perfil para personalizar la experiencia' : 'Select your profile to personalize the experience'}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {USER_TYPES.map((type) => {
+                    const Icon = type.icon;
+                    const label = type.label[lang] || type.label['en'];
+                    return (
+                      <button
+                        key={type.id}
+                        onClick={() => setUserType(type.id)}
+                        className={`flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all ${
+                          userType === type.id
+                            ? 'border-blue-500 bg-blue-500/20 text-white'
+                            : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-500'
+                        }`}
+                      >
+                        <Icon className="w-7 h-7" />
+                        <span className="text-sm font-semibold">{label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Photos */}
+            {currentStep === 2 && (
               <motion.div
                 key="step1"
                 initial={{ x: 50, opacity: 0 }}
