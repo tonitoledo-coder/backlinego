@@ -98,17 +98,17 @@ export default function Home() {
             </div>
 
             {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-4 lg:gap-8">
-              <div className="flex items-center gap-2 text-sm text-zinc-400">
-                <ShieldCheck className="w-5 h-5 text-blue-500" />
+            <div className="flex flex-wrap justify-center gap-3 lg:gap-8">
+              <div className="flex items-center gap-1.5 text-xs lg:text-sm text-zinc-400">
+                <ShieldCheck className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500 shrink-0" />
                 <span>{t('idVerified')}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-zinc-400">
-                <CreditCard className="w-5 h-5 text-green-500" />
+              <div className="flex items-center gap-1.5 text-xs lg:text-sm text-zinc-400">
+                <CreditCard className="w-4 h-4 lg:w-5 lg:h-5 text-green-500 shrink-0" />
                 <span>{t('escrowPayment')}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-zinc-400">
-                <Zap className="w-5 h-5 text-amber-500" />
+              <div className="flex items-center gap-1.5 text-xs lg:text-sm text-zinc-400">
+                <Zap className="w-4 h-4 lg:w-5 lg:h-5 text-amber-500 shrink-0" />
                 <span>{t('insuranceIncluded')}</span>
               </div>
             </div>
