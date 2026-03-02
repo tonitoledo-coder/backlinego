@@ -167,23 +167,23 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-zinc-800">
-        <div className="flex items-center justify-around h-16 px-2">
-          {navItems.map((item) => (
+        <div className="flex items-center justify-around h-16 px-1" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          {mobileNavItems.map((item) => (
             <Link
               key={item.name}
               to={createPageUrl(item.name)}
               className={cn(
-                "flex flex-col items-center justify-center w-16 h-full transition-all duration-200",
+                "flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 min-w-0",
                 isActive(item.name)
                   ? "text-blue-500"
                   : "text-zinc-500"
               )}
             >
               <item.icon className={cn(
-                "w-5 h-5 mb-1",
+                "w-5 h-5 mb-0.5 shrink-0",
                 isActive(item.name) && "scale-110"
               )} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[9px] font-medium truncate w-full text-center px-0.5">{item.label}</span>
             </Link>
           ))}
         </div>
