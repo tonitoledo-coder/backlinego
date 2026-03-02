@@ -64,19 +64,17 @@ export default function Home() {
         
         <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-20">
           <div className="text-center max-w-3xl mx-auto">
-            {/* Logo */}
-            <div className="flex justify-center mb-4">
+            {/* Logo + Tagline Hero Block */}
+            <div className="flex flex-col items-center mb-8 lg:mb-10">
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a08f2a394db4f3cafbc46f/0a293e3b0_Puedeshacerlaconcalidadmxima_1.png"
                 alt="BacklineGo"
-                className="h-16 lg:h-24 w-auto object-contain drop-shadow-[0_0_30px_rgba(59,130,246,0.25)]"
+                className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]"
               />
+              <p className="mt-3 text-sm lg:text-base font-semibold tracking-[0.25em] uppercase text-amber-400/90">
+                Glocal Marketplace
+              </p>
             </div>
-
-            <Badge className="mb-6 bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-1.5">
-              <Sparkles className="w-3.5 h-3.5 mr-2" />
-              Glocal Marketplace
-            </Badge>
             
             <h1 className="text-3xl lg:text-6xl font-bold text-white mb-4 lg:mb-6 leading-tight">
               {t('heroTitle')}
