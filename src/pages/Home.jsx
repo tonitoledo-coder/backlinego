@@ -287,8 +287,8 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 p-8 lg:p-12">
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6 lg:py-8">
+        <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 p-6 lg:p-12">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[100px]" />
           
           <div className="relative flex flex-col lg:flex-row items-center justify-between gap-6">
