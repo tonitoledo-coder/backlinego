@@ -57,6 +57,15 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Profile', icon: User, label: t('profile') },
   ];
 
+  // Bottom nav items (only show 5 on mobile to avoid overflow)
+  const mobileNavItems = [
+    { name: 'Home', icon: Home, label: t('home') },
+    { name: 'Explore', icon: Search, label: t('explore') },
+    { name: 'MapView', icon: Map, label: t('map') },
+    { name: 'Specialists', icon: Wrench, label: 'Técnicos' },
+    { name: 'Profile', icon: User, label: t('profile') },
+  ];
+
   const isActive = (pageName) => currentPageName === pageName;
 
   // Hide layout on onboarding
