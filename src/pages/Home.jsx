@@ -165,7 +165,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 lg:gap-4">
           {categories.map((cat) => (
             <Link 
               key={cat.id}
