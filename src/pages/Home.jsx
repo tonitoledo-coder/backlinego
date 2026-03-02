@@ -270,7 +270,7 @@ export default function Home() {
 
       {/* Trust & QR Security Strip */}
       <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { icon: QrCode, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'QR de Entrega', desc: 'Confirmación segura con código único' },
             { icon: ShieldCheck, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', title: 'Pago Escrow', desc: 'El dinero queda retenido hasta la entrega' },
