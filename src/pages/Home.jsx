@@ -293,10 +293,10 @@ export default function Home() {
           
           <div className="relative flex flex-col lg:flex-row items-center justify-between gap-6">
             <div>
-              <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+              <h3 className="text-xl lg:text-3xl font-bold text-white mb-2">
                 {t('onboardingTitle')}
               </h3>
-              <p className="text-blue-100/80">
+              <p className="text-blue-100/80 text-sm lg:text-base">
                 {t('onboardingStep1')} → {t('onboardingStep2')} → {t('onboardingStep3')}
               </p>
             </div>
