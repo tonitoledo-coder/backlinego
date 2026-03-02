@@ -62,7 +62,7 @@ export default function Home() {
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/30 rounded-full blur-[100px]" />
         <div className="absolute bottom-20 right-10 w-72 h-72 bg-green-500/30 rounded-full blur-[100px]" />
         
-        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-12 lg:py-20">
+        <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-20">
           <div className="text-center max-w-3xl mx-auto">
             <Badge className="mb-6 bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-1.5">
               <Sparkles className="w-3.5 h-3.5 mr-2" />
