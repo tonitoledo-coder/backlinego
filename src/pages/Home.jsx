@@ -69,11 +69,11 @@ export default function Home() {
               Glocal Marketplace
             </Badge>
             
-            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-3xl lg:text-6xl font-bold text-white mb-4 lg:mb-6 leading-tight">
               {t('heroTitle')}
             </h1>
             
-            <p className="text-lg lg:text-xl text-zinc-400 mb-8">
+            <p className="text-base lg:text-xl text-zinc-400 mb-6 lg:mb-8 px-2 lg:px-0">
               {t('heroSubtitle')}
             </p>
 
