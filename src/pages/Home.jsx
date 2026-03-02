@@ -123,14 +123,14 @@ export default function Home() {
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-500/20 to-green-600/10 border border-green-500/30 p-6 lg:p-8 group hover:border-green-500/50 transition-all duration-300">
               <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-[80px]" />
               
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-green-500/20 flex items-center justify-center pulse-sos">
-                    <Zap className="w-7 h-7 text-green-400" />
+              <div className="relative flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 lg:w-14 lg:h-14 rounded-2xl bg-green-500/20 flex items-center justify-center pulse-sos shrink-0">
+                    <Zap className="w-5 h-5 lg:w-7 lg:h-7 text-green-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white mb-1">{t('sosMode')}</h3>
-                    <p className="text-green-400/80">{t('sosDescription')} • {t('sosRadius')}</p>
+                    <h3 className="text-base lg:text-xl font-bold text-white mb-0.5">{t('sosMode')}</h3>
+                    <p className="text-green-400/80 text-xs lg:text-base">{t('sosDescription')} • {t('sosRadius')}</p>
                   </div>
                 </div>
                 
