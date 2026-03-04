@@ -59,6 +59,8 @@ import Partners from './pages/Partners';
 import Profile from './pages/Profile';
 import Rewards from './pages/Rewards';
 import Specialists from './pages/Specialists';
+import CompleteProfile from './pages/CompleteProfile';
+import PublicProfile from './pages/PublicProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +77,8 @@ export const PAGES = {
     "Profile": Profile,
     "Rewards": Rewards,
     "Specialists": Specialists,
+    "CompleteProfile": CompleteProfile,
+    "PublicProfile": PublicProfile,
 }
 
 export const pagesConfig = {
