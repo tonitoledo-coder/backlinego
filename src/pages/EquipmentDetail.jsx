@@ -46,6 +46,30 @@ export default function EquipmentDetail() {
 
   const queryClient = useQueryClient();
 
+  // Load existing bookings to block occupied dates
+  const { data: existingBookings = [] } = useQuery({
+    queryKey: ['bookings', 'equipment', equipmentId],
+    queryFn: () => base44.entities.Booking.filter({ equipment_id: equipmentId }, '-created_date', 100),
+    enabled: !!equipmentId,
+  });
+
+  // Build a Set of blocked date strings
+  const bookedDatesSet = React.useMemo(() => {
+    const set = new Set();
+    existingBookings
+      .filter(b => ['pending', 'confirmed', 'active'].includes(b.status))
+      .forEach(b => {
+        try {
+          const start = parseISO(b.start_date);
+          const end = parseISO(b.end_date);
+          eachDayOfInterval({ start, end }).forEach(d => {
+            set.add(format(d, 'yyyy-MM-dd'));
+          });
+        } catch {}
+      });
+    return set;
+  }, [existingBookings]);
+
   const { data: equipment, isLoading } = useQuery({
     queryKey: ['equipment', equipmentId],
     queryFn: async () => {
