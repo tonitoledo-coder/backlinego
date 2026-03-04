@@ -212,7 +212,7 @@ export default function Profile() {
 
       {/* Tabs */}
       <Tabs defaultValue="equipment" className="w-full">
-        <TabsList className="bg-zinc-900 border border-zinc-800 w-full justify-start">
+        <TabsList className="bg-zinc-900 border border-zinc-800 w-full justify-start flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="equipment" className="data-[state=active]:bg-blue-600">
             <Package className="w-4 h-4 mr-2" />
             {t('myEquipment')}
@@ -220,6 +220,10 @@ export default function Profile() {
           <TabsTrigger value="bookings" className="data-[state=active]:bg-blue-600">
             <Calendar className="w-4 h-4 mr-2" />
             {t('bookings')}
+          </TabsTrigger>
+          <TabsTrigger value="incoming" className="data-[state=active]:bg-green-600">
+            <Package className="w-4 h-4 mr-2" />
+            Reservas entrantes
           </TabsTrigger>
         </TabsList>
 
