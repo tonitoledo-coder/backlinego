@@ -390,7 +390,6 @@ export default function Profile() {
           )}
         </TabsContent>
       </Tabs>
-    </div>
 
       {qrBooking && (
         <QRDeliveryModal
