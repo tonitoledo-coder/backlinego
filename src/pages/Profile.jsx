@@ -65,6 +65,27 @@ export default function Profile() {
     enabled: !!user?.id,
   });
 
+  const { data: incomingBookings = [], refetch: refetchIncoming } = useQuery({
+    queryKey: ['bookings', 'incoming', user?.id],
+    queryFn: () => base44.entities.Booking.filter({ owner_id: user.id }, '-created_date', 50),
+    enabled: !!user?.id,
+  });
+
+  const { data: allEquipment = [] } = useQuery({
+    queryKey: ['equipment', 'all-mine'],
+    queryFn: () => base44.entities.Equipment.filter({}, '-created_date', 100),
+    enabled: !!user?.id,
+  });
+
+  const equipmentMap = React.useMemo(() => {
+    const map = {};
+    allEquipment.forEach(eq => { map[eq.id] = eq; });
+    return map;
+  }, [allEquipment]);
+
+  const { useMutation: _useMutation, useQueryClient: _useQueryClient } = require('@tanstack/react-query');
+  
+
   const handleLogout = () => {
     base44.auth.logout(createPageUrl('Home'));
   };
