@@ -5,11 +5,6 @@ export default function IOSInstallBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Suppress ServiceWorker registration errors in preview environments
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
-    }
-
     try {
       const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
       const isInStandaloneMode = window.navigator.standalone === true;
