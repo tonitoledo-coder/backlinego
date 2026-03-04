@@ -467,7 +467,7 @@ export default function EquipmentDetail() {
               {/* Book Button */}
               <Button 
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
-                disabled={!startDate || !endDate || isBooking}
+                disabled={!canBook || isBooking}
                 onClick={handleBooking}
               >
                 {isBooking ? t('loading') : t('bookNow')}
