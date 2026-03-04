@@ -5,11 +5,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, User, CreditCard, Bell, Lock, Shield } from 'lucide-react';
-import SettingsProfile from '@/components/settings/SettingsProfile';
-import SettingsBilling from '@/components/settings/SettingsBilling';
-import SettingsSecurity from '@/components/settings/SettingsSecurity';
-import SettingsNotifications from '@/components/settings/SettingsNotifications';
-import SettingsPrivacy from '@/components/settings/SettingsPrivacy';
+import SettingsProfile from '@/components/settings/SettingsProfile.jsx';
+import SettingsBilling from '@/components/settings/SettingsBilling.jsx';
+import SettingsSecurity from '@/components/settings/SettingsSecurity.jsx';
+import SettingsNotifications from '@/components/settings/SettingsNotifications.jsx';
+import SettingsPrivacy from '@/components/settings/SettingsPrivacy.jsx';
 
 const TABS = [
   { id: 'profile',       icon: User,       label: 'Perfil' },
