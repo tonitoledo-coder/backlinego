@@ -78,9 +78,10 @@ export default function Home() {
                 alt="BacklineGo"
                 className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]"
               />
-              <p className="mt-3 text-sm lg:text-base font-semibold tracking-[0.25em] uppercase text-amber-400/90">
-                Glocal Marketplace
-              </p>
+              <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <span className="w-1.5 h-1.5 rounded-full pulse-sos flex-shrink-0" style={{ background: '#1DDF7A' }} />
+                <span className="text-xs font-semibold tracking-[0.2em] uppercase text-zinc-300">Glocal Marketplace</span>
+              </div>
             </div>
             
             <h1 className="text-3xl lg:text-6xl font-bold text-white mb-4 lg:mb-6 leading-tight">
