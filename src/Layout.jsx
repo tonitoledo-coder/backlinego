@@ -21,15 +21,6 @@ import {
 } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
-
-// Suppress SW registration errors (sw.js not available in dev/preview)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
-      // SW not available in this environment — silently ignore
-    });
-  });
-}
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
