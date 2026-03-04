@@ -316,7 +316,7 @@ export default function Profile() {
             </div>
           )}
         </TabsContent>
-      </Tabs>
+
         <TabsContent value="incoming" className="mt-6">
           {incomingBookings.length > 0 ? (
             <div className="space-y-4">
