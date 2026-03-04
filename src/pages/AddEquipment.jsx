@@ -49,6 +49,9 @@ export default function AddEquipment() {
     deposit: '',
     sos_available: false,
     history: '',
+    min_rental_days: 1,
+    max_rental_days: 30,
+    advance_notice_days: 0,
     location: {
       city: '',
       address: '',
