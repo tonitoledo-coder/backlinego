@@ -83,8 +83,13 @@ export default function Profile() {
     return map;
   }, [allEquipment]);
 
-  const { useMutation: _useMutation, useQueryClient: _useQueryClient } = require('@tanstack/react-query');
-  
+  const queryClient = useQueryClient();
+
+  const confirmReturnMutation = useMutation({
+    mutationFn: (bookingId) => base44.entities.Booking.update(bookingId, { status: 'completed', escrow_status: 'released' }),
+    onSuccess: () => queryClient.invalidateQueries(['bookings', 'incoming']),
+  });
+
 
   const handleLogout = () => {
     base44.auth.logout(createPageUrl('Home'));
