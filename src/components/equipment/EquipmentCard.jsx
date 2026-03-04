@@ -12,6 +12,7 @@ export default function EquipmentCard({ equipment }) {
   
   const conditionColor = equipment.condition >= 8 ? 'text-green-400' : 
                          equipment.condition >= 5 ? 'text-yellow-400' : 'text-red-400';
+  const conditionStyle = { color: '#a78bfa' }; // brand violet for rating
 
   return (
     <Link to={createPageUrl('EquipmentDetail') + `?id=${equipment.id}`}>
