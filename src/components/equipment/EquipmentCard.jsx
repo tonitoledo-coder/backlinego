@@ -58,7 +58,7 @@ export default function EquipmentCard({ equipment }) {
               {equipment.title}
             </h3>
             <div className="flex items-center gap-1 text-sm">
-              <span className={conditionColor}>{equipment.condition}/10</span>
+              <span style={{color:'#a78bfa'}}>{equipment.condition}/10</span>
             </div>
           </div>
           
