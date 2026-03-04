@@ -42,6 +42,7 @@ export default function EquipmentDetail() {
   const [endDate, setEndDate] = useState(null);
   const [isBooking, setIsBooking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [rangeWarning, setRangeWarning] = useState('');
 
   const queryClient = useQueryClient();
 
