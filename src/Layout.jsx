@@ -140,7 +140,7 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 glass border-b border-zinc-800">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b" style={{background:'#1a1a2e', borderColor:'rgba(255,255,255,0.08)'}}>
         <div className="px-4 h-14 flex items-center justify-between">
           <Link to={createPageUrl('Home')} className="flex items-center">
             <img 
