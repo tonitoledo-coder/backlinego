@@ -46,7 +46,7 @@ export default function EquipmentCard({ equipment }) {
           </div>
           
           {/* Price tag */}
-          <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+          <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg" style={{background:'rgba(0,0,0,0.8)'}}>
             <span className="text-lg font-bold text-white">€{equipment.price_per_day}</span>
             <span className="text-zinc-400 text-sm">{t('perDay')}</span>
           </div>
