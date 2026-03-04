@@ -49,6 +49,7 @@
  */
 import AddEquipment from './pages/AddEquipment';
 import Chat from './pages/Chat';
+import CompleteProfile from './pages/CompleteProfile';
 import Directory from './pages/Directory';
 import EquipmentDetail from './pages/EquipmentDetail';
 import Explore from './pages/Explore';
@@ -57,16 +58,17 @@ import MapView from './pages/MapView';
 import Onboarding from './pages/Onboarding';
 import Partners from './pages/Partners';
 import Profile from './pages/Profile';
+import PublicProfile from './pages/PublicProfile';
 import Rewards from './pages/Rewards';
 import Specialists from './pages/Specialists';
-import CompleteProfile from './pages/CompleteProfile';
-import PublicProfile from './pages/PublicProfile';
+import Settings from './pages/Settings';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AddEquipment": AddEquipment,
     "Chat": Chat,
+    "CompleteProfile": CompleteProfile,
     "Directory": Directory,
     "EquipmentDetail": EquipmentDetail,
     "Explore": Explore,
@@ -75,10 +77,10 @@ export const PAGES = {
     "Onboarding": Onboarding,
     "Partners": Partners,
     "Profile": Profile,
+    "PublicProfile": PublicProfile,
     "Rewards": Rewards,
     "Specialists": Specialists,
-    "CompleteProfile": CompleteProfile,
-    "PublicProfile": PublicProfile,
+    "Settings": Settings,
 }
 
 export const pagesConfig = {
