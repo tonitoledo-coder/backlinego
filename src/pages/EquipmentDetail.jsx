@@ -403,8 +403,8 @@ export default function EquipmentDetail() {
                     <Calendar
                       mode="single"
                       selected={startDate}
-                      onSelect={setStartDate}
-                      disabled={(date) => date < new Date()}
+                      onSelect={handleStartDateSelect}
+                      disabled={disabledStart}
                       locale={dateLocale}
                     />
                   </PopoverContent>
@@ -421,13 +421,26 @@ export default function EquipmentDetail() {
                     <Calendar
                       mode="single"
                       selected={endDate}
-                      onSelect={setEndDate}
-                      disabled={(date) => date < (startDate || new Date())}
+                      onSelect={handleEndDateSelect}
+                      disabled={disabledEnd}
                       locale={dateLocale}
                     />
                   </PopoverContent>
                 </Popover>
               </div>
+
+              {/* Calendar legend */}
+              <div className="flex items-center gap-4 text-xs text-zinc-500">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />Disponible</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />No disponible</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />Seleccionado</span>
+              </div>
+
+              {rangeWarning && (
+                <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                  {rangeWarning}
+                </p>
+              )}
 
               {/* Price Breakdown */}
               {days > 0 && (
