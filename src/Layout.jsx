@@ -95,9 +95,12 @@ export default function Layout({ children, currentPageName }) {
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                   isActive(item.name)
-                    ? "bg-blue-600 text-white"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                    ? "text-white"
+                    : "text-zinc-400 hover:text-white"
                 )}
+                style={isActive(item.name) ? {background:'#6c47ff'} : {}}
+                onMouseEnter={e => { if (!isActive(item.name)) e.currentTarget.style.background='#2d2d44'; }}
+                onMouseLeave={e => { if (!isActive(item.name)) e.currentTarget.style.background=''; }}
               >
                 {item.label}
               </Link>
