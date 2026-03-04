@@ -94,6 +94,58 @@ export default function EquipmentDetail() {
   const insuranceFee = basePrice * 0.08;
   const totalPrice = basePrice + insuranceFee;
 
+  const minRentalDays = equipment?.min_rental_days || 1;
+  const maxRentalDays = equipment?.max_rental_days || 30;
+  const advanceNoticeDays = equipment?.advance_notice_days || 0;
+  const blockedByOwner = new Set(equipment?.blocked_dates || []);
+
+  const isDateBlocked = (date) => {
+    const key = format(date, 'yyyy-MM-dd');
+    return bookedDatesSet.has(key) || blockedByOwner.has(key);
+  };
+
+  const disabledStart = (date) => {
+    const minDate = addDays(new Date(), advanceNoticeDays);
+    minDate.setHours(0,0,0,0);
+    if (date < minDate) return true;
+    return isDateBlocked(date);
+  };
+
+  const disabledEnd = (date) => {
+    const base = startDate || new Date();
+    if (date < base) return true;
+    if (isDateBlocked(date)) return true;
+    // Block if any booked date exists between startDate and this date
+    if (startDate) {
+      try {
+        const interval = eachDayOfInterval({ start: addDays(startDate, 1), end: date });
+        if (interval.some(d => isDateBlocked(d))) return true;
+      } catch {}
+    }
+    return false;
+  };
+
+  const handleStartDateSelect = (date) => {
+    setStartDate(date);
+    setEndDate(null);
+    setRangeWarning('');
+  };
+
+  const handleEndDateSelect = (date) => {
+    setEndDate(date);
+    setRangeWarning('');
+    if (date && startDate) {
+      const selectedDays = differenceInDays(date, startDate) + 1;
+      if (selectedDays < minRentalDays) {
+        setRangeWarning(`Mínimo ${minRentalDays} día${minRentalDays > 1 ? 's' : ''} de alquiler`);
+      } else if (selectedDays > maxRentalDays) {
+        setRangeWarning(`Máximo ${maxRentalDays} días de alquiler`);
+      }
+    }
+  };
+
+  const canBook = startDate && endDate && days >= minRentalDays && days <= maxRentalDays && !rangeWarning;
+
   const handleBooking = async () => {
     if (!startDate || !endDate) return;
     const isAuth = await base44.auth.isAuthenticated();
