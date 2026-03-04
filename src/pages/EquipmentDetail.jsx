@@ -54,7 +54,7 @@ export default function EquipmentDetail() {
   });
 
   // Build a Set of blocked date strings
-  const bookedDatesSet = React.useMemo(() => {
+  const bookedDatesSet = useMemo(() => {
     const set = new Set();
     existingBookings
       .filter(b => ['pending', 'confirmed', 'active'].includes(b.status))
