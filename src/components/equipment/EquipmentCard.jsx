@@ -104,7 +104,19 @@ export default function EquipmentCard({ equipment }) {
               <span>{equipment.location?.city || 'Location'}</span>
             </div>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              {availability === 'available' && (
+                <span className="flex items-center gap-1 text-xs text-green-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                  Disponible
+                </span>
+              )}
+              {availability === 'occupied' && (
+                <span className="flex items-center gap-1 text-xs text-red-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block" />
+                  Ocupado
+                </span>
+              )}
               <ShieldCheck className="w-4 h-4 text-blue-500" />
             </div>
           </div>
