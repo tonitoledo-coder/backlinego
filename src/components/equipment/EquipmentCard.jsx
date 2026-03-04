@@ -62,8 +62,8 @@ export default function EquipmentCard({ equipment }) {
             </div>
           </div>
           
-          <div className="flex items-center gap-2 text-sm text-zinc-400 mb-3">
-            <CategoryIcon category={equipment.category} className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-sm mb-3" style={{color:'#94a3b8'}}>
+            <CategoryIcon category={equipment.category} className="w-4 h-4" style={{color:'#a78bfa', width:16, height:16}} />
             <span>{t(equipment.category)}</span>
             {equipment.brand && (
               <>
