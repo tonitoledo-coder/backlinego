@@ -77,7 +77,7 @@ export default function Profile() {
     enabled: !!user?.id,
   });
 
-  const equipmentMap = React.useMemo(() => {
+  const equipmentMap = useMemo(() => {
     const map = {};
     allEquipment.forEach(eq => { map[eq.id] = eq; });
     return map;
