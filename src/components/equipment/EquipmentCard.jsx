@@ -124,5 +124,6 @@ export default function EquipmentCard({ equipment }) {
         </CardContent>
       </Card>
     </Link>
+    </div>
   );
 }
