@@ -94,18 +94,23 @@ export default function Home() {
 
             {/* Search Bar */}
             <div className="relative max-w-2xl mx-auto mb-8">
-              <div className="flex items-center bg-zinc-900/80 backdrop-blur-sm rounded-2xl border border-zinc-800 p-2">
+              <div className="flex items-center rounded-2xl p-2 transition-all duration-200" style={{ background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.12)' }}
+                onFocusCapture={e => e.currentTarget.style.cssText += ';border-color:#1DDF7A;box-shadow:0 0 0 3px rgba(29,223,122,0.12)'}
+                onBlurCapture={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.boxShadow = 'none'; }}>
                 <div className="flex items-center flex-1 px-4">
-                  <Search className="w-5 h-5 text-zinc-500 mr-3" />
+                  <Search className="w-5 h-5 text-zinc-500 mr-3 flex-shrink-0" />
                   <Input 
                     placeholder={t('search') + '...'}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="border-0 bg-transparent text-white placeholder:text-zinc-500 focus-visible:ring-0"
+                    className="border-0 bg-transparent text-white focus-visible:ring-0"
+                    style={{ '--placeholder-opacity': '0.3' }}
                   />
                 </div>
                 <Link to={createPageUrl('Explore') + (searchQuery ? `?q=${searchQuery}` : '')}>
-                  <Button className="bg-blue-600 hover:bg-blue-700 rounded-xl px-6">
+                  <Button className="rounded-xl px-6 font-semibold" style={{ background: '#1DDF7A', color: '#060E18' }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#17c96e'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#1DDF7A'}>
                     {t('search')}
                   </Button>
                 </Link>
