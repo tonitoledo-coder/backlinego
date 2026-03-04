@@ -11,10 +11,33 @@ import { format } from 'date-fns';
 
 export default function EquipmentCard({ equipment }) {
   const { t } = useTranslation();
-  
+  const [availability, setAvailability] = useState(null); // null | 'available' | 'occupied'
+  const cardRef = useRef(null);
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !fetchedRef.current) {
+        fetchedRef.current = true;
+        const today = format(new Date(), 'yyyy-MM-dd');
+        base44.entities.Booking.filter({ equipment_id: equipment.id }, '-created_date', 20)
+          .then(bookings => {
+            const occupied = bookings.some(b =>
+              ['confirmed', 'active'].includes(b.status) &&
+              b.start_date <= today && b.end_date >= today
+            );
+            setAvailability(occupied ? 'occupied' : 'available');
+          })
+          .catch(() => {});
+      }
+    }, { threshold: 0.1 });
+    if (cardRef.current) observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [equipment.id]);
+
   const conditionColor = equipment.condition >= 8 ? 'text-green-400' : 
                          equipment.condition >= 5 ? 'text-yellow-400' : 'text-red-400';
-  const conditionStyle = { color: '#a78bfa' }; // brand violet for rating
+  const conditionStyle = { color: '#a78bfa' };
 
   return (
     <Link to={createPageUrl('EquipmentDetail') + `?id=${equipment.id}`}>
