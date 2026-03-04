@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Star, Zap, ShieldCheck } from 'lucide-react';
+import { MapPin, Zap, ShieldCheck } from 'lucide-react';
 import { useTranslation } from '../i18n/translations';
 import CategoryIcon from '../ui/CategoryIcon';
+import { base44 } from '@/api/base44Client';
+import { format } from 'date-fns';
 
 export default function EquipmentCard({ equipment }) {
   const { t } = useTranslation();
