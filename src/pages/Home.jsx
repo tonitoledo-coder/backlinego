@@ -61,6 +61,13 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-green-500/20" />
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/30 rounded-full blur-[100px]" />
         <div className="absolute bottom-20 right-10 w-72 h-72 bg-green-500/30 rounded-full blur-[100px]" />
+        {/* Grid texture */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+          maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)',
+        }} />
         
         <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-20">
           <div className="text-center max-w-3xl mx-auto">
