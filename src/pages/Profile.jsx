@@ -317,11 +317,86 @@ export default function Profile() {
           )}
         </TabsContent>
       </Tabs>
+        <TabsContent value="incoming" className="mt-6">
+          {incomingBookings.length > 0 ? (
+            <div className="space-y-4">
+              {incomingBookings.map(booking => {
+                const eq = equipmentMap[booking.equipment_id];
+                const StatusIcon = statusIcons[booking.status] || Clock;
+                return (
+                  <Card key={booking.id} className="bg-zinc-900/50 border-zinc-800">
+                    <CardContent className="p-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 rounded-lg bg-zinc-800 overflow-hidden flex-shrink-0">
+                            {eq?.images?.[0] ? (
+                              <img src={eq.images[0]} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <Package className="w-6 h-6 text-zinc-600 m-auto mt-4" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-white text-sm">
+                              {eq?.title || `Equipo #${booking.equipment_id?.slice(-6)}`}
+                            </p>
+                            <p className="text-xs text-zinc-400">
+                              {booking.start_date} → {booking.end_date}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {booking.days} días · €{booking.total_price?.toFixed(0)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={statusColors[booking.status]}>
+                            <StatusIcon className="w-3 h-3 mr-1" />
+                            {booking.status}
+                          </Badge>
+                          {(booking.status === 'confirmed' || booking.status === 'active') && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-blue-700 text-blue-400 hover:bg-blue-900/30 text-xs"
+                              onClick={() => setQrBooking(booking)}
+                            >
+                              <QrCode className="w-3 h-3 mr-1" />
+                              Ver QR
+                            </Button>
+                          )}
+                          {booking.status === 'active' && (
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-xs"
+                              disabled={confirmReturnMutation.isPending}
+                              onClick={() => confirmReturnMutation.mutate(booking.id)}
+                            >
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Confirmar devolución
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <Package className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Sin reservas entrantes</h3>
+              <p className="text-zinc-500">Aún no hay reservas de tu equipo</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
       {qrBooking && (
         <QRDeliveryModal
           booking={qrBooking}
           open={!!qrBooking}
           onClose={() => setQrBooking(null)}
+          currentUserId={user?.id}
         />
       )}
     </div>
