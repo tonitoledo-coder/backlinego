@@ -118,19 +118,17 @@ export default function Home() {
             </div>
 
             {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-3 lg:gap-8">
-              <div className="flex items-center gap-1.5 text-xs lg:text-sm text-zinc-400">
-                <ShieldCheck className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500 shrink-0" />
-                <span>{t('idVerified')}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs lg:text-sm text-zinc-400">
-                <CreditCard className="w-4 h-4 lg:w-5 lg:h-5 text-green-500 shrink-0" />
-                <span>{t('escrowPayment')}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs lg:text-sm text-zinc-400">
-                <Zap className="w-4 h-4 lg:w-5 lg:h-5 text-amber-500 shrink-0" />
-                <span>{t('insuranceIncluded')}</span>
-              </div>
+            <div className="flex flex-wrap justify-center gap-2.5">
+              {[
+                { icon: ShieldCheck, color: '#3D8EF8', label: t('idVerified') },
+                { icon: CreditCard,  color: '#1DDF7A', label: t('escrowPayment') },
+                { icon: Zap,         color: '#E8C86A', label: t('insuranceIncluded') },
+              ].map(({ icon: Icon, color, label }) => (
+                <div key={label} className="flex items-center gap-2 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 14px' }}>
+                  <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
+                  <span className="text-zinc-300" style={{ fontSize: 13, fontWeight: 500 }}>{label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
