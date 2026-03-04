@@ -98,8 +98,8 @@ export default function Layout({ children, currentPageName }) {
                     ? "text-white"
                     : "text-zinc-400 hover:text-white"
                 )}
-                style={isActive(item.name) ? {background:'#6c47ff'} : {}}
-                onMouseEnter={e => { if (!isActive(item.name)) e.currentTarget.style.background='#2d2d44'; }}
+                style={isActive(item.name) ? {background:'rgba(255,255,255,0.07)', borderRadius:'8px'} : {}}
+                onMouseEnter={e => { if (!isActive(item.name)) e.currentTarget.style.background='rgba(255,255,255,0.05)'; }}
                 onMouseLeave={e => { if (!isActive(item.name)) e.currentTarget.style.background=''; }}
               >
                 {item.label}
