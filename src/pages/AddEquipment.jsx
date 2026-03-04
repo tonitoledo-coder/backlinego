@@ -330,6 +330,49 @@ export default function AddEquipment() {
               </div>
             </div>
 
+            {/* Rental rules */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label className="text-zinc-300 flex items-center gap-1">
+                  Mín. días
+                  <span className="text-zinc-600 text-xs cursor-help" title="Número mínimo de días que se puede alquilar">(?)</span>
+                </Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={formData.min_rental_days}
+                  onChange={(e) => setFormData(prev => ({ ...prev, min_rental_days: parseInt(e.target.value) || 1 }))}
+                  className="bg-zinc-800/50 border-zinc-700 text-white"
+                />
+              </div>
+              <div>
+                <Label className="text-zinc-300 flex items-center gap-1">
+                  Máx. días
+                  <span className="text-zinc-600 text-xs cursor-help" title="Número máximo de días que se puede alquilar">(?)</span>
+                </Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={formData.max_rental_days}
+                  onChange={(e) => setFormData(prev => ({ ...prev, max_rental_days: parseInt(e.target.value) || 30 }))}
+                  className="bg-zinc-800/50 border-zinc-700 text-white"
+                />
+              </div>
+              <div>
+                <Label className="text-zinc-300 flex items-center gap-1">
+                  Días antelación
+                  <span className="text-zinc-600 text-xs cursor-help" title="Días mínimos de preaviso para reservar (0 = reserva para mañana)">(?)</span>
+                </Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={formData.advance_notice_days}
+                  onChange={(e) => setFormData(prev => ({ ...prev, advance_notice_days: parseInt(e.target.value) || 0 }))}
+                  className="bg-zinc-800/50 border-zinc-700 text-white"
+                />
+              </div>
+            </div>
+
             <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
               <div className="flex items-center gap-3">
                 <Zap className="w-5 h-5 text-green-400" />
