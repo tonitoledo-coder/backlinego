@@ -99,11 +99,10 @@ body {
   }
 }
 
-/* Glass morphism effects */
+/* Glass morphism effects — solid, no backdrop-filter */
 .glass {
-  background: rgba(24, 24, 27, 0.8);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Neon glow effects */
