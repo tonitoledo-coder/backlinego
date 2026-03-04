@@ -54,7 +54,7 @@ export default function EquipmentCard({ equipment }) {
         
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-semibold text-white truncate flex-1 group-hover:text-blue-400 transition-colors">
+            <h3 className="font-semibold text-white truncate flex-1 transition-colors group-hover:text-violet-400">
               {equipment.title}
             </h3>
             <div className="flex items-center gap-1 text-sm">
