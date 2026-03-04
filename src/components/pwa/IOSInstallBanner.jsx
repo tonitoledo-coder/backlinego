@@ -5,14 +5,22 @@ export default function IOSInstallBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isInStandaloneMode = window.navigator.standalone === true;
-    const dismissed = localStorage.getItem('ios_banner_dismissed');
+    // Suppress ServiceWorker registration errors in preview environments
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
 
-    if (isIOS && !isInStandaloneMode && !dismissed) {
-      // Small delay for smooth entry
-      const timer = setTimeout(() => setVisible(true), 1500);
-      return () => clearTimeout(timer);
+    try {
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+      const isInStandaloneMode = window.navigator.standalone === true;
+      const dismissed = localStorage.getItem('ios_banner_dismissed');
+
+      if (isIOS && !isInStandaloneMode && !dismissed) {
+        const timer = setTimeout(() => setVisible(true), 1500);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      // Ignore
     }
   }, []);
 
