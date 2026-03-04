@@ -184,7 +184,7 @@ export default function Layout({ children, currentPageName }) {
                   ? "text-white"
                   : "text-zinc-500"
               )}
-              style={isActive(item.name) ? {color:'#7c3aed'} : {}}
+              style={isActive(item.name) ? {color:'#1DDF7A'} : {}}
             >
               <item.icon className={cn(
                 "w-5 h-5 mb-0.5 shrink-0",
