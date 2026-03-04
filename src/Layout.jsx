@@ -20,6 +20,7 @@ import {
   Trophy
 } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
+import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
