@@ -166,6 +166,8 @@ export default function Layout({ children, currentPageName }) {
         {children}
       </main>
 
+      <IOSInstallBanner />
+
       {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-zinc-800">
         <div className="flex items-center justify-around h-16 px-1" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
