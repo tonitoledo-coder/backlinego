@@ -40,7 +40,8 @@ export default function EquipmentCard({ equipment }) {
   const conditionStyle = { color: '#a78bfa' };
 
   return (
-    <Link to={createPageUrl('EquipmentDetail') + `?id=${equipment.id}`} ref={cardRef}>
+    <div ref={cardRef}>
+    <Link to={createPageUrl('EquipmentDetail') + `?id=${equipment.id}`}>
       <Card className="border transition-all duration-300 overflow-hidden group" style={{background:'#161625', borderColor:'rgba(255,255,255,0.08)'}} onMouseEnter={e=>e.currentTarget.style.borderColor='#7c3aed'} onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'}>
         <div className="relative aspect-[4/3] overflow-hidden">
           {equipment.images?.[0] ? (
