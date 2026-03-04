@@ -33,13 +33,13 @@ export default function EquipmentCard({ equipment }) {
           {/* Badges overlay */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {equipment.sos_available && (
-              <Badge className="bg-green-500/90 text-black font-semibold">
+              <Badge className="text-black font-semibold" style={{background:'#22c55e'}}>
                 <Zap className="w-3 h-3 mr-1" />
                 SOS 24h
               </Badge>
             )}
             {equipment.owner_type === 'professional' && (
-              <Badge className="bg-amber-500/90 text-black font-semibold">
+              <Badge className="text-black font-semibold" style={{background:'#eab308'}}>
                 PRO
               </Badge>
             )}
