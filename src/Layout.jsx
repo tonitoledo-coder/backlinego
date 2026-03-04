@@ -80,11 +80,7 @@ export default function Layout({ children, currentPageName }) {
       <header className="hidden lg:block fixed top-0 left-0 right-0 z-50 border-b" style={{background:'#1a1a2e', borderColor:'rgba(255,255,255,0.08)'}}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to={createPageUrl('Home')} className="flex items-center">
-            <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a08f2a394db4f3cafbc46f/0a293e3b0_Puedeshacerlaconcalidadmxima_1.png"
-              alt="BacklineGo"
-              className="h-10 w-auto object-contain"
-            />
+            <span className="text-xl font-bold text-white tracking-tight">Backline<span style={{color:'#1DDF7A'}}>Go</span></span>
           </Link>
 
           <nav className="flex items-center gap-1">
