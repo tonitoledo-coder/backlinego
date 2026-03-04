@@ -109,7 +109,7 @@ export default function Layout({ children, currentPageName }) {
 
           <div className="flex items-center gap-3">
             <Link to={createPageUrl('AddEquipment')}>
-              <Button className="bg-green-500 hover:bg-green-600 text-black font-semibold">
+              <Button className="font-semibold text-black" style={{background:'#00c853'}} onMouseEnter={e=>e.currentTarget.style.background='#00b048'} onMouseLeave={e=>e.currentTarget.style.background='#00c853'}>
                 <Plus className="w-4 h-4 mr-2" />
                 {t('addEquipment')}
               </Button>
