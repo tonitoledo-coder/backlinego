@@ -181,9 +181,10 @@ export default function Layout({ children, currentPageName }) {
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 min-w-0",
                 isActive(item.name)
-                  ? "text-blue-500"
+                  ? "text-white"
                   : "text-zinc-500"
               )}
+              style={isActive(item.name) ? {color:'#7c3aed'} : {}}
             >
               <item.icon className={cn(
                 "w-5 h-5 mb-0.5 shrink-0",
