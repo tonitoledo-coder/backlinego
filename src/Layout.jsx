@@ -194,12 +194,10 @@ export default function Layout({ children, currentPageName }) {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link to={createPageUrl('AddEquipment')}>
-              <Button className="font-semibold" style={{background:'#1DDF7A', color:'#060E18'}} onMouseEnter={e=>e.currentTarget.style.background='#17c96e'} onMouseLeave={e=>e.currentTarget.style.background='#1DDF7A'}>
-                <Plus className="w-4 h-4 mr-2" />
-                {t('addEquipment')}
-              </Button>
-            </Link>
+            <Button onClick={handleAddEquipmentClick} className="font-semibold" style={{background:'#1DDF7A', color:'#060E18'}} onMouseEnter={e=>e.currentTarget.style.background='#17c96e'} onMouseLeave={e=>e.currentTarget.style.background='#1DDF7A'}>
+              <Plus className="w-4 h-4 mr-2" />
+              {t('addEquipment')}
+            </Button>
             
             {loading ? null : user ? (
               <div className="flex items-center gap-3">
@@ -237,11 +235,9 @@ export default function Layout({ children, currentPageName }) {
 
           <div className="flex items-center gap-2">
             {user && <NotificationBell userEmail={user.email} />}
-            <Link to={createPageUrl('AddEquipment')}>
-              <Button size="sm" className="font-semibold" style={{background:'#1DDF7A', color:'#060E18'}}>
-                <Plus className="w-4 h-4" />
-              </Button>
-            </Link>
+            <Button size="sm" onClick={handleAddEquipmentClick} className="font-semibold" style={{background:'#1DDF7A', color:'#060E18'}}>
+              <Plus className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </header>
