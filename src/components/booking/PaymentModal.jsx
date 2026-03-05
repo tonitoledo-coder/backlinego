@@ -51,6 +51,29 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
   const deposit = equipment?.deposit || 0;
   const grandTotal = totalPrice + deposit;
 
+  const handleSaveBilling = async () => {
+    setBillingLoading(true);
+    try {
+      await base44.auth.updateMe({
+        billing_name: billing.billing_name,
+        billing_email: billing.billing_email,
+        billing_type: billing.billing_type,
+        billing_address: {
+          address: billing.billing_address,
+          city: billing.billing_city,
+          postal_code: billing.billing_postal_code,
+          country: billing.billing_country,
+          company_name: billing.billing_type === 'empresa' ? billing.company_name : undefined,
+          cif_nif: billing.billing_type === 'empresa' ? billing.cif_nif : undefined,
+        },
+        stripe_onboarding_completed: true,
+      });
+      setStep('form');
+    } finally {
+      setBillingLoading(false);
+    }
+  };
+
   const handlePay = async () => {
     setStep('processing');
     await new Promise(r => setTimeout(r, 2200));
