@@ -17,7 +17,8 @@ import {
   Zap,
   LogOut,
   LogIn,
-  Trophy
+  Trophy,
+  Crown
 } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
@@ -30,6 +31,7 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadUser();
@@ -41,6 +43,11 @@ export default function Layout({ children, currentPageName }) {
       if (isAuth) {
         const userData = await base44.auth.me();
         setUser(userData);
+        // Check admin role
+        try {
+          const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+          if (profiles?.[0]?.role === 'admin') setIsAdmin(true);
+        } catch (_) {}
       }
     } catch (e) {
       console.log('Not authenticated');
@@ -101,6 +108,18 @@ export default function Layout({ children, currentPageName }) {
                 {item.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                to={createPageUrl('Admin')}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5",
+                  isActive('Admin') ? "text-white" : "text-amber-400 hover:text-amber-300"
+                )}
+                style={isActive('Admin') ? { background: 'rgba(251,191,36,0.1)', borderRadius: '8px' } : {}}>
+                <Crown className="w-3.5 h-3.5" />
+                Admin
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-3">
