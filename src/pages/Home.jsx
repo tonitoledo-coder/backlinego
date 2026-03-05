@@ -38,8 +38,30 @@ const categories = [
 
 export default function Home() {
   const { t, lang } = useTranslation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const handleAddEquipmentClick = async (e) => {
+    e.preventDefault();
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    const user = await base44.auth.me();
+    const profiles = await base44.entities.UserProfile.filter({ email: user.email });
+    const profile = profiles?.[0];
+    if (profile?.account_status === 'pending') {
+      toast.warning('Tu cuenta está pendiente de aprobación. Podrás publicar equipo una vez sea verificada.');
+      return;
+    }
+    if (!profile?.profile_complete) {
+      navigate(createPageUrl('CompleteProfile') + '?next=AddEquipment');
+      return;
+    }
+    navigate(createPageUrl('AddEquipment'));
+  };
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', 'featured'],
