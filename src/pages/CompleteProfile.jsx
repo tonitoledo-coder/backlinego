@@ -93,6 +93,33 @@ export default function CompleteProfile() {
   const finish = async () => {
     setSaving(true);
     await base44.auth.updateMe({ ...formData, onboarding_completed: true, onboarding_step: 5 });
+
+    // Sync UserProfile for admin management
+    try {
+      const existing = await base44.entities.UserProfile.filter({ email: user.email });
+      if (existing.length === 0) {
+        await base44.entities.UserProfile.create({
+          user_id: user.id,
+          email: user.email,
+          display_name: formData.username || user.full_name || user.email,
+          role: 'user',
+          is_verified: false,
+          is_banned: false,
+          profile_complete: true,
+          onboarding_completed: true,
+          subscription_plan: 'free',
+        });
+      } else {
+        await base44.entities.UserProfile.update(existing[0].id, {
+          display_name: formData.username || user.full_name || user.email,
+          profile_complete: true,
+          onboarding_completed: true,
+        });
+      }
+    } catch (e) {
+      console.warn('UserProfile sync failed:', e);
+    }
+
     setSaving(false);
     navigate(createPageUrl('Profile'));
   };
