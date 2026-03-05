@@ -22,7 +22,9 @@ import {
   QrCode,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Sparkles,
+  X
 } from 'lucide-react';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
 import QRDeliveryModal from '@/components/qr/QRDeliveryModal';
