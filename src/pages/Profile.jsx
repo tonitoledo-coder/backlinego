@@ -130,8 +130,35 @@ export default function Profile() {
     cancelled: XCircle,
   };
 
+  const showOnboardingBanner = !bannerDismissed && user && !user.onboarding_completed;
+
   return (
     <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+      {/* Onboarding Banner */}
+      {showOnboardingBanner && (
+        <div
+          className="rounded-xl p-4 mb-6 flex items-center gap-4 relative"
+          style={{ background: 'linear-gradient(135deg, #7c3aed, #4f46e5)' }}
+        >
+          <Sparkles className="w-8 h-8 text-white flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-white font-bold text-sm">Completa tu perfil</p>
+            <p className="text-purple-200 text-sm">Añade tu información profesional para empezar a alquilar y publicar equipo.</p>
+          </div>
+          <Link to={createPageUrl('CompleteProfile')} className="flex-shrink-0">
+            <Button size="sm" className="bg-white text-purple-700 hover:bg-purple-50 font-semibold">
+              Completar ahora
+            </Button>
+          </Link>
+          <button
+            onClick={() => setBannerDismissed(true)}
+            className="absolute top-2 right-2 text-purple-200 hover:text-white transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Profile Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
         <div className="flex items-center gap-4">
