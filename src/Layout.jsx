@@ -90,6 +90,7 @@ export default function Layout({ children, currentPageName }) {
         const profile = profiles?.[0];
         if (profile) {
           setAccountStatus(profile.account_status || 'approved');
+          setProfileComplete(profile.profile_complete || false);
           if (profile.role === 'admin') setIsAdmin(true);
         }
       } catch (_) {}
