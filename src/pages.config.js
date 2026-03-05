@@ -47,7 +47,6 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Admin from './pages/Admin';
 import AddEquipment from './pages/AddEquipment';
 import Chat from './pages/Chat';
 import CompleteProfile from './pages/CompleteProfile';
@@ -61,13 +60,13 @@ import Partners from './pages/Partners';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Rewards from './pages/Rewards';
-import Specialists from './pages/Specialists';
 import Settings from './pages/Settings';
+import Specialists from './pages/Specialists';
+import Admin from './pages/Admin';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Admin": Admin,
     "AddEquipment": AddEquipment,
     "Chat": Chat,
     "CompleteProfile": CompleteProfile,
@@ -81,8 +80,9 @@ export const PAGES = {
     "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Rewards": Rewards,
-    "Specialists": Specialists,
     "Settings": Settings,
+    "Specialists": Specialists,
+    "Admin": Admin,
 }
 
 export const pagesConfig = {
