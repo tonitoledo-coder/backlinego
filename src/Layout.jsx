@@ -104,9 +104,18 @@ export default function Layout({ children, currentPageName }) {
         }
         const profile = profiles?.[0];
         if (profile) {
-          setAccountStatus(profile.account_status || 'approved');
+          const role = profile.role || 'user';
+          // Admins and moderators always bypass the approval gate
+          if (role === 'admin' || role === 'moderator') {
+            setAccountStatus('approved');
+          } else {
+            setAccountStatus(profile.account_status || 'approved');
+          }
           setProfileComplete(profile.profile_complete || false);
-          if (profile.role === 'admin') setIsAdmin(true);
+          if (role === 'admin') setIsAdmin(true);
+        } else {
+          // No profile yet — allow through, auto-creation happened above
+          setAccountStatus('approved');
         }
       } catch (_) {}
     } catch (e) {
