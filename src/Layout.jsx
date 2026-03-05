@@ -86,7 +86,22 @@ export default function Layout({ children, currentPageName }) {
       const userData = await base44.auth.me();
       setUser(userData);
       try {
-        const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+        let profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+        if (profiles.length === 0) {
+          await base44.entities.UserProfile.create({
+            user_id: userData.id,
+            email: userData.email,
+            display_name: userData.full_name || userData.username || userData.email,
+            role: 'user',
+            account_status: 'pending',
+            is_verified: false,
+            is_banned: false,
+            profile_complete: !!userData.onboarding_completed,
+            onboarding_completed: !!userData.onboarding_completed,
+            subscription_plan: 'free',
+          });
+          profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+        }
         const profile = profiles?.[0];
         if (profile) {
           setAccountStatus(profile.account_status || 'approved');
