@@ -209,13 +209,25 @@ export default function EquipmentDetail() {
 
   const canBook = startDate && endDate && days >= minRentalDays && days <= maxRentalDays && !rangeWarning;
 
+  const checkBookingAccess = async () => {
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) { setAccessModal('login'); return false; }
+
+    try {
+      const user = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ email: user.email });
+      const profile = profiles?.[0];
+      if (profile?.account_status === 'pending') { setAccessModal('pending'); return false; }
+      if (!profile?.profile_complete) { setAccessModal('complete_profile'); return false; }
+    } catch (_) {}
+
+    return true;
+  };
+
   const handleBooking = async () => {
     if (!startDate || !endDate) return;
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) {
-      base44.auth.redirectToLogin(window.location.href);
-      return;
-    }
+    const allowed = await checkBookingAccess();
+    if (!allowed) return;
     setShowPayment(true);
   };
 
