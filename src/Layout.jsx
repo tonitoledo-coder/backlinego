@@ -18,12 +18,42 @@ import {
   LogOut,
   LogIn,
   Trophy,
-  Crown
+  Crown,
+  Clock,
+  XCircle
 } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+const PROTECTED_PAGES = ['Profile', 'Settings', 'AddEquipment', 'Chat', 'Rewards'];
+
+function PendingScreen() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: '#0d0d1a' }}>
+      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(251,191,36,0.15)' }}>
+        <Clock className="w-10 h-10 text-amber-400" />
+      </div>
+      <h1 className="text-2xl font-bold text-white">Cuenta pendiente de aprobación</h1>
+      <p className="text-zinc-400 text-center max-w-sm">Tu cuenta está siendo revisada. Te avisaremos por email en cuanto sea aprobada.</p>
+      <Button variant="ghost" className="text-zinc-400" onClick={() => base44.auth.logout()}>Cerrar sesión</Button>
+    </div>
+  );
+}
+
+function RejectedScreen() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: '#0d0d1a' }}>
+      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
+        <XCircle className="w-10 h-10 text-red-500" />
+      </div>
+      <h1 className="text-2xl font-bold text-white">Cuenta rechazada</h1>
+      <p className="text-zinc-400 text-center max-w-sm">Tu solicitud de acceso ha sido rechazada. Contacta con soporte si crees que es un error.</p>
+      <Button variant="ghost" className="text-zinc-400" onClick={() => base44.auth.logout()}>Cerrar sesión</Button>
+    </div>
+  );
+}
 
 export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
@@ -32,6 +62,7 @@ export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [accountStatus, setAccountStatus] = useState(null); // null | 'pending' | 'approved' | 'rejected'
 
   useEffect(() => {
     loadUser();
@@ -40,15 +71,25 @@ export default function Layout({ children, currentPageName }) {
   const loadUser = async () => {
     try {
       const isAuth = await base44.auth.isAuthenticated();
-      if (isAuth) {
-        const userData = await base44.auth.me();
-        setUser(userData);
-        // Check admin role
-        try {
-          const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
-          if (profiles?.[0]?.role === 'admin') setIsAdmin(true);
-        } catch (_) {}
+      if (!isAuth) {
+        // Redirect only if trying to access a protected page
+        if (PROTECTED_PAGES.includes(currentPageName)) {
+          base44.auth.redirectToLogin(window.location.href);
+          return;
+        }
+        setLoading(false);
+        return;
       }
+      const userData = await base44.auth.me();
+      setUser(userData);
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+        const profile = profiles?.[0];
+        if (profile) {
+          setAccountStatus(profile.account_status || 'approved');
+          if (profile.role === 'admin') setIsAdmin(true);
+        }
+      } catch (_) {}
     } catch (e) {
       console.log('Not authenticated');
     } finally {
