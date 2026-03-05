@@ -94,6 +94,98 @@ export default function PaymentModal({ open, onClose, onConfirm, equipment, days
   const isCardValid = card.name && card.number.replace(/\s/g, '').length === 16 
     && card.expiry.length === 5 && card.cvv.length === 3;
 
+  const isBillingValid = billing.billing_name && billing.billing_email &&
+    billing.billing_address && billing.billing_city && billing.billing_postal_code &&
+    (billing.billing_type === 'particular' || (billing.company_name && billing.cif_nif));
+
+  if (step === 'billing') {
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-blue-400" />
+              Método de pago
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-zinc-400 text-xs mb-1 block">Nombre</Label>
+                <Input value={billing.billing_name} onChange={e => setBilling({...billing, billing_name: e.target.value})}
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" placeholder="Nombre completo" />
+              </div>
+              <div>
+                <Label className="text-zinc-400 text-xs mb-1 block">Email de facturación</Label>
+                <Input value={billing.billing_email} onChange={e => setBilling({...billing, billing_email: e.target.value})}
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" placeholder="email@ejemplo.com" />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-zinc-400 text-xs mb-1 block">Tipo</Label>
+              <div className="flex gap-2">
+                {['particular', 'empresa'].map(type => (
+                  <button key={type} onClick={() => setBilling({...billing, billing_type: type})}
+                    className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors capitalize ${
+                      billing.billing_type === type
+                        ? 'bg-blue-600 border-blue-500 text-white'
+                        : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-white'
+                    }`}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {billing.billing_type === 'empresa' && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-zinc-400 text-xs mb-1 block">Nombre empresa</Label>
+                  <Input value={billing.company_name} onChange={e => setBilling({...billing, company_name: e.target.value})}
+                    className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" placeholder="Razón social" />
+                </div>
+                <div>
+                  <Label className="text-zinc-400 text-xs mb-1 block">CIF/NIF</Label>
+                  <Input value={billing.cif_nif} onChange={e => setBilling({...billing, cif_nif: e.target.value})}
+                    className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" placeholder="B12345678" />
+                </div>
+              </div>
+            )}
+
+            <Separator className="bg-zinc-800" />
+
+            <div>
+              <Label className="text-zinc-400 text-xs mb-1 block">Dirección</Label>
+              <Input value={billing.billing_address} onChange={e => setBilling({...billing, billing_address: e.target.value})}
+                className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 mb-2" placeholder="Calle y número" />
+              <div className="grid grid-cols-3 gap-2">
+                <Input value={billing.billing_city} onChange={e => setBilling({...billing, billing_city: e.target.value})}
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" placeholder="Ciudad" />
+                <Input value={billing.billing_postal_code} onChange={e => setBilling({...billing, billing_postal_code: e.target.value})}
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" placeholder="CP" />
+                <Input value={billing.billing_country} onChange={e => setBilling({...billing, billing_country: e.target.value})}
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500" placeholder="País" maxLength={2} />
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-500 flex items-center gap-1.5">
+              <Save className="w-3 h-3" />
+              Tus datos se guardan para futuras reservas
+            </p>
+
+            <Button className="w-full bg-blue-600 hover:bg-blue-700 font-semibold h-11"
+              disabled={!isBillingValid || billingLoading}
+              onClick={handleSaveBilling}>
+              {billingLoading ? 'Guardando...' : 'Continuar al pago'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   if (step === 'processing') {
     return (
       <Dialog open={open} onOpenChange={onClose}>
