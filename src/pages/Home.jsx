@@ -342,12 +342,10 @@ export default function Home() {
               </p>
             </div>
             
-            <Link to={createPageUrl('Onboarding')}>
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8">
-                {t('getStarted')}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
+            <Button size="lg" onClick={handleAddEquipmentClick} className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8">
+              {t('getStarted')}
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
           </div>
         </div>
       </section>
