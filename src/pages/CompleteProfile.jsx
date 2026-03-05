@@ -121,7 +121,7 @@ export default function CompleteProfile() {
     }
 
     setSaving(false);
-    navigate(createPageUrl('Profile'));
+    navigate(createPageUrl(nextPage || 'Profile'));
   };
 
   const progress = Math.round(((step - 1) / (STEPS.length - 1)) * 100);

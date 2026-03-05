@@ -59,11 +59,13 @@ function RejectedScreen() {
 export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountStatus, setAccountStatus] = useState(null); // null | 'pending' | 'approved' | 'rejected'
+  const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
     loadUser();
