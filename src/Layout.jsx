@@ -122,6 +122,14 @@ export default function Layout({ children, currentPageName }) {
     return <>{children}</>;
   }
 
+  // Account status gates (only after auth check is complete)
+  if (!loading && user && accountStatus === 'pending') {
+    return <PendingScreen />;
+  }
+  if (!loading && user && accountStatus === 'rejected') {
+    return <RejectedScreen />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
       {/* Desktop Header */}
