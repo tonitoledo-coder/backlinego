@@ -1,18 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ShieldCheck, CreditCard, Lock, CheckCircle, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { ShieldCheck, CreditCard, Lock, CheckCircle, ChevronDown, ChevronUp, Info, Save } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
-const PLATFORM_FEE_RATE = 0.12; // 12% comisión plataforma
-const INSURANCE_RATE = 0.08;    // 8% seguro
-const VAT_RATE = 0.21;          // 21% IVA sobre comisión
+const PLATFORM_FEE_RATE = 0.12;
+const VAT_RATE = 0.21;
 
 export default function PaymentModal({ open, onClose, onConfirm, equipment, days, basePrice, insuranceFee, totalPrice }) {
-  const [step, setStep] = useState('form'); // 'form' | 'processing' | 'success'
+  // step: 'billing' | 'form' | 'processing' | 'success'
+  const [step, setStep] = useState('form');
   const [card, setCard] = useState({ number: '', expiry: '', cvv: '', name: '' });
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [billingLoading, setBillingLoading] = useState(false);
+  const [billing, setBilling] = useState({
+    billing_name: '', billing_email: '', billing_type: 'particular',
+    company_name: '', cif_nif: '',
+    billing_address: '', billing_city: '', billing_postal_code: '', billing_country: 'ES',
+  });
+
+  // When modal opens, check if billing data already saved
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const user = await base44.auth.me();
+        if (user?.billing_name) {
+          setStep('form');
+        } else {
+          setBilling(b => ({
+            ...b,
+            billing_name: user?.full_name || '',
+            billing_email: user?.email || '',
+          }));
+          setStep('billing');
+        }
+      } catch {
+        setStep('form');
+      }
+    })();
+  }, [open]);
 
   // Commission breakdown
   const platformFee = basePrice * PLATFORM_FEE_RATE;
