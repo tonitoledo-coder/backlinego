@@ -101,6 +101,24 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
+  const handleAddEquipmentClick = async (e) => {
+    e.preventDefault();
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    if (accountStatus === 'pending') {
+      toast.warning('Tu cuenta está pendiente de aprobación. Podrás publicar equipo una vez sea verificada.');
+      return;
+    }
+    if (!profileComplete) {
+      navigate(createPageUrl('CompleteProfile') + '?next=AddEquipment');
+      return;
+    }
+    navigate(createPageUrl('AddEquipment'));
+  };
+
   const navItems = [
     { name: 'Home', icon: Home, label: t('home') },
     { name: 'Explore', icon: Search, label: t('explore') },
