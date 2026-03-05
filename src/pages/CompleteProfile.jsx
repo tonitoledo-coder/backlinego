@@ -32,6 +32,8 @@ export default function CompleteProfile() {
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState({});
 
+  const nextPage = new URLSearchParams(window.location.search).get('next');
+
   useEffect(() => {
     (async () => {
       const isAuth = await base44.auth.isAuthenticated();
