@@ -33,6 +33,66 @@ import PaymentModal from '@/components/booking/PaymentModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 
+// Modal types: null | 'login' | 'pending' | 'complete_profile'
+function BookingAccessModal({ type, onClose }) {
+  const navigate = useNavigate();
+  if (!type) return null;
+
+  if (type === 'login') return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="bg-zinc-900 border-zinc-800 max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-white">Inicia sesión para reservar</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Crea tu cuenta gratis para alquilar equipo profesional.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-3 mt-2">
+          <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
+            Iniciar sesión
+          </Button>
+          <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
+            Registrarse
+          </Button>
+          <p className="text-xs text-zinc-500 text-center mt-1">Solo necesitarás completar tu perfil la primera vez.</p>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
+  if (type === 'pending') return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="bg-zinc-900 border-zinc-800 max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-white">Tu cuenta está en revisión</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Nuestro equipo está verificando tu solicitud. Te avisaremos cuando puedas realizar reservas.
+          </DialogDescription>
+        </DialogHeader>
+        <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 mt-2" onClick={onClose}>Cerrar</Button>
+      </DialogContent>
+    </Dialog>
+  );
+
+  if (type === 'complete_profile') return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="bg-zinc-900 border-zinc-800 max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-white">Completa tu perfil para continuar</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Necesitamos algunos datos antes de tu primera reserva.
+          </DialogDescription>
+        </DialogHeader>
+        <Button className="w-full bg-blue-600 hover:bg-blue-700 mt-2" onClick={() => navigate(createPageUrl('CompleteProfile'))}>
+          Completar perfil ahora
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+
+  return null;
+}
+
 export default function EquipmentDetail() {
   const { t, lang } = useTranslation();
   const dateLocale = lang === 'es' ? es : enUS;
@@ -45,6 +105,7 @@ export default function EquipmentDetail() {
   const [isBooking, setIsBooking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [rangeWarning, setRangeWarning] = useState('');
+  const [accessModal, setAccessModal] = useState(null); // null | 'login' | 'pending' | 'complete_profile'
 
   const queryClient = useQueryClient();
 
