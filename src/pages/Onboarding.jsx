@@ -125,6 +125,7 @@ export default function Onboarding() {
           email: u.email,
           display_name: u.full_name || u.email,
           role: 'user',
+          account_status: 'pending',
           is_verified: false,
           is_banned: false,
           profile_complete: false,

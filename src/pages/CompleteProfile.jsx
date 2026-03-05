@@ -9,14 +9,12 @@ import StepPublicPresence from '@/components/profile/StepPublicPresence';
 import StepLocation from '@/components/profile/StepLocation';
 import StepProfessional from '@/components/profile/StepProfessional';
 import StepPreferences from '@/components/profile/StepPreferences';
-import StepBilling from '@/components/profile/StepBilling';
 
 const STEPS = [
   { id: 1, label: 'Presencia pública' },
   { id: 2, label: 'Ubicación' },
   { id: 3, label: 'Perfil profesional' },
   { id: 4, label: 'Preferencias' },
-  { id: 5, label: 'Facturación' },
 ];
 
 const slideVariants = {
