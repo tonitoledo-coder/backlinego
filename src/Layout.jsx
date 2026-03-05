@@ -139,8 +139,8 @@ export default function Layout({ children, currentPageName }) {
 
   const isActive = (pageName) => currentPageName === pageName;
 
-  // Hide layout on onboarding
-  if (currentPageName === 'Onboarding') {
+  // Hide layout on these pages
+  if (currentPageName === 'Onboarding' || currentPageName === 'PendingApproval') {
     return <>{children}</>;
   }
 

@@ -63,6 +63,7 @@ import PublicProfile from './pages/PublicProfile';
 import Rewards from './pages/Rewards';
 import Settings from './pages/Settings';
 import Specialists from './pages/Specialists';
+import PendingApproval from './pages/PendingApproval';
 import __Layout from './Layout.jsx';
 
 
@@ -83,6 +84,7 @@ export const PAGES = {
     "Rewards": Rewards,
     "Settings": Settings,
     "Specialists": Specialists,
+    "PendingApproval": PendingApproval,
 }
 
 export const pagesConfig = {
