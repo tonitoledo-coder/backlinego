@@ -30,6 +30,8 @@ import { es, enUS } from 'date-fns/locale';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import { createNotification } from '@/components/notifications/createNotification';
 import PaymentModal from '@/components/booking/PaymentModal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
 
 export default function EquipmentDetail() {
   const { t, lang } = useTranslation();
