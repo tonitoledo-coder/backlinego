@@ -165,6 +165,12 @@ export default function EquipmentDetail() {
 
   const minRentalDays = equipment?.min_rental_days || 1;
   const maxRentalDays = equipment?.max_rental_days || 30;
+
+  const availableSlots = equipment?.pricing_config?.slots
+    ? equipment.pricing_config.slots
+        .map((on, i) => (on ? i : null))
+        .filter(i => i !== null)
+    : Array.from({ length: 24 }, (_, i) => i);
   const advanceNoticeDays = equipment?.advance_notice_days || 0;
   const blockedByOwner = new Set(equipment?.blocked_dates || []);
 
