@@ -198,6 +198,7 @@ export default function EquipmentDetail() {
     setStartDate(date);
     setEndDate(null);
     setRangeWarning('');
+    setDeliverySlot(null);
   };
 
   const handleEndDateSelect = (date) => {
