@@ -535,6 +535,36 @@ export default function EquipmentDetail() {
                 </p>
               )}
 
+              {/* Slot de entrega */}
+              {days > 0 && availableSlots.length > 0 && (
+                <div>
+                  <p className="text-sm text-zinc-400 mb-2">
+                    Hora de entrega / recogida
+                  </p>
+                  <div className="grid grid-cols-6 gap-1.5">
+                    {availableSlots.map(h => (
+                      <button
+                        key={h}
+                        type="button"
+                        onClick={() => setDeliverySlot(h === deliverySlot ? null : h)}
+                        className={`py-1.5 rounded-md text-center text-xs font-mono transition-colors ${
+                          deliverySlot === h
+                            ? 'bg-blue-600 text-white border border-blue-500'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {String(h).padStart(2, '0')}h
+                      </button>
+                    ))}
+                  </div>
+                  {deliverySlot === null && (
+                    <p className="text-xs text-amber-400/70 mt-1.5">
+                      Selecciona una hora de entrega para continuar
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Price Breakdown */}
               {days > 0 && pricing && (
                 <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2 text-sm">
