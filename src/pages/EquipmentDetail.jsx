@@ -26,6 +26,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { format, differenceInDays, addDays, parseISO, isWithinInterval, eachDayOfInterval } from 'date-fns';
+import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
 import { es, enUS } from 'date-fns/locale';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import { createNotification } from '@/components/notifications/createNotification';

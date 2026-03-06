@@ -8,6 +8,7 @@ import { useTranslation } from '../i18n/translations';
 import CategoryIcon from '../ui/CategoryIcon';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
+import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
 
 export default function EquipmentCard({ equipment, currentUserEmail, onDeleted }) {
   const { t } = useTranslation();
