@@ -485,6 +485,147 @@ export default function AddEquipment() {
           </CardContent>
         </Card>
 
+        {/* ── Tarifas dinámicas ───────────────────────────── */}
+        <Card className="border-zinc-800 bg-zinc-900/50">
+          <CardHeader>
+            <CardTitle className="text-white text-base flex items-center gap-2">
+              <span>€</span> Tarifas y multiplicadores
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+
+            {/* Multiplicador fin de semana */}
+            <div
+              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${pc.weekend.on ? 'border-amber-500/40 bg-amber-500/5' : 'border-zinc-800 bg-zinc-800/30'}`}
+              onClick={() => togglePCBool('weekend')}
+            >
+              <div>
+                <p className="text-sm font-medium text-white">🗓 Recargo fin de semana</p>
+                <p className="text-xs text-zinc-500">Sábado y domingo</p>
+              </div>
+              <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                {pc.weekend.on && (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number" min="1.01" max="3" step="0.05"
+                      value={pc.weekend.val}
+                      onChange={e => setPCVal('weekend', e.target.value)}
+                      className="w-16 bg-zinc-800 border border-zinc-700 text-amber-400 text-center text-sm rounded-md px-2 py-1 outline-none focus:border-amber-500"
+                    />
+                    <span className="text-zinc-500 text-xs">×</span>
+                  </div>
+                )}
+                <Switch checked={pc.weekend.on} onCheckedChange={() => togglePCBool('weekend')} />
+              </div>
+            </div>
+
+            {/* Multiplicador temporada alta */}
+            <div
+              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${pc.summer.on ? 'border-amber-500/40 bg-amber-500/5' : 'border-zinc-800 bg-zinc-800/30'}`}
+              onClick={() => togglePCBool('summer')}
+            >
+              <div>
+                <p className="text-sm font-medium text-white">☀️ Temporada alta</p>
+                <p className="text-xs text-zinc-500">Junio · Julio · Agosto</p>
+              </div>
+              <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
+                {pc.summer.on && (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number" min="1.01" max="3" step="0.05"
+                      value={pc.summer.val}
+                      onChange={e => setPCVal('summer', e.target.value)}
+                      className="w-16 bg-zinc-800 border border-zinc-700 text-amber-400 text-center text-sm rounded-md px-2 py-1 outline-none focus:border-amber-500"
+                    />
+                    <span className="text-zinc-500 text-xs">×</span>
+                  </div>
+                )}
+                <Switch checked={pc.summer.on} onCheckedChange={() => togglePCBool('summer')} />
+              </div>
+            </div>
+
+            {/* Descuentos por duración */}
+            <div>
+              <Label className="text-zinc-300 mb-3 block text-sm">Descuentos por reserva larga</Label>
+              <div className="space-y-2">
+                {pc.tiers.map(tier => (
+                  <div key={tier.id} className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="number" min="2" placeholder="7"
+                        value={tier.minDays}
+                        onChange={e => updateTier(tier.id, 'minDays', e.target.value)}
+                        className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-md px-3 py-2 pr-8 outline-none focus:border-amber-500"
+                      />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">d+</span>
+                    </div>
+                    <div className="relative flex-1">
+                      <input
+                        type="number" min="1" max="80" placeholder="10"
+                        value={tier.pct}
+                        onChange={e => updateTier(tier.id, 'pct', e.target.value)}
+                        className="w-full bg-zinc-800 border border-zinc-700 text-white text-sm rounded-md px-3 py-2 pr-6 outline-none focus:border-amber-500"
+                      />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">%</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeTier(tier.id)}
+                      className="w-8 h-9 flex items-center justify-center border border-zinc-700 rounded-md text-red-400 hover:bg-red-500/10 transition-colors"
+                    >✕</button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addTier}
+                  className="w-full border border-dashed border-zinc-700 text-amber-500 hover:border-amber-500/50 hover:bg-amber-500/5 rounded-md py-2 text-xs font-semibold uppercase tracking-wider transition-colors"
+                >
+                  + Añadir tramo
+                </button>
+              </div>
+            </div>
+
+            {/* Slots horarios */}
+            <div>
+              <Label className="text-zinc-300 mb-1 block text-sm">Slots de entrega y recogida</Label>
+              <p className="text-xs text-zinc-500 mb-3">Selecciona las franjas en que puedes hacer entregas. No afectan al precio.</p>
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {[
+                  { label: 'Mañana 9–14h', from: 9,  to: 14 },
+                  { label: 'Tarde 16–21h', from: 16, to: 21 },
+                  { label: 'Todo el día',  from: 0,  to: 24 },
+                ].map(({ label, from, to }) => (
+                  <button key={label} type="button"
+                    onClick={() => bulkSlots(from, to, true)}
+                    className="text-xs px-3 py-1.5 border border-zinc-700 rounded-md text-zinc-400 hover:border-amber-500/40 hover:text-white transition-colors"
+                  >{label}</button>
+                ))}
+                <button type="button"
+                  onClick={() => bulkSlots(0, 24, false)}
+                  className="text-xs px-3 py-1.5 border border-zinc-700 rounded-md text-zinc-500 hover:text-white transition-colors"
+                >Limpiar</button>
+              </div>
+              <div className="grid grid-cols-12 gap-1">
+                {pc.slots.map((open, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => toggleSlot(i)}
+                    className={`py-1.5 rounded text-center text-xs font-mono transition-colors ${
+                      open
+                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+                        : 'bg-zinc-800/60 border border-zinc-700/50 text-zinc-600'
+                    }`}
+                  >
+                    {String(i).padStart(2, '0')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </CardContent>
+        </Card>
+
         {/* Submit */}
         <Button 
           type="submit" 
