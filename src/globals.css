@@ -3,154 +3,115 @@
 @tailwind utilities;
 
 :root {
-  --background: 222 100% 8%;
-  --foreground: 214 32% 95%;
-  --card: 240 30% 11%;
-  --card-foreground: 214 32% 95%;
-  --popover: 240 30% 11%;
-  --popover-foreground: 214 32% 95%;
-  --primary: 262 83% 58%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 240 22% 18%;
-  --secondary-foreground: 214 32% 95%;
-  --muted: 240 22% 18%;
-  --muted-foreground: 215 16% 57%;
-  --accent: 142 100% 39%;
+  /* Backgrounds */
+  --background:   0 0% 5%;        /* #0d0d0d */
+  --card:         0 0% 8.6%;      /* #161616 */
+  --popover:      0 0% 8.6%;
+
+  /* Text */
+  --foreground:        36 15% 91%;   /* #e8e4dc */
+  --card-foreground:   36 15% 91%;
+  --popover-foreground:36 15% 91%;
+
+  /* Primary — ámbar dorado */
+  --primary:          38 91% 55%;   /* #f5a623 */
+  --primary-foreground: 0 0% 0%;
+
+  /* Secondary / muted */
+  --secondary:         0 0% 12%;    /* #1f1f1f */
+  --secondary-foreground: 36 15% 91%;
+  --muted:             0 0% 12%;
+  --muted-foreground:  24 5% 37%;   /* #5e5a55 */
+
+  /* Accent — verde confirmación */
+  --accent:            152 55% 52%; /* #3ecf8e */
   --accent-foreground: 0 0% 0%;
-  --destructive: 0 84% 60%;
+
+  /* Destructive */
+  --destructive:       0 79% 57%;   /* #e84040 */
   --destructive-foreground: 0 0% 98%;
-  --border: 240 20% 16%;
-  --input: 240 20% 16%;
-  --ring: 262 83% 58%;
-  --radius: 0.75rem;
+
+  /* Borders & inputs */
+  --border: 0 0% 16%;              /* #2a2a2a */
+  --input:  0 0% 16%;
+  --ring:   38 91% 55%;            /* foco = ámbar */
+
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar-background:        0 0% 8.6%;
+  --sidebar-foreground:        36 15% 91%;
+  --sidebar-primary:           38 91% 55%;
+  --sidebar-primary-foreground:0 0% 0%;
+  --sidebar-accent:            0 0% 12%;
+  --sidebar-accent-foreground: 36 15% 91%;
+  --sidebar-border:            0 0% 16%;
+  --sidebar-ring:              38 91% 55%;
 }
 
 body {
-  background: #0d0d1a;
+  background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: 100vh;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Monospace para precios, fechas, códigos */
+.font-mono, code, kbd, pre {
+  font-family: 'JetBrains Mono', monospace;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* Hide scrollbar for category filter */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Leaflet map styles for dark mode */
-.leaflet-container {
-  background: #1a1a2e !important;
-}
-
+/* Leaflet dark mode */
+.leaflet-container { background: #0d0d0d !important; }
 .leaflet-popup-content-wrapper {
-  background: #18181b !important;
-  color: white !important;
-  border-radius: 12px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  background: #161616 !important; color: #e8e4dc !important;
+  border-radius: 12px !important; box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
 }
+.leaflet-popup-tip { background: #161616 !important; }
+.leaflet-popup-close-button { color: #5e5a55 !important; }
 
-.leaflet-popup-tip {
-  background: #18181b !important;
+/* Glow utilities */
+.neon-amber {
+  box-shadow: 0 0 20px rgba(245,166,35,0.25), 0 0 40px rgba(245,166,35,0.12);
 }
-
-.leaflet-popup-close-button {
-  color: #71717a !important;
-}
-
-/* Custom marker animation */
-.custom-marker {
-  animation: bounceIn 0.3s ease-out;
-}
-
-@keyframes bounceIn {
-  0% {
-    transform: scale(0) translateY(-20px);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.1) translateY(0);
-  }
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Glass morphism effects — solid, no backdrop-filter */
-.glass {
-  background: #1a1a2e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* Neon glow effects */
-.neon-blue {
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3),
-              0 0 40px rgba(59, 130, 246, 0.2),
-              0 0 60px rgba(59, 130, 246, 0.1);
-}
-
 .neon-green {
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3),
-              0 0 40px rgba(34, 197, 94, 0.2),
-              0 0 60px rgba(34, 197, 94, 0.1);
-}
-
-.neon-gold {
-  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3),
-              0 0 40px rgba(245, 158, 11, 0.2),
-              0 0 60px rgba(245, 158, 11, 0.1);
+  box-shadow: 0 0 20px rgba(62,207,142,0.25), 0 0 40px rgba(62,207,142,0.12);
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #3B82F6 0%, #22C55E 100%);
+  background: linear-gradient(135deg, #f5a623 0%, #3ecf8e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Pulse animation for SOS */
-.pulse-sos {
-  animation: pulse 2s infinite;
+/* Amber glow para focus rings */
+.amber-glow { box-shadow: 0 0 0 2px rgba(245,166,35,0.35); }
+
+/* Marker animation */
+.custom-marker { animation: bounceIn 0.3s ease-out; }
+@keyframes bounceIn {
+  0%   { transform: scale(0) translateY(-20px); opacity: 0; }
+  60%  { transform: scale(1.1) translateY(0); }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* PWA install prompt */
+/* PWA prompt */
 .pwa-prompt {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
+  position: fixed; bottom: 80px; left: 50%;
+  transform: translateX(-50%); z-index: 1000;
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
 }

@@ -29,6 +29,13 @@ import EquipmentCard from '@/components/equipment/EquipmentCard';
 import CategoryFilter from '@/components/equipment/CategoryFilter';
 
 const categories = [
+  { id: 'cuerdas',    icon: 'cuerdas',    color: 'from-amber-500   to-amber-600'  },
+  { id: 'teclados',   icon: 'teclados',   color: 'from-yellow-500  to-amber-500'  },
+  { id: 'percusion',  icon: 'percusion',  color: 'from-orange-500  to-orange-600' },
+  { id: 'dj_gear',    icon: 'dj_gear',    color: 'from-amber-400   to-yellow-500' },
+  { id: 'sonido_pa',  icon: 'sonido_pa',  color: 'from-emerald-500 to-teal-500'   },
+];
+const _categories_old = [
   { id: 'cuerdas', icon: 'cuerdas', color: 'from-blue-500 to-blue-600' },
   { id: 'teclados', icon: 'teclados', color: 'from-purple-500 to-purple-600' },
   { id: 'percusion', icon: 'percusion', color: 'from-orange-500 to-orange-600' },
