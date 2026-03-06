@@ -137,6 +137,50 @@ export default function Home() {
                     style={{ '--placeholder-opacity': '0.3' }}
                   />
                 </div>
+                {/* Date range pickers */}
+                <div className="hidden sm:flex items-center gap-1 border-l border-zinc-700 pl-3 mr-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5">
+                        <CalendarIcon className="w-3.5 h-3.5" />
+                        {searchStart ? format(searchStart, 'dd MMM') : 'Desde'}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={searchStart}
+                        onSelect={(d) => { setSearchStart(d); setSearchEnd(null); }}
+                        disabled={(d) => d < new Date()}
+                        className="text-white"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <span className="text-zinc-600 text-xs">→</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5">
+                        <CalendarIcon className="w-3.5 h-3.5" />
+                        {searchEnd ? format(searchEnd, 'dd MMM') : 'Hasta'}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={searchEnd}
+                        onSelect={setSearchEnd}
+                        disabled={(d) => d < (searchStart || new Date())}
+                        className="text-white"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {(searchStart || searchEnd) && (
+                    <button
+                      className="text-zinc-500 hover:text-white text-xs px-1"
+                      onClick={() => { setSearchStart(null); setSearchEnd(null); }}
+                    >✕</button>
+                  )}
+                </div>
                 <Link to={createPageUrl('Explore') + (searchQuery ? `?q=${searchQuery}` : '')}>
                   <Button className="rounded-xl px-6 font-semibold" style={{ background: '#1DDF7A', color: '#060E18' }}
                     onMouseEnter={e => e.currentTarget.style.background = '#17c96e'}

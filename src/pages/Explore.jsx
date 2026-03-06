@@ -193,6 +193,55 @@ export default function Explore() {
               </SheetHeader>
               
               <div className="mt-6 space-y-6">
+                {/* Fechas */}
+                <div>
+                  <Label className="text-zinc-300 mb-3 block">Fechas de reserva</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="border-zinc-700 text-zinc-300 text-xs justify-start">
+                          <CalendarIcon className="w-3 h-3 mr-1.5" />
+                          {searchStart ? format(searchStart, 'dd MMM') : 'Desde'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700">
+                        <Calendar
+                          mode="single"
+                          selected={searchStart}
+                          onSelect={(d) => { setSearchStart(d); setSearchEnd(null); }}
+                          disabled={(d) => d < new Date()}
+                          className="text-white"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="border-zinc-700 text-zinc-300 text-xs justify-start">
+                          <CalendarIcon className="w-3 h-3 mr-1.5" />
+                          {searchEnd ? format(searchEnd, 'dd MMM') : 'Hasta'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700">
+                        <Calendar
+                          mode="single"
+                          selected={searchEnd}
+                          onSelect={setSearchEnd}
+                          disabled={(d) => d < (searchStart || new Date())}
+                          className="text-white"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  {(searchStart || searchEnd) && (
+                    <button
+                      className="text-zinc-500 hover:text-zinc-300 text-xs mt-2"
+                      onClick={() => { setSearchStart(null); setSearchEnd(null); }}
+                    >
+                      Limpiar fechas
+                    </button>
+                  )}
+                </div>
+
                 {/* Price Range */}
                 <div>
                   <Label className="text-zinc-300 mb-4 block">{t('pricePerDay')}: €{priceRange[0]} - €{priceRange[1]}</Label>
