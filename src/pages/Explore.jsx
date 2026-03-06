@@ -5,12 +5,16 @@ import { useTranslation } from '@/components/i18n/translations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import { 
   Search, 
   SlidersHorizontal, 
   X,
   Zap,
-  ArrowUpDown
+  ArrowUpDown,
+  CalendarIcon
 } from 'lucide-react';
 import {
   Sheet,

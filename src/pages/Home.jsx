@@ -8,6 +8,9 @@ import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { addDays, format } from 'date-fns';
 import { 
   Search, 
   MapPin, 
@@ -22,7 +25,8 @@ import {
   Star,
   CheckCircle,
   Trophy,
-  Globe
+  Globe,
+  CalendarIcon
 } from 'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
