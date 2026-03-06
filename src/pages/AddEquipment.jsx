@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useMutation } from '@tanstack/react-query';
@@ -36,7 +36,10 @@ const categories = [
 export default function AddEquipment() {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
-  
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const editId = urlParams.get('edit');
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -63,9 +66,22 @@ export default function AddEquipment() {
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(!!editId);
+
+  useEffect(() => {
+    if (!editId) return;
+    base44.entities.Equipment.get(editId).then(existing => {
+      const { images: existingImages, ...rest } = existing;
+      setFormData(prev => ({ ...prev, ...rest }));
+      setImages(existingImages || []);
+    }).finally(() => setLoadingEdit(false));
+  }, [editId]);
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
+      if (editId) {
+        return base44.entities.Equipment.update(editId, data);
+      }
       return base44.entities.Equipment.create(data);
     },
     onSuccess: () => {
@@ -138,6 +154,17 @@ export default function AddEquipment() {
     });
   };
 
+  if (loadingEdit) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 lg:px-6 py-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 bg-zinc-800 rounded" />
+          <div className="h-48 bg-zinc-800 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
   if (success) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -146,7 +173,9 @@ export default function AddEquipment() {
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">
-            {lang === 'es' ? '¡Equipo publicado!' : 'Equipment published!'}
+            {editId
+            ? (lang === 'es' ? '¡Equipo actualizado!' : 'Equipment updated!')
+            : (lang === 'es' ? '¡Equipo publicado!' : 'Equipment published!')}
           </h2>
           <p className="text-zinc-400">
             {lang === 'es' ? 'Redirigiendo a tu perfil...' : 'Redirecting to your profile...'}
@@ -163,7 +192,7 @@ export default function AddEquipment() {
         {t('back')}
       </Link>
 
-      <h1 className="text-3xl font-bold text-white mb-2">{t('addEquipment')}</h1>
+      <h1 className="text-3xl font-bold text-white mb-2">{editId ? 'Editar equipo' : t('addEquipment')}</h1>
       <p className="text-zinc-400 mb-8">{t('onboardingTitle')}</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -431,10 +460,10 @@ export default function AddEquipment() {
           {createMutation.isPending ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {lang === 'es' ? 'Publicando...' : 'Publishing...'}
+              {lang === 'es' ? (editId ? 'Guardando...' : 'Publicando...') : (editId ? 'Saving...' : 'Publishing...')}
             </>
           ) : (
-            t('goLive')
+            editId ? 'Guardar cambios' : t('goLive')
           )}
         </Button>
       </form>
