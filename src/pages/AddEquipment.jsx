@@ -101,6 +101,26 @@ export default function AddEquipment() {
     }
   });
 
+  const pc = formData.pricing_config;
+  const setPC = (updater) =>
+    setFormData(prev => ({
+      ...prev,
+      pricing_config: typeof updater === 'function'
+        ? updater(prev.pricing_config)
+        : updater,
+    }));
+
+  const togglePCBool  = (key) => setPC(c => ({ ...c, [key]: { ...c[key], on: !c[key].on } }));
+  const setPCVal      = (key, val) => setPC(c => ({ ...c, [key]: { ...c[key], val } }));
+  const addTier       = () => setPC(c => ({ ...c, tiers: [...c.tiers, { id: Date.now(), minDays: '', pct: '' }] }));
+  const removeTier    = (id) => setPC(c => ({ ...c, tiers: c.tiers.filter(t => t.id !== id) }));
+  const updateTier    = (id, field, val) =>
+    setPC(c => ({ ...c, tiers: c.tiers.map(t => t.id === id ? { ...t, [field]: val } : t) }));
+  const toggleSlot    = (i) =>
+    setPC(c => { const s = [...c.slots]; s[i] = !s[i]; return { ...c, slots: s }; });
+  const bulkSlots     = (from, to, val) =>
+    setPC(c => ({ ...c, slots: c.slots.map((x, idx) => idx >= from && idx < to ? val : x) }));
+
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
