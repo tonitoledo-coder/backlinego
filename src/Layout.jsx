@@ -3,24 +3,17 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/translations';
-import { toast } from 'sonner';
 import { 
   Home, 
   Search, 
   Map, 
-  Package, 
   User, 
   Plus,
-  Building2,
   Wrench,
-  Menu,
-  X,
-  Zap,
-  LogOut,
   LogIn,
   Trophy,
   Crown,
-  Clock,
+  Ban,
   XCircle
 } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -30,27 +23,14 @@ import { cn } from '@/lib/utils';
 
 const PROTECTED_PAGES = ['Profile', 'Settings', 'AddEquipment', 'Chat', 'Rewards'];
 
-function PendingScreen() {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: '#0d0d1a' }}>
-      <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(251,191,36,0.15)' }}>
-        <Clock className="w-10 h-10 text-amber-400" />
-      </div>
-      <h1 className="text-2xl font-bold text-white">Cuenta pendiente de aprobación</h1>
-      <p className="text-zinc-400 text-center max-w-sm">Tu cuenta está siendo revisada. Te avisaremos por email en cuanto sea aprobada.</p>
-      <Button variant="ghost" className="text-zinc-400" onClick={() => base44.auth.logout()}>Cerrar sesión</Button>
-    </div>
-  );
-}
-
 function RejectedScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: '#0d0d1a' }}>
       <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
-        <XCircle className="w-10 h-10 text-red-500" />
+        <Ban className="w-10 h-10 text-red-500" />
       </div>
-      <h1 className="text-2xl font-bold text-white">Cuenta rechazada</h1>
-      <p className="text-zinc-400 text-center max-w-sm">Tu solicitud de acceso ha sido rechazada. Contacta con soporte si crees que es un error.</p>
+      <h1 className="text-2xl font-bold text-white">Cuenta suspendida</h1>
+      <p className="text-zinc-400 text-center max-w-sm">Tu cuenta ha sido suspendida temporalmente. Contacta con nosotros en hola@backlinego.com</p>
       <Button variant="ghost" className="text-zinc-400" onClick={() => base44.auth.logout()}>Cerrar sesión</Button>
     </div>
   );
