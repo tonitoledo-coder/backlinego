@@ -177,7 +177,7 @@ export default function Profile() {
           </div>
           
           <div>
-            <h1 className="text-2xl font-bold text-white">{user?.display_name || user?.full_name || 'Usuario'}</h1>
+            <h1 className="text-2xl font-bold text-white">{user?.display_name || user?.full_name || user?.username || 'Usuario'}</h1>
             <p className="text-zinc-400">{user?.email}</p>
             <div className="flex items-center gap-3 mt-2">
               {(userProfile?.is_verified || user?.id_verified) ? (
@@ -206,6 +206,12 @@ export default function Profile() {
             <Button className="bg-green-500 hover:bg-green-600 text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" />
               {t('addEquipment')}
+            </Button>
+          </Link>
+          <Link to={createPageUrl('Settings')}>
+            <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+              <Settings className="w-4 h-4 mr-2" />
+              Editar perfil
             </Button>
           </Link>
           <Button 
