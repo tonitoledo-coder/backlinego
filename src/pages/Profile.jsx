@@ -32,6 +32,7 @@ import QRDeliveryModal from '@/components/qr/QRDeliveryModal';
 export default function Profile() {
   const { t, lang } = useTranslation();
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [qrBooking, setQrBooking] = useState(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
@@ -49,6 +50,9 @@ export default function Profile() {
       }
       const userData = await base44.auth.me();
       setUser(userData);
+      const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+      const userProfile = profiles?.[0] || null;
+      setUserProfile(userProfile);
     } catch (e) {
       base44.auth.redirectToLogin();
     } finally {
@@ -176,7 +180,7 @@ export default function Profile() {
             <h1 className="text-2xl font-bold text-white">{user?.display_name || user?.full_name || 'Usuario'}</h1>
             <p className="text-zinc-400">{user?.email}</p>
             <div className="flex items-center gap-3 mt-2">
-              {user?.id_verified ? (
+              {(userProfile?.is_verified || user?.id_verified) ? (
                 <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">
                   <ShieldCheck className="w-3 h-3 mr-1" />
                   {t('idVerified')}
