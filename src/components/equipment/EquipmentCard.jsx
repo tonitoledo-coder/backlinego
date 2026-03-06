@@ -1,19 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Zap, ShieldCheck } from 'lucide-react';
+import { MapPin, Zap, ShieldCheck, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from '../i18n/translations';
 import CategoryIcon from '../ui/CategoryIcon';
 import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 
-export default function EquipmentCard({ equipment }) {
+export default function EquipmentCard({ equipment, currentUserEmail, onDeleted }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [availability, setAvailability] = useState(null); // null | 'available' | 'occupied'
   const cardRef = useRef(null);
   const fetchedRef = useRef(false);
+
+  const isOwner = currentUserEmail && equipment.created_by === currentUserEmail;
+
+  const handleEdit = (e) => {
+    e.preventDefault();
+    navigate(createPageUrl('AddEquipment') + '?edit=' + equipment.id);
+  };
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    if (!window.confirm('¿Eliminar este equipo?')) return;
+    await base44.entities.Equipment.delete(equipment.id);
+    onDeleted?.();
+  };
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
@@ -56,6 +71,26 @@ export default function EquipmentCard({ equipment }) {
             </div>
           )}
           
+          {/* Owner action buttons */}
+          {isOwner && (
+            <div className="absolute top-3 right-3 flex gap-1.5 z-10">
+              <button
+                onClick={handleEdit}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-opacity"
+                style={{ background: 'rgba(0,0,0,0.7)' }}
+              >
+                <Pencil className="w-3.5 h-3.5 text-zinc-300" />
+              </button>
+              <button
+                onClick={handleDelete}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-opacity"
+                style={{ background: 'rgba(0,0,0,0.7)' }}
+              >
+                <Trash2 className="w-3.5 h-3.5 text-red-400" />
+              </button>
+            </div>
+          )}
+
           {/* Badges overlay */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {equipment.sos_available && (
