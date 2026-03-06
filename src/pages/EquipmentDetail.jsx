@@ -461,8 +461,11 @@ export default function EquipmentDetail() {
             <CardHeader>
               <div className="flex items-baseline justify-between">
                 <div>
-                  <span className="text-3xl font-bold text-white">€{equipment.price_per_day}</span>
-                  <span className="text-zinc-500 ml-1">{t('perDay')}</span>
+                  <span className="text-3xl font-bold text-white">
+                    {days > 0 && pricing
+                      ? `€${pricing.totalPrice.toFixed(0)} total`
+                      : `desde €${equipment.price_per_day}/día`}
+                  </span>
                 </div>
                 {equipment.deposit > 0 && (
                   <span className="text-sm text-zinc-500">{t('deposit')}: €{equipment.deposit}</span>
@@ -524,23 +527,47 @@ export default function EquipmentDetail() {
               )}
 
               {/* Price Breakdown */}
-              {days > 0 && (
-                <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
+              {days > 0 && pricing && (
+                <div className="bg-zinc-800/50 rounded-xl p-4 space-y-2 text-sm">
                   <div className="flex justify-between text-zinc-400">
-                    <span>€{equipment.price_per_day} × {days} {days === 1 ? 'día' : 'días'}</span>
-                    <span>€{basePrice.toFixed(2)}</span>
+                    <span>€{equipment.price_per_day}/día × {days} días</span>
+                    <span>€{pricing.basePrice.toFixed(2)}</span>
                   </div>
+
+                  {pricing.weekendMultiplier > 1 && (
+                    <div className="flex justify-between text-amber-400">
+                      <span>Fin de semana ×{pricing.weekendMultiplier.toFixed(2)}</span>
+                      <span>+€{(pricing.basePrice * (pricing.weekendMultiplier - 1)).toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {pricing.summerMultiplier > 1 && (
+                    <div className="flex justify-between text-amber-400">
+                      <span>Temporada alta ×{pricing.summerMultiplier.toFixed(2)}</span>
+                      <span>+€{(pricing.basePrice * pricing.weekendMultiplier * (pricing.summerMultiplier - 1)).toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {pricing.discountPct > 0 && (
+                    <div className="flex justify-between text-green-400">
+                      <span>Descuento reserva larga −{pricing.discountPct}%</span>
+                      <span>−€{pricing.discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between text-zinc-400">
                     <span className="flex items-center gap-1">
                       <ShieldCheck className="w-4 h-4 text-blue-500" />
                       {t('insuranceFee')}
                     </span>
-                    <span>€{insuranceFee.toFixed(2)}</span>
+                    <span>€{pricing.insuranceFee.toFixed(2)}</span>
                   </div>
+
                   <Separator className="bg-zinc-700" />
-                  <div className="flex justify-between text-white font-semibold text-lg">
+
+                  <div className="flex justify-between font-semibold text-white text-base">
                     <span>{t('totalPrice')}</span>
-                    <span>€{totalPrice.toFixed(2)}</span>
+                    <span>€{pricing.totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
               )}

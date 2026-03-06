@@ -55,6 +55,11 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
                          equipment.condition >= 5 ? 'text-yellow-400' : 'text-red-400';
   const conditionStyle = { color: '#a78bfa' };
 
+  const priceResult =
+    searchStart && searchEnd
+      ? calcBookingPrice(equipment, searchStart, searchEnd)
+      : null;
+
   return (
     <div ref={cardRef}>
     <Link to={createPageUrl('EquipmentDetail') + `?id=${equipment.id}`}>
@@ -109,8 +114,23 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
           
           {/* Price tag */}
           <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-lg" style={{background:'rgba(0,0,0,0.8)'}}>
-            <span className="text-lg font-bold text-white">€{equipment.price_per_day}</span>
-            <span className="text-zinc-400 text-sm">{t('perDay')}</span>
+            {priceResult ? (
+              <div className="text-right">
+                {priceResult.hasModifiers && (
+                  <div className="text-zinc-400 text-xs line-through leading-none mb-0.5">
+                    €{priceResult.basePrice.toFixed(0)}
+                  </div>
+                )}
+                <span className="text-lg font-bold text-white">€{priceResult.totalPrice.toFixed(0)}</span>
+                <span className="text-zinc-400 text-xs ml-1">total</span>
+              </div>
+            ) : (
+              <>
+                <span className="text-zinc-400 text-xs">desde </span>
+                <span className="text-lg font-bold text-white">€{equipment.price_per_day}</span>
+                <span className="text-zinc-400 text-sm">/día</span>
+              </>
+            )}
           </div>
         </div>
         
