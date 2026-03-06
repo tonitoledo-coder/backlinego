@@ -316,7 +316,12 @@ export default function AddEquipment() {
             </div>
 
             <div>
-              <Label className="text-zinc-300 mb-3 block">Estado: {formData.condition}/10</Label>
+              <div className="flex items-center justify-between mb-3">
+                <Label className="text-zinc-300">Estado del instrumento</Label>
+                <span className="text-emerald-400 font-semibold text-sm bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                  {formData.condition}/10
+                </span>
+              </div>
               <Slider
                 value={[formData.condition]}
                 onValueChange={([v]) => setFormData(prev => ({ ...prev, condition: v }))}
