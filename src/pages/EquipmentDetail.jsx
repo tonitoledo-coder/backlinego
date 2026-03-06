@@ -220,7 +220,8 @@ export default function EquipmentDetail() {
     }
   };
 
-  const canBook = startDate && endDate && days >= minRentalDays && days <= maxRentalDays && !rangeWarning;
+  const needsSlot = days > 0 && availableSlots.length > 0;
+  const canBook   = startDate && endDate && days >= minRentalDays && days <= maxRentalDays && !rangeWarning && (!needsSlot || deliverySlot !== null);
 
   const checkBookingAccess = async () => {
     const isAuth = await base44.auth.isAuthenticated();
