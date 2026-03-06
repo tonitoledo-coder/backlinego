@@ -179,7 +179,8 @@ export default function AddEquipment() {
       deposit: parseFloat(formData.deposit) || 0,
       year: parseInt(formData.year) || null,
       status: 'available',
-      owner_type: 'particular'
+      owner_type: 'particular',
+      pricing_config: formData.pricing_config
     });
   };
 
