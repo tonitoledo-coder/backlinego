@@ -265,7 +265,12 @@ export default function Profile() {
           {myEquipment.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {myEquipment.map(eq => (
-                <EquipmentCard key={eq.id} equipment={eq} />
+                <EquipmentCard
+                  key={eq.id}
+                  equipment={eq}
+                  currentUserEmail={user?.email}
+                  onDeleted={() => queryClient.invalidateQueries(['equipment', 'mine', user?.email])}
+                />
               ))}
             </div>
           ) : (
