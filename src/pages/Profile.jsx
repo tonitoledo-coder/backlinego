@@ -209,14 +209,14 @@ export default function Profile() {
             </Button>
           </Link>
           <Link to={createPageUrl('Settings')}>
-            <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+            <Button variant="outline" className="">
               <Settings className="w-4 h-4 mr-2" />
               Editar perfil
             </Button>
           </Link>
           <Button 
             variant="outline" 
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="border-red-900/50 text-red-400 hover:bg-red-950/60 hover:border-red-800 hover:text-red-300"
             onClick={handleLogout}
           >
             <LogOut className="w-4 h-4 mr-2" />
