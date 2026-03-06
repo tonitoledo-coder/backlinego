@@ -308,7 +308,7 @@ export default function Home() {
         ) : filteredEquipment.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredEquipment.map(eq => (
-              <EquipmentCard key={eq.id} equipment={eq} />
+              <EquipmentCard key={eq.id} equipment={eq} searchStart={searchStart} searchEnd={searchEnd} />
             ))}
           </div>
         ) : (
