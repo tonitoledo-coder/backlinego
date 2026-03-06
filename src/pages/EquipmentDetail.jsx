@@ -273,7 +273,8 @@ export default function EquipmentDetail() {
         status: 'confirmed',
         escrow_status: 'held',
         delivery_qr: `BLG-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        is_sos: equipment.sos_available
+        is_sos: equipment.sos_available,
+        delivery_slot: deliverySlot,
       });
     } finally {
       setIsBooking(false);
