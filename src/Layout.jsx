@@ -88,34 +88,25 @@ export default function Layout({ children, currentPageName }) {
       try {
         let profiles = await base44.entities.UserProfile.filter({ email: userData.email });
         if (profiles.length === 0) {
-          await base44.entities.UserProfile.create({
+          // Auto-create profile in background — user is allowed through immediately
+          base44.entities.UserProfile.create({
             user_id: userData.id,
             email: userData.email,
             display_name: userData.full_name || userData.username || userData.email,
             role: 'user',
-            account_status: 'pending',
+            account_status: 'approved',
             is_verified: false,
             is_banned: false,
             profile_complete: !!userData.onboarding_completed,
             onboarding_completed: !!userData.onboarding_completed,
             subscription_plan: 'free',
-          });
-          profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+          }).catch(() => {});
         }
         const profile = profiles?.[0];
         if (profile) {
-          const role = profile.role || 'user';
-          // Admins and moderators always bypass the approval gate
-          if (role === 'admin' || role === 'moderator') {
-            setAccountStatus('approved');
-          } else {
-            setAccountStatus(profile.account_status || 'approved');
-          }
+          setIsBanned(profile.is_banned || false);
           setProfileComplete(profile.profile_complete || false);
-          if (role === 'admin') setIsAdmin(true);
-        } else {
-          // No profile yet — allow through, auto-creation happened above
-          setAccountStatus('approved');
+          if (profile.role === 'admin') setIsAdmin(true);
         }
       } catch (_) {}
     } catch (e) {
@@ -169,10 +160,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   // Account status gates (only after auth check is complete)
-  if (!loading && user && accountStatus === 'pending') {
-    return <PendingScreen />;
-  }
-  if (!loading && user && accountStatus === 'rejected') {
+  if (!loading && user && isBanned) {
     return <RejectedScreen />;
   }
 
