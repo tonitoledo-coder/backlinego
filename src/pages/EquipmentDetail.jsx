@@ -153,10 +153,14 @@ export default function EquipmentDetail() {
     }
   });
 
-  const days = startDate && endDate ? differenceInDays(endDate, startDate) + 1 : 0;
-  const basePrice = days * (equipment?.price_per_day || 0);
-  const insuranceFee = basePrice * 0.08;
-  const totalPrice = basePrice + insuranceFee;
+  const pricing = startDate && endDate && equipment
+    ? calcBookingPrice(equipment, startDate, endDate)
+    : null;
+
+  const days         = pricing?.days         ?? 0;
+  const basePrice    = pricing?.basePrice    ?? 0;
+  const insuranceFee = pricing?.insuranceFee ?? 0;
+  const totalPrice   = pricing?.totalPrice   ?? 0;
 
   const minRentalDays = equipment?.min_rental_days || 1;
   const maxRentalDays = equipment?.max_rental_days || 30;

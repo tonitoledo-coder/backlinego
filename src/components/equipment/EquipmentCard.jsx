@@ -10,7 +10,7 @@ import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
 
-export default function EquipmentCard({ equipment, currentUserEmail, onDeleted }) {
+export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, searchStart, searchEnd }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [availability, setAvailability] = useState(null); // null | 'available' | 'occupied'
