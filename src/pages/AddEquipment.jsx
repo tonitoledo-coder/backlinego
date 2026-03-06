@@ -60,7 +60,16 @@ export default function AddEquipment() {
       address: '',
       lat: null,
       lng: null
-    }
+    },
+    pricing_config: {
+      weekend: { on: false, val: '1.25' },
+      summer:  { on: false, val: '1.15' },
+      tiers:   [
+        { id: 1, minDays: '7',  pct: '10' },
+        { id: 2, minDays: '14', pct: '20' },
+      ],
+      slots: Array.from({ length: 24 }, (_, i) => i >= 9 && i < 22),
+    },
   });
   
   const [images, setImages] = useState([]);
