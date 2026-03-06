@@ -328,6 +328,7 @@ export default function Admin() {
 
   const stats = useMemo(() => ({
     total: profiles.length,
+    active: profiles.filter(p => !p.is_banned).length,
     verified: profiles.filter(p => p.is_verified).length,
     banned: profiles.filter(p => p.is_banned).length,
     flagged: profiles.filter(p => p.flagged).length,

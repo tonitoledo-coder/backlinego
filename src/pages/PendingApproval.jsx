@@ -1,8 +1,7 @@
 import React from 'react';
-import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Clock } from 'lucide-react';
+import { Ban } from 'lucide-react';
 
 export default function PendingApproval() {
   return (
@@ -17,37 +16,32 @@ export default function PendingApproval() {
           Backline<span style={{ color: '#1DDF7A' }}>Go</span>
         </span>
 
-        {/* Animated icon */}
+        {/* Icon */}
         <div
-          className="w-24 h-24 rounded-full flex items-center justify-center animate-pulse"
-          style={{ background: 'rgba(245,158,11,0.12)', border: '2px solid rgba(245,158,11,0.3)' }}
+          className="w-24 h-24 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(239,68,68,0.12)', border: '2px solid rgba(239,68,68,0.3)' }}
         >
-          <Clock className="w-12 h-12" style={{ color: '#f59e0b' }} />
+          <Ban className="w-12 h-12" style={{ color: '#ef4444' }} />
         </div>
 
         {/* Title */}
         <h1 className="text-2xl font-bold text-white">
-          Solicitud en revisión
+          Cuenta suspendida
         </h1>
 
-        {/* Subtitle */}
+        {/* Message */}
         <p className="text-zinc-400 leading-relaxed">
-          Nuestro equipo está revisando tu cuenta. Este proceso suele tardar menos de 24 horas.
-        </p>
-
-        {/* Separator */}
-        <div className="w-full h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-
-        {/* Small note */}
-        <p className="text-zinc-500 text-sm">
-          Te notificaremos por email cuando tu cuenta esté activa.
+          Tu cuenta ha sido suspendida temporalmente. Si crees que es un error, contacta con nosotros en{' '}
+          <a href="mailto:hola@backlinego.com" className="text-white underline underline-offset-2">
+            hola@backlinego.com
+          </a>
         </p>
 
         {/* Logout */}
         <Button
           variant="ghost"
           className="text-zinc-400 hover:text-white mt-2"
-          onClick={() => base44.auth.logout(createPageUrl('Home'))}
+          onClick={() => base44.auth.logout()}
         >
           Cerrar sesión
         </Button>

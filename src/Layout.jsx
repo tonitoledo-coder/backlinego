@@ -64,7 +64,7 @@ export default function Layout({ children, currentPageName }) {
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [accountStatus, setAccountStatus] = useState(null); // null | 'pending' | 'approved' | 'rejected'
+  const [isBanned, setIsBanned] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {

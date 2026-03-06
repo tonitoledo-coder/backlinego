@@ -58,12 +58,12 @@ import Home from './pages/Home';
 import MapView from './pages/MapView';
 import Onboarding from './pages/Onboarding';
 import Partners from './pages/Partners';
+import PendingApproval from './pages/PendingApproval';
 import Profile from './pages/Profile';
 import PublicProfile from './pages/PublicProfile';
 import Rewards from './pages/Rewards';
 import Settings from './pages/Settings';
 import Specialists from './pages/Specialists';
-import PendingApproval from './pages/PendingApproval';
 import __Layout from './Layout.jsx';
 
 
@@ -79,12 +79,12 @@ export const PAGES = {
     "MapView": MapView,
     "Onboarding": Onboarding,
     "Partners": Partners,
+    "PendingApproval": PendingApproval,
     "Profile": Profile,
     "PublicProfile": PublicProfile,
     "Rewards": Rewards,
     "Settings": Settings,
     "Specialists": Specialists,
-    "PendingApproval": PendingApproval,
 }
 
 export const pagesConfig = {
