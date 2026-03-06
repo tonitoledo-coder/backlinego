@@ -364,11 +364,11 @@ export default function Admin() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         <StatCard icon={Users} value={stats.total} label="Total usuarios" color="#a78bfa" />
-        <StatCard icon={ShieldCheck} value={stats.verified} label="Verificados" color="#1DDF7A" />
+        <StatCard icon={ShieldCheck} value={stats.active} label="Activos" color="#1DDF7A" />
+        <StatCard icon={ShieldCheck} value={stats.verified} label="Verificados" color="#60a5fa" />
         <StatCard icon={Ban} value={stats.banned} label="Baneados" color="#ef4444" />
         <StatCard icon={AlertTriangle} value={stats.flagged} label="Flagged" color="#fbbf24" />
-        <StatCard icon={Star} value={stats.premium} label="Pro / Business" color="#60a5fa" />
-        <StatCard icon={UserCog} value={stats.admins} label="Admins" color="#fbbf24" />
+        <StatCard icon={Star} value={stats.premium} label="Pro / Business" color="#a78bfa" />
       </div>
 
       {/* Filters */}
