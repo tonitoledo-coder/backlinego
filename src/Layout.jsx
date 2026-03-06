@@ -123,10 +123,6 @@ export default function Layout({ children, currentPageName }) {
       base44.auth.redirectToLogin(window.location.href);
       return;
     }
-    if (accountStatus === 'pending') {
-      toast.warning('Tu cuenta está pendiente de aprobación. Podrás publicar equipo una vez sea verificada.');
-      return;
-    }
     if (!profileComplete) {
       navigate(createPageUrl('CompleteProfile') + '?next=AddEquipment');
       return;
