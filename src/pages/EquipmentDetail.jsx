@@ -107,6 +107,7 @@ export default function EquipmentDetail() {
   const [showPayment, setShowPayment] = useState(false);
   const [rangeWarning, setRangeWarning] = useState('');
   const [accessModal, setAccessModal] = useState(null); // null | 'login' | 'pending' | 'complete_profile'
+  const [deliverySlot, setDeliverySlot] = useState(null); // número 0-23 | null
 
   const queryClient = useQueryClient();
 
