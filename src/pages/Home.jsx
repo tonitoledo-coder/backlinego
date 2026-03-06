@@ -46,6 +46,8 @@ export default function Home() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchStart, setSearchStart] = useState(null);
+  const [searchEnd,   setSearchEnd]   = useState(null);
 
   const handleAddEquipmentClick = async (e) => {
     e.preventDefault();
