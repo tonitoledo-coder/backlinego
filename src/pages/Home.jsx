@@ -35,13 +35,7 @@ const categories = [
   { id: 'dj_gear',    icon: 'dj_gear',    color: 'from-amber-400   to-yellow-500' },
   { id: 'sonido_pa',  icon: 'sonido_pa',  color: 'from-emerald-500 to-teal-500'   },
 ];
-const _categories_old = [
-  { id: 'cuerdas', icon: 'cuerdas', color: 'from-blue-500 to-blue-600' },
-  { id: 'teclados', icon: 'teclados', color: 'from-purple-500 to-purple-600' },
-  { id: 'percusion', icon: 'percusion', color: 'from-orange-500 to-orange-600' },
-  { id: 'dj_gear', icon: 'dj_gear', color: 'from-pink-500 to-pink-600' },
-  { id: 'sonido_pa', icon: 'sonido_pa', color: 'from-green-500 to-green-600' },
-];
+
 
 export default function Home() {
   const { t, lang } = useTranslation();
