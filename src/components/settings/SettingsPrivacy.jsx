@@ -57,7 +57,7 @@ export default function SettingsPrivacy({ user, onSaved }) {
           })}
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving} size="sm" className="font-semibold text-white" style={{ background: '#7c3aed' }}>
+          <Button onClick={handleSave} disabled={saving} size="sm" className="font-semibold text-white" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : saved ? <CheckCircle className="w-4 h-4 mr-1 text-green-400" /> : <Save className="w-4 h-4 mr-1" />}
             {saved ? '¡Guardado!' : 'Guardar'}
           </Button>
