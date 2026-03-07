@@ -562,7 +562,7 @@ export default function EquipmentDetail() {
                   </PopoverContent>
                 </Popover>
                 
-                <Popover>
+                <Popover open={openEnd} onOpenChange={setOpenEnd}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start border-zinc-700 text-zinc-300 hover:bg-zinc-800">
                       <CalendarIcon className="w-4 h-4 mr-2 text-zinc-500" />
