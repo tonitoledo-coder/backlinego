@@ -501,6 +501,11 @@ export default function Admin() {
         <TabsContent value="transacciones">
           <AdminTransactionsTab enabled={authState === 'ok' && activeTab === 'transacciones'} />
         </TabsContent>
+
+        {/* ── Legal ── */}
+        <TabsContent value="legal">
+          <AdminLegalTab enabled={authState === 'ok' && activeTab === 'legal'} />
+        </TabsContent>
       </Tabs>
     </div>
   );
