@@ -534,12 +534,21 @@ export default function EquipmentDetail() {
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-800">
                     <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={handleStartDateSelect}
-                      disabled={disabledStart}
-                      locale={dateLocale}
-                    />
+    mode="single"
+    selected={startDate}
+    onSelect={handleStartDateSelect}
+    disabled={disabledStart}
+    locale={dateLocale}
+    modifiers={{
+      booked: (date) => {
+        const key = format(date, 'yyyy-MM-dd');
+        return bookedDatesSet.has(key) || blockedByOwner.has(key);
+      }
+    }}
+    modifiersClassNames={{
+      booked: 'text-red-400/70 line-through opacity-60'
+    }}
+  />
                   </PopoverContent>
                 </Popover>
                 
