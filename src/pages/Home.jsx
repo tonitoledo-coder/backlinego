@@ -141,7 +141,7 @@ export default function Home() {
                 </div>
                 {/* Date range pickers */}
                 <div className="hidden sm:flex items-center gap-1 border-l border-zinc-700 pl-3 mr-2">
-                  <Popover>
+                  <Popover open={openStart} onOpenChange={setOpenStart}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5">
                         <CalendarIcon className="w-3.5 h-3.5" />
@@ -152,7 +152,12 @@ export default function Home() {
                       <Calendar
                         mode="single"
                         selected={searchStart}
-                        onSelect={(d) => { setSearchStart(d); setSearchEnd(null); }}
+                        onSelect={(d) => {
+                          setSearchStart(d);
+                          setSearchEnd(null);
+                          setOpenStart(false);
+                          setOpenEnd(true);
+                        }}
                         disabled={(d) => d < new Date()}
                         className="text-white"
                       />
