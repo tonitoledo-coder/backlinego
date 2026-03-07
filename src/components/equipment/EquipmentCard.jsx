@@ -62,7 +62,12 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
 
   return (
     <div ref={cardRef}>
-    <Link to={createPageUrl('EquipmentDetail') + `?id=${equipment.id}`}>
+    <Link to={(() => {
+      const p = new URLSearchParams({ id: equipment.id });
+      if (searchStart) p.set('from', format(searchStart, 'yyyy-MM-dd'));
+      if (searchEnd)   p.set('to',   format(searchEnd,   'yyyy-MM-dd'));
+      return createPageUrl('EquipmentDetail') + '?' + p.toString();
+    })()}>
       <Card className="border transition-all duration-300 overflow-hidden group" style={{background:'#161625', borderColor:'rgba(255,255,255,0.08)'}} onMouseEnter={e=>e.currentTarget.style.borderColor='#7c3aed'} onMouseLeave={e=>e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'}>
         <div className="relative aspect-[4/3] overflow-hidden">
           {equipment.images?.[0] ? (
@@ -121,8 +126,16 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
                     €{priceResult.basePrice.toFixed(0)}
                   </div>
                 )}
-                <span className="text-lg font-bold text-white">€{priceResult.totalPrice.toFixed(0)}</span>
-                <span className="text-zinc-400 text-xs ml-1">total</span>
+                <div>
+                  <span className="text-lg font-bold text-white">€{priceResult.totalPrice.toFixed(0)}</span>
+                  <span className="text-zinc-400 text-xs ml-1">total</span>
+                </div>
+                <div className="text-zinc-500 text-xs mt-0.5 leading-none">
+                  {priceResult.days} día{priceResult.days !== 1 ? 's' : ''}
+                  {priceResult.weekendMultiplier > 1 && ' · fin de semana'}
+                  {priceResult.summerMultiplier > 1  && ' · temp. alta'}
+                  {priceResult.discountPct > 0       && ` · −${priceResult.discountPct}%`}
+                </div>
               </div>
             ) : (
               <>
