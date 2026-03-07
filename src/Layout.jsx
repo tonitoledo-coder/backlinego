@@ -90,6 +90,26 @@ export default function Layout({ children, currentPageName }) {
           setIsBanned(profile.is_banned || false);
           setProfileComplete(profile.profile_complete || false);
           if (profile.role === 'admin') setIsAdmin(true);
+          setCurrentUserProfile(profile);
+
+          // Silently check legal version compliance
+          if (profile.onboarding_completed) {
+            const [termsDocs, privacyDocs] = await Promise.all([
+              base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
+              base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
+            ]);
+            const activeTerms = termsDocs?.[0];
+            const activePrivacy = privacyDocs?.[0];
+            const termsOk = activeTerms
+              ? profile.terms_version_accepted === activeTerms.version
+              : !!profile.terms_version_accepted;
+            const privacyOk = activePrivacy
+              ? profile.privacy_version_accepted === activePrivacy.version
+              : !!profile.privacy_version_accepted;
+            if (!termsOk || !privacyOk) {
+              setShowLegalModal(true);
+            }
+          }
         }
       } catch (_) {}
     } catch (e) {
