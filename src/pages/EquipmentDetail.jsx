@@ -582,9 +582,15 @@ export default function EquipmentDetail() {
 
               {/* Calendar legend */}
               <div className="flex items-center gap-4 text-xs text-zinc-500">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />Disponible</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />No disponible</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />Seleccionado</span>
+<span className="flex items-center gap-1">
+    <span className="w-2.5 h-2.5 rounded-full bg-zinc-100 inline-block" />Disponible
+  </span>
+  <span className="flex items-center gap-1">
+    <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />Ocupado
+  </span>
+  <span className="flex items-center gap-1">
+    <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block" />Seleccionado
+  </span>
               </div>
 
               {rangeWarning && (
