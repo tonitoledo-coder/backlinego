@@ -101,8 +101,14 @@ export default function EquipmentDetail() {
   const equipmentId = params.get('id');
   
   const [currentImage, setCurrentImage] = useState(0);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState(() => {
+    const v = params.get('from');
+    return v ? parseISO(v) : null;
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const v = params.get('to');
+    return v ? parseISO(v) : null;
+  });
   const [isBooking, setIsBooking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [rangeWarning, setRangeWarning] = useState('');
