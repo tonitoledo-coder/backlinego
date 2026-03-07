@@ -462,6 +462,66 @@ export default function Admin() {
         onClose={() => setEditProfile(null)}
         onSaved={() => queryClient.invalidateQueries({ queryKey: ['admin', 'userprofiles'] })}
       />
+
+      {/* ── Reservas activas ── */}
+      <div className="mt-10">
+        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-blue-400" />
+          Reservas confirmadas
+          <span className="text-sm font-normal text-zinc-500 ml-1">
+            ({activeBookings.length})
+          </span>
+        </h2>
+
+        {activeBookings.length === 0 ? (
+          <p className="text-zinc-500 text-sm">No hay reservas confirmadas en este momento.</p>
+        ) : (
+          <div className="space-y-2">
+            {activeBookings.map(booking => (
+              <div
+                key={booking.id}
+                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3"
+              >
+                <div className="space-y-0.5">
+                  <p className="text-white text-sm font-mono font-semibold">
+                    #{booking.id?.slice(-8)}
+                  </p>
+                  <p className="text-zinc-400 text-xs">
+                    {booking.start_date} → {booking.end_date}
+                    {' · '}
+                    <span className="text-white font-medium">
+                      €{booking.total_price?.toFixed(0) ?? '—'}
+                    </span>
+                  </p>
+                  <p className="text-zinc-600 text-xs font-mono">
+                    renter: {booking.renter_id?.slice(-8)}
+                    {' · '}
+                    owner: {booking.owner_id?.slice(-8)}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-red-800 text-red-400 hover:bg-red-950/40 flex-shrink-0"
+                  onClick={() => setAdminCancelBooking(booking)}
+                >
+                  <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                  Cancelar reserva
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {adminCancelBooking && (
+        <CancelBookingModal
+          booking={adminCancelBooking}
+          cancelledBy="admin"
+          open={!!adminCancelBooking}
+          onClose={() => setAdminCancelBooking(null)}
+        />
+      )}
     </div>
   );
 }
