@@ -281,7 +281,7 @@ export default function CompleteProfile() {
                   <><CheckCircle className="w-4 h-4 mr-2" />Completar perfil</>
                 )}
               </Button>
-              <button onClick={finish} className="text-xs text-zinc-500 hover:text-zinc-300 text-center transition-colors">
+              <button onClick={handleFinishClick} className="text-xs text-zinc-500 hover:text-zinc-300 text-center transition-colors">
                 Omitir facturación por ahora, configurar más tarde
               </button>
             </div>
