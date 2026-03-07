@@ -15,11 +15,12 @@ import {
 import {
   Crown, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
   Star, UserCog, User, Package, BookOpen, Edit2,
-  Guitar, CreditCard
+  Guitar, CreditCard, FileText
 } from 'lucide-react';
 import AdminEquipmentTab from '@/components/admin/AdminEquipmentTab';
 import AdminBookingsTab from '@/components/admin/AdminBookingsTab';
 import AdminTransactionsTab from '@/components/admin/AdminTransactionsTab';
+import AdminLegalTab from '@/components/admin/AdminLegalTab';
 
 // ─── Access Guard ────────────────────────────────────────────────────────────
 function AccessDenied() {
