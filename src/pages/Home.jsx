@@ -164,7 +164,7 @@ export default function Home() {
                     </PopoverContent>
                   </Popover>
                   <span className="text-zinc-600 text-xs">→</span>
-                  <Popover>
+                  <Popover open={openEnd} onOpenChange={setOpenEnd}>
                     <PopoverTrigger asChild>
                       <button className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5">
                         <CalendarIcon className="w-3.5 h-3.5" />
@@ -175,7 +175,7 @@ export default function Home() {
                       <Calendar
                         mode="single"
                         selected={searchEnd}
-                        onSelect={setSearchEnd}
+                        onSelect={(d) => { setSearchEnd(d); setOpenEnd(false); }}
                         disabled={(d) => d < (searchStart || new Date())}
                         className="text-white"
                       />

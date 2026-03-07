@@ -535,7 +535,7 @@ export default function EquipmentDetail() {
             <CardContent className="space-y-4">
               {/* Date Selection */}
               <div className="grid grid-cols-2 gap-3">
-                <Popover>
+                <Popover open={openStart} onOpenChange={setOpenStart}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start border-zinc-700 text-zinc-300 hover:bg-zinc-800">
                       <CalendarIcon className="w-4 h-4 mr-2 text-zinc-500" />
