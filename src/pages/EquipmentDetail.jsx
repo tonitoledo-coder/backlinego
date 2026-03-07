@@ -569,14 +569,16 @@ export default function EquipmentDetail() {
                 </p>
               )}
 
-              {/* Slot de entrega */}
-              {days > 0 && availableSlots.length > 0 && (
+              {/* ── Slot de entrega (startDate) ── */}
+              {startDate && availableDeliverySlots.length > 0 && (
                 <div>
-                  <p className="text-sm text-zinc-400 mb-2">
-                    Hora de entrega / recogida
+                  <p className="text-sm font-medium text-white mb-1">
+                    Hora de entrega
+                    <span className="text-zinc-500 font-normal ml-2 text-xs">{format(startDate, 'dd MMM')}</span>
                   </p>
+                  <p className="text-xs text-zinc-500 mb-2">El owner te entrega el equipo en esta franja</p>
                   <div className="grid grid-cols-6 gap-1.5">
-                    {availableSlots.map(h => (
+                    {availableDeliverySlots.map(h => (
                       <button
                         key={h}
                         type="button"
@@ -591,10 +593,38 @@ export default function EquipmentDetail() {
                       </button>
                     ))}
                   </div>
-                  {deliverySlot === null && (
-                    <p className="text-xs text-amber-400/70 mt-1.5">
-                      Selecciona una hora de entrega para continuar
-                    </p>
+                  {deliverySlot === null && endDate && (
+                    <p className="text-xs text-amber-400/70 mt-1.5">Elige hora de entrega para continuar</p>
+                  )}
+                </div>
+              )}
+
+              {/* ── Slot de devolución (endDate) ── */}
+              {endDate && deliverySlot !== null && availableReturnSlots.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-white mb-1">
+                    Hora de devolución
+                    <span className="text-zinc-500 font-normal ml-2 text-xs">{format(endDate, 'dd MMM')}</span>
+                  </p>
+                  <p className="text-xs text-zinc-500 mb-2">Devuelves el equipo al owner en esta franja</p>
+                  <div className="grid grid-cols-6 gap-1.5">
+                    {availableReturnSlots.map(h => (
+                      <button
+                        key={h}
+                        type="button"
+                        onClick={() => setReturnSlot(h === returnSlot ? null : h)}
+                        className={`py-1.5 rounded-md text-center text-xs font-mono transition-colors ${
+                          returnSlot === h
+                            ? 'bg-emerald-600 text-white border border-emerald-500'
+                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:border-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {String(h).padStart(2, '0')}h
+                      </button>
+                    ))}
+                  </div>
+                  {returnSlot === null && (
+                    <p className="text-xs text-amber-400/70 mt-1.5">Elige hora de devolución para continuar</p>
                   )}
                 </div>
               )}
