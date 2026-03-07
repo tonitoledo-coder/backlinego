@@ -573,7 +573,7 @@ export default function EquipmentDetail() {
                     <Calendar
     mode="single"
     selected={endDate}
-    onSelect={handleEndDateSelect}
+    onSelect={(d) => { handleEndDateSelect(d); setOpenEnd(false); }}
     disabled={disabledEnd}
     locale={dateLocale}
     modifiers={{
