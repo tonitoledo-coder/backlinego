@@ -364,6 +364,17 @@ export default function Profile() {
                               {t('scanQR')}
                             </Button>
                           )}
+                          {['pending', 'confirmed'].includes(booking.status) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-red-800 text-red-400 hover:bg-red-950/40 text-xs"
+                              onClick={() => { setCancelBooking(booking); setCancelledByRole('renter'); }}
+                            >
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Cancelar
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
