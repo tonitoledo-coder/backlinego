@@ -272,7 +272,7 @@ export default function CompleteProfile() {
           {step === 5 ? (
             <div className="flex flex-col gap-2 flex-1">
               <Button
-                onClick={finish}
+                onClick={handleFinishClick}
                 disabled={saving}
                 className="w-full h-12 font-semibold text-white"
                 style={{ background: '#7c3aed' }}
