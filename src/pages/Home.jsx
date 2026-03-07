@@ -181,13 +181,22 @@ export default function Home() {
                     >✕</button>
                   )}
                 </div>
-                <Link to={createPageUrl('Explore') + (searchQuery ? `?q=${searchQuery}` : '')}>
-                  <Button className="rounded-xl px-6 font-semibold" style={{ background: '#1DDF7A', color: '#060E18' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#17c96e'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#1DDF7A'}>
-                    {t('search')}
-                  </Button>
-                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = new URLSearchParams();
+                    if (searchQuery) p.set('q', searchQuery);
+                    if (searchStart) p.set('from', format(searchStart, 'yyyy-MM-dd'));
+                    if (searchEnd)   p.set('to',   format(searchEnd,   'yyyy-MM-dd'));
+                    navigate(createPageUrl('Explore') + (p.toString() ? '?' + p.toString() : ''));
+                  }}
+                  className="rounded-xl px-6 font-semibold h-10"
+                  style={{ background: '#1DDF7A', color: '#060E18' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#17c96e'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#1DDF7A'}
+                >
+                  {t('search')}
+                </button>
               </div>
             </div>
 
