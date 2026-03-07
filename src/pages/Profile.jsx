@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
 import QRDeliveryModal from '@/components/qr/QRDeliveryModal';
+import CancelBookingModal from '@/components/booking/CancelBookingModal';
 
 export default function Profile() {
   const { t, lang } = useTranslation();

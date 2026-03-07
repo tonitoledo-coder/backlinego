@@ -15,6 +15,7 @@ import {
   Crown, Calendar, XCircle, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
   Star, UserCog, User, Package, BookOpen, DollarSign, Edit2
 } from 'lucide-react';
+import CancelBookingModal from '@/components/booking/CancelBookingModal';
 
 // ─── Access Guard ────────────────────────────────────────────────────────────
 function AccessDenied() {
