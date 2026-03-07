@@ -79,9 +79,13 @@ export default function Profile() {
   });
 
   const { data: allEquipment = [] } = useQuery({
-    queryKey: ['equipment', 'all-mine'],
-    queryFn: () => base44.entities.Equipment.filter({}, '-created_date', 100),
-    enabled: !!user?.id,
+    queryKey: ['equipment', 'all-mine', user?.email],
+    queryFn: () => base44.entities.Equipment.filter(
+      { created_by: user.email },
+      '-created_date',
+      100
+    ),
+    enabled: !!user?.email,
   });
 
   const equipmentMap = useMemo(() => {
