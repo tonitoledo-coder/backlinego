@@ -211,7 +211,7 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2">
           <Link to={createPageUrl('AddEquipment')}>
             <Button className="bg-green-500 hover:bg-green-600 text-black font-semibold">
               <Plus className="w-4 h-4 mr-2" />
@@ -219,7 +219,7 @@ export default function Profile() {
             </Button>
           </Link>
           <Link to={createPageUrl('Settings')}>
-            <Button variant="outline" className="">
+            <Button variant="outline">
               <Settings className="w-4 h-4 mr-2" />
               Editar perfil
             </Button>
