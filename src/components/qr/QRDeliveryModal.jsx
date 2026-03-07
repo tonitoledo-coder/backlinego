@@ -182,7 +182,9 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
                   className="w-full bg-green-600 hover:bg-green-700 h-11"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Confirmar devolución y liberar escrow
+                  {fmtSlot(booking?.return_slot)
+                    ? `Confirmar devolución · ${fmtSlot(booking.return_slot)}`
+                    : 'Confirmar devolución y liberar escrow'}
                 </Button>
               )}
             </>
