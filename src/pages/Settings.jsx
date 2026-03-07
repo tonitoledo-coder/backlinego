@@ -67,9 +67,7 @@ export default function Settings() {
               const Icon = tab.icon;
               return (
                 <TabsTrigger key={tab.id} value={tab.id}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all min-w-max px-3 data-[state=active]:text-white data-[state=inactive]:text-zinc-500"
-                  style={{ '--active-bg': '#7c3aed' }}
-                  data-active-style="background: #7c3aed">
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all min-w-max px-3 data-[state=active]:bg-zinc-700 data-[state=active]:text-white data-[state=inactive]:text-zinc-500 data-[state=inactive]:hover:text-zinc-300">
                   <Icon className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">{tab.label}</span>
                 </TabsTrigger>
