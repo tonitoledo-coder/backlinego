@@ -276,6 +276,7 @@ function ProfileRow({ profile, onEdit, onVerify, onBan }) {
 export default function Admin() {
   const [authState, setAuthState] = useState('loading'); // loading | denied | ok
   const [editProfile, setEditProfile] = useState(null);
+  const [adminCancelBooking, setAdminCancelBooking] = useState(null);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');

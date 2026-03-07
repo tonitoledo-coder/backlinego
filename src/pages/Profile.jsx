@@ -37,6 +37,8 @@ export default function Profile() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [qrBooking, setQrBooking] = useState(null);
+  const [cancelBooking,   setCancelBooking]   = useState(null);
+  const [cancelledBy,     setCancelledByRole] = useState(null);
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
