@@ -712,13 +712,70 @@ export default function EquipmentDetail() {
               )}
 
               {/* Book Button */}
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
-                disabled={!canBook || isBooking}
-                onClick={handleBooking}
-              >
-                {isBooking ? t('loading') : t('bookNow')}
-              </Button>
+              {(() => {
+                // Sin fechas: invita a seleccionar
+                if (!startDate || !endDate) return (
+                  <div className="space-y-2">
+                    <Button
+                      className="w-full bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-semibold h-12 cursor-default"
+                      disabled
+                    >
+                      <CalendarIcon className="w-4 h-4 mr-2 opacity-60" />
+                      Selecciona las fechas
+                    </Button>
+                    {!isAuthed && (
+                      <p className="text-center text-xs text-zinc-500">
+                        ¿Primera vez?{' '}
+                        <button
+                          className="text-blue-400 hover:text-blue-300 underline underline-offset-2"
+                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                        >
+                          Regístrate gratis
+                        </button>
+                      </p>
+                    )}
+                  </div>
+                );
+
+                // Con fechas pero slots pendientes
+                if (canBook === false && (deliverySlot === null || returnSlot === null)) return (
+                  <Button
+                    className="w-full bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-semibold h-12 cursor-default"
+                    disabled
+                  >
+                    <Clock className="w-4 h-4 mr-2 opacity-60" />
+                    Elige un horario de entrega
+                  </Button>
+                );
+
+                // Listo para reservar
+                return (
+                  <div className="space-y-2">
+                    <Button
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+                      disabled={isBooking}
+                      onClick={handleBooking}
+                    >
+                      {isBooking
+                        ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('loading')}</>
+                        : t('bookNow')
+                      }
+                    </Button>
+                    {!isAuthed && (
+                      <p className="text-center text-xs text-zinc-500">
+                        ¿Primera vez?{' '}
+                        <button
+                          className="text-blue-400 hover:text-blue-300 underline underline-offset-2"
+                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                        >
+                          Regístrate gratis
+                        </button>{' '}
+                        · Solo 2 minutos
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Trust Features */}
               <div className="space-y-3 pt-4">
