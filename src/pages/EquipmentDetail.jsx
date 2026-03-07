@@ -23,7 +23,8 @@ import {
   ChevronRight,
   User,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { format, differenceInDays, addDays, parseISO, isWithinInterval, eachDayOfInterval } from 'date-fns';
 import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
