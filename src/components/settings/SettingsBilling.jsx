@@ -123,7 +123,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
               <Button onClick={handlePortal} disabled={stripeLoading} size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-1.5">
                 <ExternalLink className="w-3.5 h-3.5" /> Ver historial en Stripe
               </Button>
-              <Button onClick={handleSimulatePayment} disabled={stripeLoading} size="sm" className="text-white gap-1.5" style={{ background: '#7c3aed' }}>
+              <Button onClick={handleSimulatePayment} disabled={stripeLoading} size="sm" className="text-white gap-1.5" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
                 {stripeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
                 Simular pago de prueba
               </Button>
@@ -133,7 +133,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
           <div className="space-y-3">
             <p className="text-sm text-zinc-400">Conecta tu cuenta de Stripe para recibir pagos y gestionar suscripciones.</p>
             <div className="flex gap-2">
-              <Button onClick={handleConnectStripe} disabled={stripeConnecting} size="sm" className="text-white gap-1.5" style={{ background: '#7c3aed' }}>
+              <Button onClick={handleConnectStripe} disabled={stripeConnecting} size="sm" className="text-white gap-1.5" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
                 {stripeConnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
                 Conectar Stripe (Sandbox)
               </Button>
@@ -202,7 +202,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button onClick={handleSave} disabled={saving} className="font-semibold text-white" style={{ background: '#7c3aed' }}>
+          <Button onClick={handleSave} disabled={saving} className="font-semibold text-white" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
             {saved ? '¡Guardado!' : 'Guardar'}
           </Button>
