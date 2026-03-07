@@ -12,7 +12,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import {
-  Crown, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
+  Crown, Calendar, XCircle, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
   Star, UserCog, User, Package, BookOpen, DollarSign, Edit2
 } from 'lucide-react';
 
