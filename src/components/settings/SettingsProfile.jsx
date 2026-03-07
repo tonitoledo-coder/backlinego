@@ -75,7 +75,7 @@ export default function SettingsProfile({ user, onSaved }) {
             {uploadingAvatar && <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
           </div>
           <label className="cursor-pointer">
-            <span className="px-4 py-2 rounded-lg text-sm font-medium text-white inline-block" style={{ background: '#7c3aed' }}>
+            <span className="px-4 py-2 rounded-lg text-sm font-medium text-white inline-block" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
               {uploadingAvatar ? 'Subiendo...' : 'Cambiar foto'}
             </span>
             <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
@@ -162,7 +162,7 @@ export default function SettingsProfile({ user, onSaved }) {
                 <Input value={tagInput} onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                   placeholder="Añadir etiqueta..." className="text-white border-zinc-700 text-sm" style={{ background: '#1a1a2e' }} />
-                <Button type="button" onClick={addTag} size="sm" className="text-white" style={{ background: '#7c3aed' }}>+</Button>
+                <Button type="button" onClick={addTag} size="sm" className="text-white" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">+</Button>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {form.professional_tags.map((tag, i) => (
@@ -179,7 +179,7 @@ export default function SettingsProfile({ user, onSaved }) {
       </Section>
 
       <div className="flex justify-end pt-2">
-        <Button onClick={handleSave} disabled={saving} className="font-semibold text-white" style={{ background: '#7c3aed' }}>
+        <Button onClick={handleSave} disabled={saving} className="font-semibold text-white" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : saved ? <CheckCircle className="w-4 h-4 mr-2 text-green-400" /> : <Save className="w-4 h-4 mr-2" />}
           {saved ? '¡Guardado!' : 'Guardar cambios'}
         </Button>
