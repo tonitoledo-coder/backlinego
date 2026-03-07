@@ -32,6 +32,9 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
   const queryClient = useQueryClient();
   const [done, setDone] = useState(false);
 
+  const fmtSlot = (h) =>
+    h != null ? String(h).padStart(2, '0') + ':00h' : null;
+
   const isRenter = booking?.renter_id === currentUserId;
   const isOwner = booking?.owner_id === currentUserId;
   const qrValue = booking?.delivery_qr || `BACKLINE-${booking?.id?.slice(-12)}`;
@@ -93,6 +96,35 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
             </Badge>
           </div>
 
+          {/* Resumen de fechas y slots */}
+          {booking && (
+            <div className="bg-zinc-800/60 rounded-xl px-4 py-3 text-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-500 text-xs uppercase tracking-wider">Entrega</span>
+                <div className="flex items-center gap-2 text-right">
+                  <span className="text-white font-medium">{booking.start_date}</span>
+                  {fmtSlot(booking.delivery_slot) && (
+                    <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/25">
+                      {fmtSlot(booking.delivery_slot)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="h-px bg-zinc-700" />
+              <div className="flex items-center justify-between">
+                <span className="text-zinc-500 text-xs uppercase tracking-wider">Devolución</span>
+                <div className="flex items-center gap-2 text-right">
+                  <span className="text-white font-medium">{booking.end_date}</span>
+                  {fmtSlot(booking.return_slot) && (
+                    <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/25">
+                      {fmtSlot(booking.return_slot)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Renter view: show QR */}
           {isRenter && (
             <>
@@ -138,7 +170,9 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
                   className="w-full bg-blue-600 hover:bg-blue-700 h-11"
                 >
                   <PackageCheck className="w-4 h-4 mr-2" />
-                  Confirmar recepción del equipo
+                  {fmtSlot(booking?.delivery_slot)
+                    ? `Confirmar entrega · ${fmtSlot(booking.delivery_slot)}`
+                    : 'Confirmar entrega del equipo'}
                 </Button>
               )}
               {booking?.status === 'active' && (
