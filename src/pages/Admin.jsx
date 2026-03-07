@@ -400,6 +400,11 @@ export default function Admin() {
             <CreditCard className="w-4 h-4" />
             Transacciones
           </TabsTrigger>
+          <TabsTrigger value="legal" style={tabTriggerStyle('legal')}
+            className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 transition-all">
+            <FileText className="w-4 h-4" />
+            Legal
+          </TabsTrigger>
         </TabsList>
 
         {/* ── Usuarios ── */}
