@@ -33,6 +33,9 @@ export default function CompleteProfile() {
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState({});
+  const [userProfile, setUserProfile] = useState(null);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [activeLegalDocs, setActiveLegalDocs] = useState({ terms: null, privacy: null });
 
   const nextPage = new URLSearchParams(window.location.search).get('next');
 
