@@ -287,7 +287,7 @@ export default function EquipmentDetail() {
           user_email: equipment.created_by,
           type: 'booking_confirmed',
           title: `Nueva reserva: ${equipment.title}`,
-          body: `${format(startDate, 'dd MMM')} → ${format(endDate, 'dd MMM')} · €${totalPrice.toFixed(0)}`,
+          body: `${format(startDate, 'dd MMM')} ${deliverySlot !== null ? String(deliverySlot).padStart(2,'0')+'h' : ''} → ${format(endDate, 'dd MMM')} ${returnSlot !== null ? String(returnSlot).padStart(2,'0')+'h' : ''} · €${pricing?.totalPrice?.toFixed(0) || totalPrice.toFixed(0)}`,
           link_page: 'Profile',
         });
       }
