@@ -131,6 +131,7 @@ export default function Profile() {
     pending: Clock,
     confirmed: CheckCircle,
     active: CheckCircle,
+    returning: PackageCheck,
     completed: CheckCircle,
     cancelled: XCircle,
   };
