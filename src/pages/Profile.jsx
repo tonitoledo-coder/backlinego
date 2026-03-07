@@ -134,6 +134,9 @@ export default function Profile() {
     cancelled: XCircle,
   };
 
+  const fmtSlot = (h) =>
+    h != null ? String(h).padStart(2, '0') + ':00h' : null;
+
   const showOnboardingBanner = !bannerDismissed && user && !user.onboarding_completed;
 
   return (
@@ -313,10 +316,24 @@ export default function Profile() {
                           </div>
                           <div>
                             <p className="font-semibold text-white">Reserva #{booking.id?.slice(-8)}</p>
-                            <p className="text-sm text-zinc-400">
-                              {booking.start_date} - {booking.end_date}
+                            <div className="flex items-center gap-1.5 text-sm text-zinc-400 mt-0.5">
+                              <span>{booking.start_date}</span>
+                              {fmtSlot(booking.delivery_slot) && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 font-mono">
+                                  {fmtSlot(booking.delivery_slot)}
+                                </span>
+                              )}
+                              <span className="text-zinc-600">→</span>
+                              <span>{booking.end_date}</span>
+                              {fmtSlot(booking.return_slot) && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">
+                                  {fmtSlot(booking.return_slot)}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-zinc-500 mt-0.5">
+                              {booking.days} días · €{booking.total_price}
                             </p>
-                            <p className="text-sm text-zinc-500">{booking.days} días • €{booking.total_price}</p>
                           </div>
                         </div>
                         
@@ -384,10 +401,22 @@ export default function Profile() {
                             <p className="font-semibold text-white text-sm">
                               {eq?.title || `Equipo #${booking.equipment_id?.slice(-6)}`}
                             </p>
-                            <p className="text-xs text-zinc-400">
-                              {booking.start_date} → {booking.end_date}
-                            </p>
-                            <p className="text-xs text-zinc-500">
+                            <div className="flex flex-wrap items-center gap-1 text-xs text-zinc-400 mt-0.5">
+                              <span>{booking.start_date}</span>
+                              {fmtSlot(booking.delivery_slot) && (
+                                <span className="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 font-mono">
+                                  {fmtSlot(booking.delivery_slot)}
+                                </span>
+                              )}
+                              <span className="text-zinc-600">→</span>
+                              <span>{booking.end_date}</span>
+                              {fmtSlot(booking.return_slot) && (
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">
+                                  {fmtSlot(booking.return_slot)}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-zinc-500 mt-0.5">
                               {booking.days} días · €{booking.total_price?.toFixed(0)}
                             </p>
                           </div>
