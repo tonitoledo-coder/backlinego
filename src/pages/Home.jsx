@@ -48,6 +48,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchStart, setSearchStart] = useState(null);
   const [searchEnd,   setSearchEnd]   = useState(null);
+  const [openStart, setOpenStart] = useState(false);
+  const [openEnd,   setOpenEnd]   = useState(false);
 
   const handleAddEquipmentClick = async (e) => {
     e.preventDefault();

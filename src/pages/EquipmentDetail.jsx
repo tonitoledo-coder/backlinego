@@ -114,6 +114,8 @@ export default function EquipmentDetail() {
   const [showPayment, setShowPayment] = useState(false);
   const [rangeWarning, setRangeWarning] = useState('');
   const [accessModal, setAccessModal] = useState(null); // null | 'login' | 'pending' | 'complete_profile'
+  const [openStart, setOpenStart] = useState(false);
+  const [openEnd,   setOpenEnd]   = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
