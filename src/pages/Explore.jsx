@@ -46,8 +46,12 @@ export default function Explore() {
   const [sosOnly, setSosOnly] = useState(params.get('sos') === 'true');
   const [sortBy, setSortBy] = useState('newest');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [searchStart, setSearchStart] = useState(null);
-  const [searchEnd,   setSearchEnd]   = useState(null);
+  const [searchStart, setSearchStart] = useState(
+    params.get('from') ? parseISO(params.get('from')) : null
+  );
+  const [searchEnd, setSearchEnd] = useState(
+    params.get('to') ? parseISO(params.get('to')) : null
+  );
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', 'all'],
