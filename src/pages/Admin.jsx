@@ -298,6 +298,16 @@ export default function Admin() {
     })();
   }, []);
 
+  const { data: activeBookings = [] } = useQuery({
+    queryKey: ['admin', 'bookings'],
+    queryFn: () => base44.entities.Booking.filter(
+      { status: 'confirmed' },
+      '-created_date',
+      200
+    ),
+    enabled: authState === 'ok',
+  });
+
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['admin', 'userprofiles'],
     queryFn: () => base44.entities.UserProfile.list('-created_date', 500),
