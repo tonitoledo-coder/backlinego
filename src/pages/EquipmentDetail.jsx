@@ -166,13 +166,38 @@ export default function EquipmentDetail() {
 
   const minRentalDays = equipment?.min_rental_days || 1;
   const maxRentalDays = equipment?.max_rental_days || 30;
-
-  const availableSlots = equipment?.pricing_config?.slots
-    ? equipment.pricing_config.slots
-        .map((on, i) => (on ? i : null))
-        .filter(i => i !== null)
-    : Array.from({ length: 24 }, (_, i) => i);
   const advanceNoticeDays = equipment?.advance_notice_days || 0;
+
+  // Slots ocupados en las fechas seleccionadas
+  const occupiedDeliverySlots = useMemo(() => {
+    if (!startDate) return new Set();
+    const key = format(startDate, 'yyyy-MM-dd');
+    return new Set(
+      existingBookings
+        .filter(b => ['confirmed', 'active'].includes(b.status) && b.start_date === key && b.delivery_slot != null)
+        .map(b => b.delivery_slot)
+    );
+  }, [startDate, existingBookings]);
+
+  const occupiedReturnSlots = useMemo(() => {
+    if (!endDate) return new Set();
+    const key = format(endDate, 'yyyy-MM-dd');
+    return new Set(
+      existingBookings
+        .filter(b => ['confirmed', 'active'].includes(b.status) && b.end_date === key && b.return_slot != null)
+        .map(b => b.return_slot)
+    );
+  }, [endDate, existingBookings]);
+
+  const ownerSlots = useMemo(() =>
+    equipment?.pricing_config?.slots
+      ? equipment.pricing_config.slots.map((on, i) => (on ? i : null)).filter(i => i !== null)
+      : Array.from({ length: 24 }, (_, i) => i),
+    [equipment]
+  );
+
+  const availableDeliverySlots = ownerSlots.filter(h => !occupiedDeliverySlots.has(h));
+  const availableReturnSlots   = ownerSlots.filter(h => !occupiedReturnSlots.has(h));
   const blockedByOwner = new Set(equipment?.blocked_dates || []);
 
   const isDateBlocked = (date) => {
