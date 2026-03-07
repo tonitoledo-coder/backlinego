@@ -80,8 +80,14 @@ export default function AddEquipment() {
   useEffect(() => {
     if (!editId) return;
     base44.entities.Equipment.get(editId).then(existing => {
-      const { images: existingImages, ...rest } = existing;
-      setFormData(prev => ({ ...prev, ...rest }));
+      const { images: existingImages, pricing_config: existingPC, ...rest } = existing;
+      setFormData(prev => ({
+        ...prev,
+        ...rest,
+        // Si el equipo no tiene pricing_config guardado todavía,
+        // conserva el valor por defecto del estado inicial
+        pricing_config: existingPC ?? prev.pricing_config,
+      }));
       setImages(existingImages || []);
     }).finally(() => setLoadingEdit(false));
   }, [editId]);
