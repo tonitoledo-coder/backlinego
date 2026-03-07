@@ -299,6 +299,12 @@ export default function CompleteProfile() {
           )}
         </div>
       </div>
+      {showLegalModal && userProfile && (
+        <LegalAcceptanceModal
+          userProfile={userProfile}
+          onAccepted={handleLegalAccepted}
+        />
+      )}
     </div>
   );
 }
