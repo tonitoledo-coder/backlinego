@@ -75,7 +75,8 @@ export default function SettingsProfile({ user, onSaved }) {
             {uploadingAvatar && <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.7)' }}><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
           </div>
           <label className="cursor-pointer">
-            <span className="px-4 py-2 rounded-lg text-sm font-medium text-white inline-block" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-zinc-900 transition-colors shadow-sm shadow-emerald-900/30">
+              {uploadingAvatar ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
               {uploadingAvatar ? 'Subiendo...' : 'Cambiar foto'}
             </span>
             <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
