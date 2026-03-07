@@ -106,6 +106,32 @@ export default function CompleteProfile() {
     setStep(s => s - 1);
   };
 
+  const needsLegalAcceptance = () => {
+    if (!userProfile) return false;
+    const { terms_version_accepted, privacy_version_accepted } = userProfile;
+    const termsOk = activeLegalDocs.terms
+      ? terms_version_accepted === activeLegalDocs.terms.version
+      : !!terms_version_accepted;
+    const privacyOk = activeLegalDocs.privacy
+      ? privacy_version_accepted === activeLegalDocs.privacy.version
+      : !!privacy_version_accepted;
+    return !termsOk || !privacyOk;
+  };
+
+  const handleFinishClick = () => {
+    if (needsLegalAcceptance()) {
+      setShowLegalModal(true);
+    } else {
+      finish();
+    }
+  };
+
+  const handleLegalAccepted = (accepted) => {
+    setUserProfile(p => p ? { ...p, ...accepted } : p);
+    setShowLegalModal(false);
+    finish();
+  };
+
   const finish = async () => {
     setSaving(true);
     await base44.auth.updateMe({ ...formData, onboarding_completed: true, onboarding_step: 5 });
