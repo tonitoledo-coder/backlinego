@@ -114,7 +114,6 @@ export default function NotificationBell({ userEmail }) {
               notifications.map(notif => (
                 <div
                   key={notif.id}
-                  onClick={() => { markOneRead(notif); setOpen(false); }}
                   className={cn(
                     "flex gap-3 px-4 py-3 border-b border-zinc-800/60 cursor-pointer transition-colors hover:bg-zinc-800/60",
                     !notif.read && "bg-blue-500/5"
@@ -124,12 +123,17 @@ export default function NotificationBell({ userEmail }) {
                     <Link
                       to={`${createPageUrl(notif.link_page)}${notif.link_params ? '?' + notif.link_params : ''}`}
                       className="flex gap-3 w-full"
-                      onClick={e => e.stopPropagation()}
+                      onClick={() => { markOneRead(notif); setOpen(false); }}
                     >
                       <NotifContent notif={notif} />
                     </Link>
                   ) : (
-                    <NotifContent notif={notif} />
+                    <div
+                      className="flex gap-3 w-full"
+                      onClick={() => { markOneRead(notif); setOpen(false); }}
+                    >
+                      <NotifContent notif={notif} />
+                    </div>
                   )}
                 </div>
               ))
