@@ -59,7 +59,7 @@ export const translations = {
     edit: 'Edit', back: 'Back', next: 'Next', finish: 'Finish',
     yourLocation: 'Your location', particular: 'Individual', professional: 'Professional',
     heroTitle: 'Rent musical & audiovisual equipment near you',
-    heroSubtitle: 'Connecting musicians and professionals. Secure rental with escrow payment and insurance included.',
+    heroSubtitle: 'Connecting musicians and professionals. Secure rental with Escrow payment and insurance included.',
   },
   fr: {
     home: 'Accueil', explore: 'Explorer', map: 'Carte', myEquipment: 'Mon Équipement',
@@ -90,7 +90,7 @@ export const translations = {
     edit: 'Modifier', back: 'Retour', next: 'Suivant', finish: 'Terminer',
     yourLocation: 'Votre position', particular: 'Particulier', professional: 'Professionnel',
     heroTitle: 'Louez du matériel musical et audiovisuel près de chez vous',
-    heroSubtitle: 'Mise en relation de musiciens et professionnels. Location sécurisée avec paiement escrow et assurance incluse.',
+    heroSubtitle: 'Mise en relation de musiciens et professionnels. Location sécurisée avec paiement Escrow et assurance incluse.',
   },
   de: {
     home: 'Startseite', explore: 'Entdecken', map: 'Karte', myEquipment: 'Mein Equipment',
@@ -152,7 +152,7 @@ export const translations = {
     edit: 'Modifica', back: 'Indietro', next: 'Avanti', finish: 'Fine',
     yourLocation: 'La tua posizione', particular: 'Privato', professional: 'Professionale',
     heroTitle: 'Noleggia attrezzatura musicale e audiovisiva vicino a te',
-    heroSubtitle: 'Collegamento tra musicisti e professionisti. Noleggio sicuro con pagamento escrow e assicurazione inclusa.',
+    heroSubtitle: 'Collegamento tra musicisti e professionisti. Noleggio sicuro con pagamento Escrow e assicurazione inclusa.',
   },
   pt: {
     home: 'Início', explore: 'Explorar', map: 'Mapa', myEquipment: 'Meu Equipamento',
@@ -183,7 +183,7 @@ export const translations = {
     edit: 'Editar', back: 'Voltar', next: 'Próximo', finish: 'Finalizar',
     yourLocation: 'Sua localização', particular: 'Particular', professional: 'Profissional',
     heroTitle: 'Alugue equipamento musical e audiovisual perto de você',
-    heroSubtitle: 'Conectando músicos e profissionais. Aluguel seguro com pagamento escrow e seguro incluído.',
+    heroSubtitle: 'Conectando músicos e profissionais. Aluguel seguro com pagamento Escrow e seguro incluído.',
   },
   ja: {
     home: 'ホーム', explore: '探す', map: '地図', myEquipment: '私の機材',
