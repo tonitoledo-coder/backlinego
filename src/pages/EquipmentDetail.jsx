@@ -231,11 +231,13 @@ export default function EquipmentDetail() {
     setEndDate(null);
     setRangeWarning('');
     setDeliverySlot(null);
+    setReturnSlot(null);
   };
 
   const handleEndDateSelect = (date) => {
     setEndDate(date);
     setRangeWarning('');
+    setReturnSlot(null);
     if (date && startDate) {
       const selectedDays = differenceInDays(date, startDate) + 1;
       if (selectedDays < minRentalDays) {
