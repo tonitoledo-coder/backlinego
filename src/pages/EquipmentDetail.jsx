@@ -307,6 +307,7 @@ export default function EquipmentDetail() {
         delivery_qr: `BLG-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         is_sos: equipment.sos_available,
         delivery_slot: deliverySlot,
+        return_slot: returnSlot,
       });
     } finally {
       setIsBooking(false);
