@@ -28,7 +28,7 @@ export const translations = {
     edit: 'Editar', back: 'Volver', next: 'Siguiente', finish: 'Finalizar',
     yourLocation: 'Tu ubicación', particular: 'Particular', professional: 'Profesional',
     heroTitle: 'Alquila equipo musical y audiovisual cerca de ti',
-    heroSubtitle: 'Conectamos músicos y profesionales. Alquiler seguro con pago Escrow y seguro incluido.',
+    heroSubtitle: 'Conectamos músicos y profesionales. Alquiler con pago Escrow y seguro incluido.',
   },
   en: {
     home: 'Home', explore: 'Explore', map: 'Map', myEquipment: 'My Equipment',
