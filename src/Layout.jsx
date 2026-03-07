@@ -47,6 +47,8 @@ export default function Layout({ children, currentPageName }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
+  const [currentUserProfile, setCurrentUserProfile] = useState(null);
 
   useEffect(() => {
     loadUser();
