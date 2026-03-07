@@ -76,6 +76,17 @@ export default function CompleteProfile() {
         billing_address: u.billing_address || {},
         stripe_onboarding_completed: u.stripe_onboarding_completed || false,
       });
+      // Load active legal docs for version check
+      const [termsDocs, privacyDocs] = await Promise.all([
+        base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
+        base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
+      ]);
+      setActiveLegalDocs({ terms: termsDocs?.[0] || null, privacy: privacyDocs?.[0] || null });
+
+      // Load existing UserProfile
+      const profiles = await base44.entities.UserProfile.filter({ email: u.email });
+      if (profiles?.length) setUserProfile(profiles[0]);
+
       setLoading(false);
     })();
   }, []);
