@@ -10,6 +10,7 @@ import StepLocation from '@/components/profile/StepLocation';
 import StepProfessional from '@/components/profile/StepProfessional';
 import StepPreferences from '@/components/profile/StepPreferences';
 import StepBilling from '@/components/profile/StepBilling';
+import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
 
 const STEPS = [
   { id: 1, label: 'Presencia pública' },
