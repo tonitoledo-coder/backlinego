@@ -122,6 +122,7 @@ export default function Profile() {
     pending: 'bg-yellow-500/20 text-yellow-400',
     confirmed: 'bg-blue-500/20 text-blue-400',
     active: 'bg-green-500/20 text-green-400',
+    returning: 'bg-emerald-500/20 text-emerald-400',
     completed: 'bg-zinc-500/20 text-zinc-400',
     cancelled: 'bg-red-500/20 text-red-400',
   };
