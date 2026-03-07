@@ -114,6 +114,11 @@ export default function EquipmentDetail() {
   const [showPayment, setShowPayment] = useState(false);
   const [rangeWarning, setRangeWarning] = useState('');
   const [accessModal, setAccessModal] = useState(null); // null | 'login' | 'pending' | 'complete_profile'
+  const [isAuthed, setIsAuthed] = useState(false);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(setIsAuthed).catch(() => setIsAuthed(false));
+  }, []);
   const [deliverySlot, setDeliverySlot] = useState(null); // hora entrega en startDate
   const [returnSlot,   setReturnSlot]   = useState(null); // hora devolución en endDate
 
