@@ -65,7 +65,7 @@ export default function SettingsNotifications({ user, onSaved }) {
       ))}
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving} className="font-semibold text-white" style={{ background: '#7c3aed' }}>
+        <Button onClick={handleSave} disabled={saving} className="font-semibold bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : saved ? <CheckCircle className="w-4 h-4 mr-2 text-green-400" /> : <Save className="w-4 h-4 mr-2" />}
           {saved ? '¡Guardado!' : 'Guardar preferencias'}
         </Button>
