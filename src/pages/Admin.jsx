@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from '@/components/ui/dialog';
@@ -12,10 +13,13 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import {
-  Crown, Calendar, XCircle, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
-  Star, UserCog, User, Package, BookOpen, DollarSign, Edit2
+  Crown, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
+  Star, UserCog, User, Package, BookOpen, Edit2,
+  Guitar, CreditCard
 } from 'lucide-react';
-import CancelBookingModal from '@/components/booking/CancelBookingModal';
+import AdminEquipmentTab from '@/components/admin/AdminEquipmentTab';
+import AdminBookingsTab from '@/components/admin/AdminBookingsTab';
+import AdminTransactionsTab from '@/components/admin/AdminTransactionsTab';
 
 // ─── Access Guard ────────────────────────────────────────────────────────────
 function AccessDenied() {
@@ -75,6 +79,7 @@ function EditModal({ profile, open, onClose, onSaved }) {
   const mutation = useMutation({
     mutationFn: (data) => base44.entities.UserProfile.update(profile.id, data),
     onSuccess: () => { onSaved(); onClose(); },
+    onError: (err) => console.error('Profile update failed', err),
   });
 
   if (!profile) return null;
@@ -90,7 +95,6 @@ function EditModal({ profile, open, onClose, onSaved }) {
         </DialogHeader>
 
         <div className="space-y-5 py-2">
-          {/* Role & Plan */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-zinc-400 mb-1 block">Rol</label>
@@ -120,7 +124,6 @@ function EditModal({ profile, open, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Toggle flags */}
           <div>
             <label className="text-xs text-zinc-400 mb-2 block">Flags</label>
             <div className="flex flex-wrap gap-2">
@@ -132,7 +135,6 @@ function EditModal({ profile, open, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* Conditional inputs */}
           {form.is_banned && (
             <div>
               <label className="text-xs text-zinc-400 mb-1 block">Motivo del ban</label>
@@ -148,7 +150,6 @@ function EditModal({ profile, open, onClose, onSaved }) {
             </div>
           )}
 
-          {/* Access level */}
           <div>
             <label className="text-xs text-zinc-400 mb-1 block">Nivel de acceso (1–10)</label>
             <Input type="number" min={1} max={10} value={form.access_level ?? 1}
@@ -156,14 +157,12 @@ function EditModal({ profile, open, onClose, onSaved }) {
               style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
           </div>
 
-          {/* Notes */}
           <div>
             <label className="text-xs text-zinc-400 mb-1 block">Notas internas</label>
             <Textarea rows={3} value={form.notes || ''} onChange={e => set('notes', e.target.value)}
               style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
           </div>
 
-          {/* Read-only stats */}
           <div className="grid grid-cols-3 gap-3 rounded-lg p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="text-center">
               <div className="text-lg font-bold text-white">{profile.equipment_count ?? 0}</div>
@@ -214,13 +213,11 @@ function ProfileRow({ profile, onEdit, onVerify, onBan }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Avatar */}
       <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
         style={{ background: 'rgba(167,139,250,0.15)' }}>
         <User className="w-4 h-4" style={{ color: '#a78bfa' }} />
       </div>
 
-      {/* Name + email */}
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-white truncate">
           {profile.display_name || '—'}
@@ -231,7 +228,6 @@ function ProfileRow({ profile, onEdit, onVerify, onBan }) {
         <div className="text-xs text-zinc-500 truncate">{profile.email}</div>
       </div>
 
-      {/* Badges */}
       <div className="hidden sm:flex items-center gap-1.5 shrink-0">
         <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={roleBadgeStyle[profile.role] || roleBadgeStyle.user}>
           {profile.role || 'user'}
@@ -241,14 +237,12 @@ function ProfileRow({ profile, onEdit, onVerify, onBan }) {
         </span>
       </div>
 
-      {/* Stats (lg only) */}
       <div className="hidden lg:flex items-center gap-4 text-xs text-zinc-500 shrink-0">
         <span className="flex items-center gap-1"><Package className="w-3.5 h-3.5" />{profile.equipment_count ?? 0}</span>
         <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{profile.bookings_count ?? 0}</span>
         {profile.rating && <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5" />{profile.rating.toFixed(1)}</span>}
       </div>
 
-      {/* Actions */}
       {hovered && (
         <div className="flex items-center gap-1.5 shrink-0">
           <button onClick={() => onVerify(profile)}
@@ -274,9 +268,9 @@ function ProfileRow({ profile, onEdit, onVerify, onBan }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Admin() {
-  const [authState, setAuthState] = useState('loading'); // loading | denied | ok
+  const [authState, setAuthState] = useState('loading');
+  const [activeTab, setActiveTab] = useState('usuarios');
   const [editProfile, setEditProfile] = useState(null);
-  const [adminCancelBooking, setAdminCancelBooking] = useState(null);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -298,16 +292,6 @@ export default function Admin() {
     })();
   }, []);
 
-  const { data: activeBookings = [] } = useQuery({
-    queryKey: ['admin', 'bookings'],
-    queryFn: () => base44.entities.Booking.filter(
-      { status: 'confirmed' },
-      '-created_date',
-      200
-    ),
-    enabled: authState === 'ok',
-  });
-
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['admin', 'userprofiles'],
     queryFn: () => base44.entities.UserProfile.list('-created_date', 500),
@@ -317,11 +301,13 @@ export default function Admin() {
   const verifyMutation = useMutation({
     mutationFn: ({ id, val }) => base44.entities.UserProfile.update(id, { is_verified: val }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'userprofiles'] }),
+    onError: (err) => console.error('Verify failed', err),
   });
 
   const banMutation = useMutation({
     mutationFn: ({ id, val }) => base44.entities.UserProfile.update(id, { is_banned: val }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'userprofiles'] }),
+    onError: (err) => console.error('Ban failed', err),
   });
 
   const filtered = useMemo(() => {
@@ -345,7 +331,6 @@ export default function Admin() {
     banned: profiles.filter(p => p.is_banned).length,
     flagged: profiles.filter(p => p.flagged).length,
     premium: profiles.filter(p => ['pro', 'business'].includes(p.subscription_plan)).length,
-    admins: profiles.filter(p => p.role === 'admin').length,
   }), [profiles]);
 
   if (authState === 'loading') {
@@ -357,6 +342,13 @@ export default function Admin() {
   }
 
   if (authState === 'denied') return <AccessDenied />;
+
+  const tabTriggerStyle = (val) => ({
+    background: activeTab === val ? '#1e1e35' : 'transparent',
+    color: activeTab === val ? 'white' : '#71717a',
+    border: activeTab === val ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+    borderRadius: '8px',
+  });
 
   return (
     <div className="min-h-screen px-4 py-6 max-w-6xl mx-auto" style={{ background: '#0d0d1a' }}>
@@ -383,145 +375,127 @@ export default function Admin() {
         <StatCard icon={Star} value={stats.premium} label="Pro / Business" color="#a78bfa" />
       </div>
 
-      {/* Filters */}
-      <div className="rounded-xl p-4 mb-4 flex flex-wrap gap-3" style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.06)' }}>
-        <Input
-          placeholder="Buscar por email o nombre..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px]"
-          style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-        />
-        <Select value={filterRole} onValueChange={setFilterRole}>
-          <SelectTrigger className="w-36" style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-            <SelectValue placeholder="Rol" />
-          </SelectTrigger>
-          <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <SelectItem value="all">Todos los roles</SelectItem>
-            <SelectItem value="user">user</SelectItem>
-            <SelectItem value="admin">admin</SelectItem>
-            <SelectItem value="moderator">moderator</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-40" style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-            <SelectValue placeholder="Estado" />
-          </SelectTrigger>
-          <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="verificados">Verificados</SelectItem>
-            <SelectItem value="sin_verificar">Sin verificar</SelectItem>
-            <SelectItem value="baneados">Baneados</SelectItem>
-            <SelectItem value="flagged">Flagged</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterPlan} onValueChange={setFilterPlan}>
-          <SelectTrigger className="w-36" style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-            <SelectValue placeholder="Plan" />
-          </SelectTrigger>
-          <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <SelectItem value="all">Todos los planes</SelectItem>
-            <SelectItem value="free">free</SelectItem>
-            <SelectItem value="pro">pro</SelectItem>
-            <SelectItem value="business">business</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6 p-1 h-auto gap-1 w-full sm:w-auto"
+          style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+          <TabsTrigger value="usuarios" style={tabTriggerStyle('usuarios')}
+            className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 transition-all">
+            <Users className="w-4 h-4" />
+            Usuarios
+          </TabsTrigger>
+          <TabsTrigger value="anuncios" style={tabTriggerStyle('anuncios')}
+            className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 transition-all">
+            <Guitar className="w-4 h-4" />
+            Anuncios
+          </TabsTrigger>
+          <TabsTrigger value="reservas" style={tabTriggerStyle('reservas')}
+            className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 transition-all">
+            <BookOpen className="w-4 h-4" />
+            Reservas
+          </TabsTrigger>
+          <TabsTrigger value="transacciones" style={tabTriggerStyle('transacciones')}
+            className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 transition-all">
+            <CreditCard className="w-4 h-4" />
+            Transacciones
+          </TabsTrigger>
+        </TabsList>
 
-      <p className="text-xs text-zinc-500 mb-3">
-        Mostrando <span className="text-white font-medium">{filtered.length}</span> de <span className="text-white font-medium">{profiles.length}</span> usuarios
-      </p>
-
-      {/* User list */}
-      <div className="rounded-xl overflow-hidden" style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.06)' }}>
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#1DDF7A', borderTopColor: 'transparent' }} />
+        {/* ── Usuarios ── */}
+        <TabsContent value="usuarios">
+          <div className="rounded-xl p-4 mb-4 flex flex-wrap gap-3" style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <Input
+              placeholder="Buscar por email o nombre..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="flex-1 min-w-[200px]"
+              style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+            />
+            <Select value={filterRole} onValueChange={setFilterRole}>
+              <SelectTrigger className="w-36" style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+                <SelectValue placeholder="Rol" />
+              </SelectTrigger>
+              <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <SelectItem value="all">Todos los roles</SelectItem>
+                <SelectItem value="user">user</SelectItem>
+                <SelectItem value="admin">admin</SelectItem>
+                <SelectItem value="moderator">moderator</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-40" style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="verificados">Verificados</SelectItem>
+                <SelectItem value="sin_verificar">Sin verificar</SelectItem>
+                <SelectItem value="baneados">Baneados</SelectItem>
+                <SelectItem value="flagged">Flagged</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterPlan} onValueChange={setFilterPlan}>
+              <SelectTrigger className="w-36" style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+                <SelectValue placeholder="Plan" />
+              </SelectTrigger>
+              <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <SelectItem value="all">Todos los planes</SelectItem>
+                <SelectItem value="free">free</SelectItem>
+                <SelectItem value="pro">pro</SelectItem>
+                <SelectItem value="business">business</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-16 text-zinc-500">No se encontraron usuarios</div>
-        ) : (
-          <div className="divide-y divide-transparent">
-            {filtered.map(p => (
-              <ProfileRow
-                key={p.id}
-                profile={p}
-                onEdit={setEditProfile}
-                onVerify={profile => verifyMutation.mutate({ id: profile.id, val: !profile.is_verified })}
-                onBan={profile => banMutation.mutate({ id: profile.id, val: !profile.is_banned })}
-              />
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Edit Modal */}
-      <EditModal
-        profile={editProfile}
-        open={!!editProfile}
-        onClose={() => setEditProfile(null)}
-        onSaved={() => queryClient.invalidateQueries({ queryKey: ['admin', 'userprofiles'] })}
-      />
+          <p className="text-xs text-zinc-500 mb-3">
+            Mostrando <span className="text-white font-medium">{filtered.length}</span> de <span className="text-white font-medium">{profiles.length}</span> usuarios
+          </p>
 
-      {/* ── Reservas activas ── */}
-      <div className="mt-10">
-        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-blue-400" />
-          Reservas confirmadas
-          <span className="text-sm font-normal text-zinc-500 ml-1">
-            ({activeBookings.length})
-          </span>
-        </h2>
-
-        {activeBookings.length === 0 ? (
-          <p className="text-zinc-500 text-sm">No hay reservas confirmadas en este momento.</p>
-        ) : (
-          <div className="space-y-2">
-            {activeBookings.map(booking => (
-              <div
-                key={booking.id}
-                className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3"
-              >
-                <div className="space-y-0.5">
-                  <p className="text-white text-sm font-mono font-semibold">
-                    #{booking.id?.slice(-8)}
-                  </p>
-                  <p className="text-zinc-400 text-xs">
-                    {booking.start_date} → {booking.end_date}
-                    {' · '}
-                    <span className="text-white font-medium">
-                      €{booking.total_price?.toFixed(0) ?? '—'}
-                    </span>
-                  </p>
-                  <p className="text-zinc-600 text-xs font-mono">
-                    renter: {booking.renter_id?.slice(-8)}
-                    {' · '}
-                    owner: {booking.owner_id?.slice(-8)}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-red-800 text-red-400 hover:bg-red-950/40 flex-shrink-0"
-                  onClick={() => setAdminCancelBooking(booking)}
-                >
-                  <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                  Cancelar reserva
-                </Button>
+          <div className="rounded-xl overflow-hidden" style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.06)' }}>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#1DDF7A', borderTopColor: 'transparent' }} />
               </div>
-            ))}
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-16 text-zinc-500">No se encontraron usuarios</div>
+            ) : (
+              <div className="divide-y divide-transparent">
+                {filtered.map(p => (
+                  <ProfileRow
+                    key={p.id}
+                    profile={p}
+                    onEdit={setEditProfile}
+                    onVerify={profile => verifyMutation.mutate({ id: profile.id, val: !profile.is_verified })}
+                    onBan={profile => banMutation.mutate({ id: profile.id, val: !profile.is_banned })}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {adminCancelBooking && (
-        <CancelBookingModal
-          booking={adminCancelBooking}
-          cancelledBy="admin"
-          open={!!adminCancelBooking}
-          onClose={() => setAdminCancelBooking(null)}
-        />
-      )}
+          <EditModal
+            profile={editProfile}
+            open={!!editProfile}
+            onClose={() => setEditProfile(null)}
+            onSaved={() => queryClient.invalidateQueries({ queryKey: ['admin', 'userprofiles'] })}
+          />
+        </TabsContent>
+
+        {/* ── Anuncios ── */}
+        <TabsContent value="anuncios">
+          <AdminEquipmentTab enabled={authState === 'ok' && activeTab === 'anuncios'} />
+        </TabsContent>
+
+        {/* ── Reservas ── */}
+        <TabsContent value="reservas">
+          <AdminBookingsTab enabled={authState === 'ok' && activeTab === 'reservas'} />
+        </TabsContent>
+
+        {/* ── Transacciones ── */}
+        <TabsContent value="transacciones">
+          <AdminTransactionsTab enabled={authState === 'ok' && activeTab === 'transacciones'} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
