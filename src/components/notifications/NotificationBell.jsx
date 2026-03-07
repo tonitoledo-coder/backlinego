@@ -55,8 +55,14 @@ export default function NotificationBell({ userEmail }) {
 
   const markOneRead = async (notif) => {
     if (!notif.read) {
-      await base44.entities.Notification.update(notif.id, { read: true });
-      queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] });
+      try {
+        await base44.entities.Notification.update(notif.id, { read: true });
+        queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] });
+      } catch (e) {
+        // Si la API rechaza el update (ej. 405), ignoramos el error
+        // y dejamos que la navegación continúe igualmente
+        console.warn('Could not mark notification as read:', e?.message);
+      }
     }
   };
 
