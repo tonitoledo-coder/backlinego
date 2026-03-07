@@ -505,6 +505,14 @@ export default function Profile() {
           currentUserId={user?.id}
         />
       )}
+      {cancelBooking && (
+        <CancelBookingModal
+          booking={cancelBooking}
+          cancelledBy={cancelledBy}
+          open={!!cancelBooking}
+          onClose={() => { setCancelBooking(null); setCancelledByRole(null); }}
+        />
+      )}
     </div>
   );
 }
