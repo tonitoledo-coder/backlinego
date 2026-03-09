@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import ReactMarkdown from 'react-markdown';
-import { Button } from '@/components/ui/button';
-import { Loader2, FileText, Shield, CheckCircle2 } from 'lucide-react';
+import { Loader2, FileText, Shield, CheckCircle2, Check } from 'lucide-react';
 
 export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
   const [activeTab, setActiveTab] = useState('terms');
@@ -12,8 +11,8 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
 
   const [termsScrolled, setTermsScrolled] = useState(false);
   const [privacyScrolled, setPrivacyScrolled] = useState(false);
-  const [termsChecked, setTermsChecked] = useState(false);
-  const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const termsRef = useRef(null);
@@ -21,7 +20,6 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
 
   const checkIfAtBottom = useCallback((type, el) => {
     if (!el) return;
-    // If no real scroll overflow, auto-mark as read
     if (el.scrollHeight <= el.clientHeight + 10) {
       if (type === 'terms') setTermsScrolled(true);
       if (type === 'privacy') setPrivacyScrolled(true);
@@ -44,14 +42,12 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
       const privacyResult = privacy?.[0] || null;
       setTermsDoc(termsResult);
       setPrivacyDoc(privacyResult);
-      // If no doc exists, auto-mark as scrolled so checkbox is usable
       if (!termsResult) setTermsScrolled(true);
       if (!privacyResult) setPrivacyScrolled(true);
       setLoading(false);
     })();
   }, []);
 
-  // Check if content is short enough to not need scrolling, on tab change or after load
   useEffect(() => {
     if (loading) return;
     setTimeout(() => {
@@ -60,12 +56,8 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
     }, 50);
   }, [activeTab, loading, checkIfAtBottom]);
 
-  const handleScroll = useCallback((type, el) => {
-    checkIfAtBottom(type, el);
-  }, [checkIfAtBottom]);
-
   const handleConfirm = async () => {
-    if (!termsChecked || !privacyChecked) return;
+    if (!termsAccepted || !privacyAccepted) return;
     setSaving(true);
     await base44.entities.UserProfile.update(userProfile.id, {
       terms_version_accepted: termsDoc?.version || '1.0',
@@ -79,47 +71,58 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
     });
   };
 
-  const canConfirm = termsChecked && privacyChecked;
+  const canContinue = termsAccepted && privacyAccepted;
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '16px',
+        background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',
+        pointerEvents: 'auto',
+      }}
     >
       <div
-        className="w-full max-w-2xl flex flex-col rounded-2xl overflow-hidden"
         style={{
+          width: '100%', maxWidth: '672px',
+          display: 'flex', flexDirection: 'column',
+          borderRadius: '16px', overflow: 'hidden',
           background: '#0a0a0f',
           border: '1px solid rgba(255,255,255,0.1)',
           maxHeight: '90vh',
           boxShadow: '0 25px 80px rgba(0,0,0,0.8)',
+          pointerEvents: 'auto',
         }}
       >
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <h2 className="text-xl font-bold text-white mb-1">Revisión de documentos legales</h2>
-          <p className="text-sm text-zinc-400">Debes leer y aceptar los siguientes documentos para continuar.</p>
+        <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+          <h2 style={{ color: 'white', fontWeight: 700, fontSize: '1.25rem', marginBottom: '4px' }}>Revisión de documentos legales</h2>
+          <p style={{ color: '#a1a1aa', fontSize: '0.875rem' }}>Debes leer y aceptar los siguientes documentos para continuar.</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
           {[
-            { key: 'terms', icon: FileText, label: 'Términos y Condiciones', checked: termsChecked },
-            { key: 'privacy', icon: Shield, label: 'Política de Privacidad', checked: privacyChecked },
-          ].map(({ key, icon: Icon, label, checked }) => (
+            { key: 'terms', icon: FileText, label: 'Términos y Condiciones', accepted: termsAccepted },
+            { key: 'privacy', icon: Shield, label: 'Política de Privacidad', accepted: privacyAccepted },
+          ].map(({ key, icon: Icon, label, accepted }) => (
             <button
               key={key}
+              type="button"
               onClick={() => setActiveTab(key)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all"
               style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: '8px', padding: '12px 16px', fontSize: '0.875rem', fontWeight: 500,
                 background: activeTab === key ? 'rgba(59,130,246,0.1)' : 'transparent',
                 color: activeTab === key ? '#3b82f6' : '#71717a',
                 borderBottom: activeTab === key ? '2px solid #3b82f6' : '2px solid transparent',
+                border: 'none', cursor: 'pointer', transition: 'all 0.2s',
               }}
             >
-              {checked
-                ? <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-                : <Icon className="w-4 h-4 shrink-0" />
+              {accepted
+                ? <CheckCircle2 style={{ width: 16, height: 16, color: '#4ade80', flexShrink: 0 }} />
+                : <Icon style={{ width: 16, height: 16, flexShrink: 0 }} />
               }
               <span className="hidden sm:inline">{label}</span>
               <span className="sm:hidden">{key === 'terms' ? 'T&C' : 'Privacidad'}</span>
@@ -128,52 +131,66 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
         </div>
 
         {/* Document content */}
-        <div className="flex-1 overflow-hidden relative">
+        <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0, pointerEvents: 'auto' }}>
           {loading ? (
-            <div className="flex items-center justify-center h-full py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '64px 0' }}>
+              <Loader2 style={{ width: 24, height: 24, color: '#a1a1aa', animation: 'spin 1s linear infinite' }} className="animate-spin" />
             </div>
           ) : (
             <>
-              {/* Terms */}
+              {/* Terms scroll area */}
               <div
                 ref={termsRef}
-                onScroll={() => handleScroll('terms', termsRef.current)}
-                className="absolute inset-0 overflow-y-auto px-6 py-4 prose prose-invert prose-sm max-w-none"
-                style={{ display: activeTab === 'terms' ? 'block' : 'none' }}
+                onScroll={() => checkIfAtBottom('terms', termsRef.current)}
+                style={{
+                  display: activeTab === 'terms' ? 'block' : 'none',
+                  position: 'absolute', inset: 0,
+                  overflowY: 'auto', padding: '16px 24px',
+                  pointerEvents: 'auto',
+                }}
+                className="prose prose-invert prose-sm max-w-none"
               >
                 {termsDoc ? (
                   <>
-                    <h3 className="text-white text-base font-semibold mb-1">{termsDoc.title} <span className="text-zinc-500 text-xs font-normal">v{termsDoc.version}</span></h3>
+                    <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600, marginBottom: '4px' }}>
+                      {termsDoc.title} <span style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 400 }}>v{termsDoc.version}</span>
+                    </h3>
                     {termsDoc.effective_date && (
-                      <p className="text-xs text-zinc-500 mb-4">En vigor desde: {termsDoc.effective_date}</p>
+                      <p style={{ color: '#71717a', fontSize: '0.75rem', marginBottom: '16px' }}>En vigor desde: {termsDoc.effective_date}</p>
                     )}
                     <ReactMarkdown>{termsDoc.content}</ReactMarkdown>
-                    <div className="h-8" />
+                    <div style={{ height: 32 }} />
                   </>
                 ) : (
-                  <p className="text-zinc-400 text-sm">No hay términos activos disponibles.</p>
+                  <p style={{ color: '#a1a1aa', fontSize: '0.875rem' }}>No hay términos activos disponibles.</p>
                 )}
               </div>
 
-              {/* Privacy */}
+              {/* Privacy scroll area */}
               <div
                 ref={privacyRef}
-                onScroll={() => handleScroll('privacy', privacyRef.current)}
-                className="absolute inset-0 overflow-y-auto px-6 py-4 prose prose-invert prose-sm max-w-none"
-                style={{ display: activeTab === 'privacy' ? 'block' : 'none' }}
+                onScroll={() => checkIfAtBottom('privacy', privacyRef.current)}
+                style={{
+                  display: activeTab === 'privacy' ? 'block' : 'none',
+                  position: 'absolute', inset: 0,
+                  overflowY: 'auto', padding: '16px 24px',
+                  pointerEvents: 'auto',
+                }}
+                className="prose prose-invert prose-sm max-w-none"
               >
                 {privacyDoc ? (
                   <>
-                    <h3 className="text-white text-base font-semibold mb-1">{privacyDoc.title} <span className="text-zinc-500 text-xs font-normal">v{privacyDoc.version}</span></h3>
+                    <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: 600, marginBottom: '4px' }}>
+                      {privacyDoc.title} <span style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 400 }}>v{privacyDoc.version}</span>
+                    </h3>
                     {privacyDoc.effective_date && (
-                      <p className="text-xs text-zinc-500 mb-4">En vigor desde: {privacyDoc.effective_date}</p>
+                      <p style={{ color: '#71717a', fontSize: '0.75rem', marginBottom: '16px' }}>En vigor desde: {privacyDoc.effective_date}</p>
                     )}
                     <ReactMarkdown>{privacyDoc.content}</ReactMarkdown>
-                    <div className="h-8" />
+                    <div style={{ height: 32 }} />
                   </>
                 ) : (
-                  <p className="text-zinc-400 text-sm">No hay política de privacidad activa disponible.</p>
+                  <p style={{ color: '#a1a1aa', fontSize: '0.875rem' }}>No hay política de privacidad activa disponible.</p>
                 )}
               </div>
             </>
@@ -182,84 +199,109 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
 
         {/* Scroll hint */}
         {!loading && (
-          <div className="px-6 py-2 shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ padding: '8px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', flexShrink: 0, minHeight: '32px' }}>
             {activeTab === 'terms' && !termsScrolled && (
-              <p className="text-xs text-amber-400 text-center">↓ Desplázate hasta el final para habilitar el checkbox</p>
+              <p style={{ color: '#fbbf24', fontSize: '0.75rem', textAlign: 'center' }}>↓ Desplázate hasta el final para habilitar el checkbox</p>
             )}
             {activeTab === 'privacy' && !privacyScrolled && (
-              <p className="text-xs text-amber-400 text-center">↓ Desplázate hasta el final para habilitar el checkbox</p>
+              <p style={{ color: '#fbbf24', fontSize: '0.75rem', textAlign: 'center' }}>↓ Desplázate hasta el final para habilitar el checkbox</p>
             )}
           </div>
         )}
 
         {/* Checkboxes + CTA */}
-        <div className="px-6 pb-6 pt-3 shrink-0 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ padding: '12px 24px 24px', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '10px', pointerEvents: 'auto' }}>
+
           {/* Terms checkbox */}
           <div
-            className="flex items-start gap-3 rounded-xl p-3 transition-all"
-            style={{ background: termsChecked ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${termsChecked ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}` }}
+            onClick={() => termsScrolled && setTermsAccepted(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '12px', borderRadius: '10px',
+              background: termsAccepted ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${termsAccepted ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              cursor: termsScrolled ? 'pointer' : 'default',
+              pointerEvents: 'auto',
+              userSelect: 'none',
+            }}
           >
-            <input
-              type="checkbox"
-              checked={termsChecked}
-              onChange={e => setTermsChecked(e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-blue-500 shrink-0 cursor-pointer"
-              disabled={!termsScrolled}
-              style={{ opacity: termsScrolled ? 1 : 0.35 }}
-            />
-            <span className="text-sm leading-snug" style={{ opacity: termsScrolled ? 1 : 0.5 }}>
-              <span className="text-zinc-200">He leído y acepto los{' '}</span>
-              <button
-                type="button"
-                onClick={() => setActiveTab('terms')}
-                style={{ color: '#3b82f6', pointerEvents: 'auto', opacity: 1, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+            <div style={{
+              width: 18, height: 18, borderRadius: '4px', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: termsAccepted ? '#3b82f6' : 'transparent',
+              border: `2px solid ${termsScrolled ? '#3b82f6' : '#374151'}`,
+              opacity: termsScrolled ? 1 : 0.4,
+              transition: 'all 0.15s',
+            }}>
+              {termsAccepted && <Check style={{ width: 11, height: 11, color: 'white' }} />}
+            </div>
+            <span style={{ fontSize: '0.875rem', color: termsScrolled ? '#e4e4e7' : '#6b7280', lineHeight: 1.4 }}>
+              He leído y acepto los{' '}
+              <span
+                onClick={e => { e.stopPropagation(); setActiveTab('terms'); }}
+                style={{ color: '#3b82f6', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px', pointerEvents: 'auto' }}
               >
                 Términos y Condiciones
-              </button>
-              {termsDoc && <span className="text-zinc-500"> (v{termsDoc.version})</span>}
+              </span>
+              {termsDoc && <span style={{ color: '#71717a' }}> (v{termsDoc.version})</span>}
             </span>
           </div>
 
           {/* Privacy checkbox */}
           <div
-            className="flex items-start gap-3 rounded-xl p-3 transition-all"
-            style={{ background: privacyChecked ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${privacyChecked ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}` }}
+            onClick={() => privacyScrolled && setPrivacyAccepted(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '12px', borderRadius: '10px',
+              background: privacyAccepted ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${privacyAccepted ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              cursor: privacyScrolled ? 'pointer' : 'default',
+              pointerEvents: 'auto',
+              userSelect: 'none',
+            }}
           >
-            <input
-              type="checkbox"
-              checked={privacyChecked}
-              onChange={e => setPrivacyChecked(e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-blue-500 shrink-0 cursor-pointer"
-              disabled={!privacyScrolled}
-              style={{ opacity: privacyScrolled ? 1 : 0.35 }}
-            />
-            <span className="text-sm leading-snug" style={{ opacity: privacyScrolled ? 1 : 0.5 }}>
-              <span className="text-zinc-200">He leído y acepto la{' '}</span>
-              <button
-                type="button"
-                onClick={() => setActiveTab('privacy')}
-                style={{ color: '#3b82f6', pointerEvents: 'auto', opacity: 1, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+            <div style={{
+              width: 18, height: 18, borderRadius: '4px', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: privacyAccepted ? '#3b82f6' : 'transparent',
+              border: `2px solid ${privacyScrolled ? '#3b82f6' : '#374151'}`,
+              opacity: privacyScrolled ? 1 : 0.4,
+              transition: 'all 0.15s',
+            }}>
+              {privacyAccepted && <Check style={{ width: 11, height: 11, color: 'white' }} />}
+            </div>
+            <span style={{ fontSize: '0.875rem', color: privacyScrolled ? '#e4e4e7' : '#6b7280', lineHeight: 1.4 }}>
+              He leído y acepto la{' '}
+              <span
+                onClick={e => { e.stopPropagation(); setActiveTab('privacy'); }}
+                style={{ color: '#3b82f6', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px', pointerEvents: 'auto' }}
               >
                 Política de Privacidad
-              </button>
-              {privacyDoc && <span className="text-zinc-500"> (v{privacyDoc.version})</span>}
+              </span>
+              {privacyDoc && <span style={{ color: '#71717a' }}> (v{privacyDoc.version})</span>}
             </span>
           </div>
 
-          {!canConfirm && !saving && (termsChecked || privacyChecked) && (
-            <p className="text-xs text-amber-400 text-center">
-              {!termsChecked ? 'Acepta los Términos y Condiciones para continuar.' : 'Acepta la Política de Privacidad para continuar.'}
-            </p>
-          )}
-
-          <Button
+          <button
+            type="button"
             onClick={handleConfirm}
-            disabled={saving}
-            className="w-full h-12 font-semibold text-white mt-1"
-            style={{ background: canConfirm ? '#3b82f6' : '#1e293b', opacity: canConfirm ? 1 : 0.4 }}
+            style={{
+              background: canContinue ? '#3b82f6' : '#1e3a5f',
+              color: canContinue ? 'white' : '#4b6a8a',
+              cursor: canContinue ? 'pointer' : 'not-allowed',
+              width: '100%', padding: '12px',
+              borderRadius: '8px', border: 'none',
+              fontWeight: 600, fontSize: '0.95rem',
+              pointerEvents: 'auto',
+              transition: 'all 0.2s',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            }}
           >
-            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continuar'}
-          </Button>
+            {saving
+              ? <><Loader2 style={{ width: 18, height: 18 }} className="animate-spin" /> Guardando...</>
+              : 'Continuar'
+            }
+          </button>
         </div>
       </div>
     </div>
