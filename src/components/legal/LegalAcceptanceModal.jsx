@@ -216,7 +216,10 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
               disabled={!privacyScrolled}
             />
             <span className="text-sm text-zinc-200 leading-snug">
-              He leído y acepto la <span className="text-blue-400 font-medium">Política de Privacidad</span>
+              He leído y acepto la{' '}
+              <button type="button" onClick={e => { e.preventDefault(); setActiveTab('privacy'); }} className="text-blue-400 font-medium hover:text-blue-300 underline underline-offset-2 cursor-pointer">
+                Política de Privacidad
+              </button>
               {privacyDoc && <span className="text-zinc-500"> (v{privacyDoc.version})</span>}
             </span>
           </label>
