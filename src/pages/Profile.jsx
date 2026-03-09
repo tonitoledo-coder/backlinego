@@ -349,22 +349,22 @@ export default function Profile() {
                               {eq?.title ? (eq.title.length > 30 ? eq.title.slice(0, 30) + '…' : eq.title) : `Equipo #${booking.equipment_id?.slice(-6)}`}
                             </p>
                             <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>Reserva #{booking.id?.slice(-8)}</p>
-                            <div className="flex items-center gap-1.5 text-sm text-zinc-400 mt-0.5">
+                            <div className="flex items-center gap-1.5 text-xs text-zinc-400 mt-0.5">
                               <span>{booking.start_date}</span>
                               {fmtSlot(booking.delivery_slot) && (
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 font-mono">
+                                <span className="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 font-mono">
                                   {fmtSlot(booking.delivery_slot)}
                                 </span>
                               )}
                               <span className="text-zinc-600">→</span>
                               <span>{booking.end_date}</span>
                               {fmtSlot(booking.return_slot) && (
-                                <span className="text-xs px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">
                                   {fmtSlot(booking.return_slot)}
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-zinc-500 mt-0.5">
+                            <p className="text-xs text-zinc-500 mt-0.5">
                               {booking.days} días · €{booking.total_price}
                             </p>
                           </div>
