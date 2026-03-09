@@ -21,6 +21,12 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
 
   const checkIfAtBottom = useCallback((type, el) => {
     if (!el) return;
+    // If no real scroll overflow, auto-mark as read
+    if (el.scrollHeight <= el.clientHeight + 10) {
+      if (type === 'terms') setTermsScrolled(true);
+      if (type === 'privacy') setPrivacyScrolled(true);
+      return;
+    }
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
     if (atBottom) {
       if (type === 'terms') setTermsScrolled(true);
