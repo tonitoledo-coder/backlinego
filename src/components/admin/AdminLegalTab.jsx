@@ -11,9 +11,19 @@ import {
   FileText, Eye, Edit3, CheckCircle, RotateCcw
 } from 'lucide-react';
 
-// ─── New Document Modal ───────────────────────────────────────────────────────
+// ─── New Document Modal (con importación de .md / .txt / .docx) ──────────────
+// Sustituye el componente NewLegalDocumentModal en AdminLegalTab.jsx
+// Requiere: npm install mammoth  (para parseo de .docx → texto plano)
+// mammoth ya está disponible como import en el entorno Base44/Vite
+
+import mammoth from 'mammoth';
+
 function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
   const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+
   const [form, setForm] = useState({
     type: defaultType || 'terms',
     version: '',
@@ -24,8 +34,72 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
   });
   const [preview, setPreview] = useState(false);
 
+  // Resetear al abrir con tipo por defecto
+  useEffect(() => {
+    if (open) {
+      setForm(f => ({ ...f, type: defaultType || 'terms' }));
+      setImportError('');
+    }
+  }, [open, defaultType]);
+
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  // ── Importación de archivo ──────────────────────────────────────────────────
+  const handleFileImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    setImportError('');
+
+    try {
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      if (ext === 'md' || ext === 'txt') {
+        // Lectura directa como texto
+        const text = await file.text();
+        set('content', text);
+
+        // Autorellenar título desde primera línea H1 si está vacío
+        if (!form.title) {
+          const firstLine = text.split('\n').find(l => l.trim());
+          if (firstLine?.startsWith('#')) {
+            set('title', firstLine.replace(/^#+\s*/, '').trim());
+          }
+        }
+
+      } else if (ext === 'docx') {
+        // Convertir DOCX → Markdown mediante mammoth
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.convertToMarkdown({ arrayBuffer });
+        set('content', result.value);
+
+        // Avisar si hay mensajes de advertencia de mammoth
+        if (result.messages?.length > 0) {
+          setImportError('Importado con advertencias: puede haber pequeñas diferencias de formato. Revisa el preview.');
+        }
+
+        // Autorellenar título si está vacío
+        if (!form.title) {
+          const firstLine = result.value.split('\n').find(l => l.trim());
+          if (firstLine?.startsWith('#')) {
+            set('title', firstLine.replace(/^#+\s*/, '').trim());
+          }
+        }
+
+      } else {
+        setImportError('Formato no soportado. Usa .md, .txt o .docx');
+      }
+    } catch (err) {
+      console.error('Import error:', err);
+      setImportError('Error al importar el archivo. Inténtalo de nuevo.');
+    } finally {
+      setImporting(false);
+      // Reset input para permitir reimportar el mismo archivo
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  // ── Mutation ────────────────────────────────────────────────────────────────
   const mutation = useMutation({
     mutationFn: async (data) => {
       return base44.entities.LegalDocument.create({
@@ -45,10 +119,9 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
     },
   });
 
-  const handleOpen = (open) => {
-    if (!open) onClose();
-  };
+  const handleOpen = (open) => { if (!open) onClose(); };
 
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogContent
@@ -63,6 +136,7 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
         </DialogHeader>
 
         <div className="flex flex-col gap-4 overflow-y-auto flex-1 py-2 pr-1">
+
           {/* Meta fields */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
@@ -96,6 +170,7 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
               />
             </div>
           </div>
+
           <div>
             <label className="text-xs text-zinc-400 mb-1 block">Título visible</label>
             <Input
@@ -106,24 +181,86 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
             />
           </div>
 
-          {/* Editor + Preview */}
+          {/* Editor + Preview + Import */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <label className="text-xs text-zinc-400">Contenido (Markdown)</label>
-              <button
-                onClick={() => setPreview(p => !p)}
-                className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg transition-all"
-                style={{ background: preview ? '#3b82f620' : 'rgba(255,255,255,0.05)', color: preview ? '#3b82f6' : '#94a3b8', border: `1px solid ${preview ? '#3b82f640' : 'rgba(255,255,255,0.1)'}` }}
-              >
-                <Eye className="w-3.5 h-3.5" />
-                {preview ? 'Editar' : 'Preview'}
-              </button>
+
+              <div className="flex items-center gap-2">
+                {/* Import button */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={importing}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all"
+                  style={{
+                    background: 'rgba(34,197,94,0.08)',
+                    border: '1px solid rgba(34,197,94,0.25)',
+                    color: importing ? '#6b7280' : '#22c55e',
+                    cursor: importing ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {importing ? (
+                    <>
+                      <div className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
+                      Importando…
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-3.5 h-3.5" />
+                      Importar .md / .txt / .docx
+                    </>
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".md,.txt,.docx"
+                  className="hidden"
+                  onChange={handleFileImport}
+                />
+
+                {/* Preview toggle */}
+                <button
+                  onClick={() => setPreview(p => !p)}
+                  className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg transition-all"
+                  style={{
+                    background: preview ? '#3b82f620' : 'rgba(255,255,255,0.05)',
+                    color: preview ? '#3b82f6' : '#94a3b8',
+                    border: `1px solid ${preview ? '#3b82f640' : 'rgba(255,255,255,0.1)'}`,
+                  }}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  {preview ? 'Editar' : 'Preview'}
+                </button>
+              </div>
             </div>
+
+            {/* Import error / warning */}
+            {importError && (
+              <div
+                className="flex items-start gap-2 text-xs rounded-lg px-3 py-2 mb-2"
+                style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', color: '#fbbf24' }}
+              >
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                {importError}
+              </div>
+            )}
+
+            {/* Import success badge */}
+            {!importError && form.content && (
+              <div
+                className="flex items-center gap-2 text-xs rounded-lg px-3 py-1.5 mb-2"
+                style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', color: '#4ade80' }}
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                Contenido listo — {form.content.split('\n').length} líneas · {(new Blob([form.content]).size / 1024).toFixed(1)} KB
+              </div>
+            )}
 
             {preview ? (
               <div
                 className="rounded-lg p-4 overflow-y-auto prose prose-invert prose-sm max-w-none"
-                style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', minHeight: '260px', maxHeight: '320px', color: '#e4e4e7' }}
+                style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', minHeight: '260px', maxHeight: '340px', color: '#e4e4e7' }}
               >
                 <ReactMarkdown>{form.content || '*Sin contenido aún*'}</ReactMarkdown>
               </div>
@@ -131,7 +268,7 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <Textarea
                   rows={14}
-                  placeholder="# Términos y Condiciones&#10;&#10;## 1. Introducción..."
+                  placeholder={'# Términos y Condiciones\n\n## 1. Introducción\n\nEscribe aquí o importa un archivo .md / .txt / .docx...'}
                   value={form.content}
                   onChange={e => set('content', e.target.value)}
                   style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white', fontFamily: 'monospace', fontSize: '0.8rem', resize: 'none' }}
@@ -140,7 +277,7 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
                   className="rounded-lg p-4 overflow-y-auto prose prose-invert prose-sm max-w-none"
                   style={{ background: '#0a0a15', border: '1px solid rgba(255,255,255,0.06)', minHeight: '200px', maxHeight: '340px', color: '#e4e4e7' }}
                 >
-                  <ReactMarkdown>{form.content || '*Escribe Markdown a la izquierda para ver el preview...*'}</ReactMarkdown>
+                  <ReactMarkdown>{form.content || '*Escribe Markdown a la izquierda o importa un archivo para ver el preview…*'}</ReactMarkdown>
                 </div>
               </div>
             )}
