@@ -198,7 +198,10 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
               disabled={!termsScrolled}
             />
             <span className="text-sm text-zinc-200 leading-snug">
-              He leído y acepto los <span className="text-blue-400 font-medium">Términos y Condiciones</span>
+              He leído y acepto los{' '}
+              <button type="button" onClick={e => { e.preventDefault(); setActiveTab('terms'); }} className="text-blue-400 font-medium hover:text-blue-300 underline underline-offset-2 cursor-pointer">
+                Términos y Condiciones
+              </button>
               {termsDoc && <span className="text-zinc-500"> (v{termsDoc.version})</span>}
             </span>
           </label>
