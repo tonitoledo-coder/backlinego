@@ -194,47 +194,69 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
 
         {/* Checkboxes + CTA */}
         <div className="px-6 pb-6 pt-3 shrink-0 space-y-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <label className={`flex items-start gap-3 cursor-pointer rounded-xl p-3 transition-all ${!termsScrolled ? 'opacity-40 pointer-events-none' : ''}`}
-            style={{ background: termsChecked ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${termsChecked ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+          {/* Terms checkbox */}
+          <div
+            className="flex items-start gap-3 rounded-xl p-3 transition-all"
+            style={{ background: termsChecked ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${termsChecked ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}` }}
+          >
             <input
               type="checkbox"
               checked={termsChecked}
               onChange={e => setTermsChecked(e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-blue-500 shrink-0"
+              className="mt-0.5 w-4 h-4 accent-blue-500 shrink-0 cursor-pointer"
               disabled={!termsScrolled}
+              style={{ opacity: termsScrolled ? 1 : 0.35 }}
             />
-            <span className="text-sm text-zinc-200 leading-snug">
-              He leído y acepto los{' '}
-              <button type="button" onClick={e => { e.preventDefault(); setActiveTab('terms'); }} className="text-blue-400 font-medium hover:text-blue-300 underline underline-offset-2 cursor-pointer">
+            <span className="text-sm leading-snug" style={{ opacity: termsScrolled ? 1 : 0.5 }}>
+              <span className="text-zinc-200">He leído y acepto los{' '}</span>
+              <button
+                type="button"
+                onClick={() => setActiveTab('terms')}
+                style={{ color: '#3b82f6', pointerEvents: 'auto', opacity: 1, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+              >
                 Términos y Condiciones
               </button>
               {termsDoc && <span className="text-zinc-500"> (v{termsDoc.version})</span>}
             </span>
-          </label>
+          </div>
 
-          <label className={`flex items-start gap-3 cursor-pointer rounded-xl p-3 transition-all ${!privacyScrolled ? 'opacity-40 pointer-events-none' : ''}`}
-            style={{ background: privacyChecked ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${privacyChecked ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}` }}>
+          {/* Privacy checkbox */}
+          <div
+            className="flex items-start gap-3 rounded-xl p-3 transition-all"
+            style={{ background: privacyChecked ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${privacyChecked ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.08)'}` }}
+          >
             <input
               type="checkbox"
               checked={privacyChecked}
               onChange={e => setPrivacyChecked(e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-blue-500 shrink-0"
+              className="mt-0.5 w-4 h-4 accent-blue-500 shrink-0 cursor-pointer"
               disabled={!privacyScrolled}
+              style={{ opacity: privacyScrolled ? 1 : 0.35 }}
             />
-            <span className="text-sm text-zinc-200 leading-snug">
-              He leído y acepto la{' '}
-              <button type="button" onClick={e => { e.preventDefault(); setActiveTab('privacy'); }} className="text-blue-400 font-medium hover:text-blue-300 underline underline-offset-2 cursor-pointer">
+            <span className="text-sm leading-snug" style={{ opacity: privacyScrolled ? 1 : 0.5 }}>
+              <span className="text-zinc-200">He leído y acepto la{' '}</span>
+              <button
+                type="button"
+                onClick={() => setActiveTab('privacy')}
+                style={{ color: '#3b82f6', pointerEvents: 'auto', opacity: 1, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+              >
                 Política de Privacidad
               </button>
               {privacyDoc && <span className="text-zinc-500"> (v{privacyDoc.version})</span>}
             </span>
-          </label>
+          </div>
+
+          {!canConfirm && !saving && (termsChecked || privacyChecked) && (
+            <p className="text-xs text-amber-400 text-center">
+              {!termsChecked ? 'Acepta los Términos y Condiciones para continuar.' : 'Acepta la Política de Privacidad para continuar.'}
+            </p>
+          )}
 
           <Button
             onClick={handleConfirm}
-            disabled={!canConfirm || saving}
+            disabled={saving}
             className="w-full h-12 font-semibold text-white mt-1"
-            style={{ background: canConfirm ? '#3b82f6' : '#1e293b', opacity: canConfirm ? 1 : 0.6 }}
+            style={{ background: canConfirm ? '#3b82f6' : '#1e293b', opacity: canConfirm ? 1 : 0.4 }}
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continuar'}
           </Button>
