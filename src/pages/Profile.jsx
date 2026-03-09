@@ -98,6 +98,21 @@ export default function Profile() {
     return map;
   }, [allEquipment]);
 
+  // Fetch equipment for renter bookings (owned by other users)
+  const renterEquipmentIds = useMemo(() => [...new Set(myBookings.map(b => b.equipment_id).filter(Boolean))], [myBookings]);
+
+  const { data: renterEquipmentList = [] } = useQuery({
+    queryKey: ['equipment', 'renter-bookings', renterEquipmentIds],
+    queryFn: () => base44.entities.Equipment.filter({ id__in: renterEquipmentIds }),
+    enabled: renterEquipmentIds.length > 0,
+  });
+
+  const renterEquipmentMap = useMemo(() => {
+    const map = {};
+    renterEquipmentList.forEach(eq => { map[eq.id] = eq; });
+    return map;
+  }, [renterEquipmentList]);
+
   const queryClient = useQueryClient();
 
   const confirmReturnMutation = useMutation({
