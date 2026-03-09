@@ -331,16 +331,24 @@ export default function Profile() {
             <div className="space-y-4">
               {myBookings.map(booking => {
                 const StatusIcon = statusIcons[booking.status] || Clock;
+                const eq = renterEquipmentMap[booking.equipment_id];
                 return (
                   <Card key={booking.id} className="bg-zinc-900/50 border-zinc-800">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-lg bg-zinc-800 flex items-center justify-center">
-                            <Package className="w-6 h-6 text-zinc-600" />
+                          <div className="w-16 h-16 rounded-lg bg-zinc-800 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            {eq?.images?.[0] ? (
+                              <img src={eq.images[0]} alt={eq.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <Package className="w-6 h-6 text-zinc-600" />
+                            )}
                           </div>
                           <div>
-                            <p className="font-semibold text-white">Reserva #{booking.id?.slice(-8)}</p>
+                            <p className="font-semibold text-white truncate max-w-[200px] sm:max-w-xs">
+                              {eq?.title ? (eq.title.length > 30 ? eq.title.slice(0, 30) + '…' : eq.title) : `Equipo #${booking.equipment_id?.slice(-6)}`}
+                            </p>
+                            <p className="text-xs mt-0.5" style={{ color: '#6b7280' }}>Reserva #{booking.id?.slice(-8)}</p>
                             <div className="flex items-center gap-1.5 text-sm text-zinc-400 mt-0.5">
                               <span>{booking.start_date}</span>
                               {fmtSlot(booking.delivery_slot) && (
