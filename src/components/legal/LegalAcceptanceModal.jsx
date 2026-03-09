@@ -19,24 +19,44 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
   const termsRef = useRef(null);
   const privacyRef = useRef(null);
 
+  const checkIfAtBottom = useCallback((type, el) => {
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    if (atBottom) {
+      if (type === 'terms') setTermsScrolled(true);
+      if (type === 'privacy') setPrivacyScrolled(true);
+    }
+  }, []);
+
   useEffect(() => {
     (async () => {
       const [terms, privacy] = await Promise.all([
         base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
         base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
       ]);
-      setTermsDoc(terms?.[0] || null);
-      setPrivacyDoc(privacy?.[0] || null);
+      const termsResult = terms?.[0] || null;
+      const privacyResult = privacy?.[0] || null;
+      setTermsDoc(termsResult);
+      setPrivacyDoc(privacyResult);
+      // If no doc exists, auto-mark as scrolled so checkbox is usable
+      if (!termsResult) setTermsScrolled(true);
+      if (!privacyResult) setPrivacyScrolled(true);
       setLoading(false);
     })();
   }, []);
 
+  // Check if content is short enough to not need scrolling, on tab change or after load
+  useEffect(() => {
+    if (loading) return;
+    setTimeout(() => {
+      if (activeTab === 'terms') checkIfAtBottom('terms', termsRef.current);
+      if (activeTab === 'privacy') checkIfAtBottom('privacy', privacyRef.current);
+    }, 50);
+  }, [activeTab, loading, checkIfAtBottom]);
+
   const handleScroll = useCallback((type, el) => {
-    if (!el) return;
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
-    if (type === 'terms' && atBottom) setTermsScrolled(true);
-    if (type === 'privacy' && atBottom) setPrivacyScrolled(true);
-  }, []);
+    checkIfAtBottom(type, el);
+  }, [checkIfAtBottom]);
 
   const handleConfirm = async () => {
     if (!termsChecked || !privacyChecked) return;
