@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import ReactMarkdown from 'react-markdown';
 import {
   ShieldCheck, Plus, ChevronDown, ChevronUp, AlertTriangle,
-  FileText, Eye, Edit3, CheckCircle, RotateCcw
+  FileText, Eye, Edit3, CheckCircle, RotateCcw, Upload
 } from 'lucide-react';
 
 // ─── New Document Modal (con importación de .md / .txt / .docx) ──────────────
