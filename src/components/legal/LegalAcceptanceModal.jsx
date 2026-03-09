@@ -45,6 +45,10 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
       if (!termsResult) setTermsScrolled(true);
       if (!privacyResult) setPrivacyScrolled(true);
       setLoading(false);
+      // If no active documents exist at all, auto-dismiss
+      if (!termsResult && !privacyResult) {
+        onAccepted({ terms_version_accepted: null, privacy_version_accepted: null });
+      }
     })();
   }, []);
 

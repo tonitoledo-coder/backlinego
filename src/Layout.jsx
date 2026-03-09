@@ -100,13 +100,15 @@ export default function Layout({ children, currentPageName }) {
             ]);
             const activeTerms = termsDocs?.[0];
             const activePrivacy = privacyDocs?.[0];
-            const termsOk = activeTerms
-              ? profile.terms_version_accepted === activeTerms.version
-              : !!profile.terms_version_accepted;
-            const privacyOk = activePrivacy
-              ? profile.privacy_version_accepted === activePrivacy.version
-              : !!profile.privacy_version_accepted;
-            if (!termsOk || !privacyOk) {
+            const needsLegalAcceptance =
+              profile.role !== 'admin' &&
+              activeTerms && activePrivacy && (
+                !profile.terms_version_accepted ||
+                !profile.privacy_version_accepted ||
+                profile.terms_version_accepted !== activeTerms.version ||
+                profile.privacy_version_accepted !== activePrivacy.version
+              );
+            if (needsLegalAcceptance) {
               setShowLegalModal(true);
             }
           }
