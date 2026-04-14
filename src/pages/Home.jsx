@@ -8,9 +8,8 @@ import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { addDays, format } from 'date-fns';
+import { format } from 'date-fns';
+import DatePickerDrawer from '@/components/ui/DatePickerDrawer';
 import {
   Search,
   MapPin,
@@ -25,8 +24,7 @@ import {
   Star,
   CheckCircle,
   Trophy,
-  Globe,
-  CalendarIcon } from
+  Globe } from
 'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
@@ -140,53 +138,31 @@ export default function Home() {
                   
                 </div>
                 {/* Date range pickers */}
-                <div className="hidden sm:flex items-center gap-1 border-l border-zinc-700 pl-3 mr-2">
-                  <Popover open={openStart} onOpenChange={setOpenStart}>
-                    <PopoverTrigger asChild>
-                      <button className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5">
-                        <CalendarIcon className="w-3.5 h-3.5" />
-                        {searchStart ? format(searchStart, 'dd MMM') : 'Desde'}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={searchStart}
-                        onSelect={(d) => {
-                          setSearchStart(d);
-                          setSearchEnd(null);
-                          setOpenStart(false);
-                          setOpenEnd(true);
-                        }}
-                        disabled={(d) => d < new Date()}
-                        className="text-white" />
-                      
-                    </PopoverContent>
-                  </Popover>
+                <div className="flex items-center gap-1 border-l border-zinc-700 pl-3 mr-2">
+                  <DatePickerDrawer
+                    label="Desde"
+                    value={searchStart}
+                    onChange={(d) => { setSearchStart(d); setSearchEnd(null); setOpenStart(false); setOpenEnd(true); }}
+                    disabled={(d) => d < new Date()}
+                    open={openStart}
+                    onOpenChange={setOpenStart}
+                  />
                   <span className="text-zinc-600 text-xs">→</span>
-                  <Popover open={openEnd} onOpenChange={setOpenEnd}>
-                    <PopoverTrigger asChild>
-                      <button className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5">
-                        <CalendarIcon className="w-3.5 h-3.5" />
-                        {searchEnd ? format(searchEnd, 'dd MMM') : 'Hasta'}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={searchEnd}
-                        onSelect={(d) => {setSearchEnd(d);setOpenEnd(false);}}
-                        disabled={(d) => d < (searchStart || new Date())}
-                        className="text-white" />
-                      
-                    </PopoverContent>
-                  </Popover>
-                  {(searchStart || searchEnd) &&
-                  <button
-                    className="text-zinc-500 hover:text-white text-xs px-1"
-                    onClick={() => {setSearchStart(null);setSearchEnd(null);}}>
-                    ✕</button>
-                  }
+                  <DatePickerDrawer
+                    label="Hasta"
+                    value={searchEnd}
+                    onChange={(d) => setSearchEnd(d)}
+                    disabled={(d) => d < (searchStart || new Date())}
+                    open={openEnd}
+                    onOpenChange={setOpenEnd}
+                  />
+                  {(searchStart || searchEnd) && (
+                    <button
+                      className="text-zinc-500 hover:text-white text-xs px-1"
+                      onClick={() => { setSearchStart(null); setSearchEnd(null); }}>
+                      ✕
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
