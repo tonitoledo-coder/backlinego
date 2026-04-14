@@ -11,11 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { addDays, format } from 'date-fns';
-import { 
-  Search, 
-  MapPin, 
-  Zap, 
-  ShieldCheck, 
+import {
+  Search,
+  MapPin,
+  Zap,
+  ShieldCheck,
   CreditCard,
   ArrowRight,
   ChevronRight,
@@ -26,19 +26,19 @@ import {
   CheckCircle,
   Trophy,
   Globe,
-  CalendarIcon
-} from 'lucide-react';
+  CalendarIcon } from
+'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
 import CategoryFilter from '@/components/equipment/CategoryFilter';
 
 const categories = [
-  { id: 'cuerdas',    icon: 'cuerdas',    color: 'from-amber-500   to-amber-600'  },
-  { id: 'teclados',   icon: 'teclados',   color: 'from-yellow-500  to-amber-500'  },
-  { id: 'percusion',  icon: 'percusion',  color: 'from-orange-500  to-orange-600' },
-  { id: 'dj_gear',    icon: 'dj_gear',    color: 'from-amber-400   to-yellow-500' },
-  { id: 'sonido_pa',  icon: 'sonido_pa',  color: 'from-emerald-500 to-teal-500'   },
-];
+{ id: 'cuerdas', icon: 'cuerdas', color: 'from-amber-500   to-amber-600' },
+{ id: 'teclados', icon: 'teclados', color: 'from-yellow-500  to-amber-500' },
+{ id: 'percusion', icon: 'percusion', color: 'from-orange-500  to-orange-600' },
+{ id: 'dj_gear', icon: 'dj_gear', color: 'from-amber-400   to-yellow-500' },
+{ id: 'sonido_pa', icon: 'sonido_pa', color: 'from-emerald-500 to-teal-500' }];
+
 
 
 export default function Home() {
@@ -47,9 +47,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchStart, setSearchStart] = useState(null);
-  const [searchEnd,   setSearchEnd]   = useState(null);
+  const [searchEnd, setSearchEnd] = useState(null);
   const [openStart, setOpenStart] = useState(false);
-  const [openEnd,   setOpenEnd]   = useState(false);
+  const [openEnd, setOpenEnd] = useState(false);
 
   const handleAddEquipmentClick = async (e) => {
     e.preventDefault();
@@ -74,17 +74,17 @@ export default function Home() {
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', 'featured'],
-    queryFn: () => base44.entities.Equipment.filter({ status: 'available' }, '-created_date', 12),
+    queryFn: () => base44.entities.Equipment.filter({ status: 'available' }, '-created_date', 12)
   });
 
   const { data: sosEquipment = [] } = useQuery({
     queryKey: ['equipment', 'sos'],
-    queryFn: () => base44.entities.Equipment.filter({ sos_available: true, status: 'available' }, '-created_date', 4),
+    queryFn: () => base44.entities.Equipment.filter({ sos_available: true, status: 'available' }, '-created_date', 4)
   });
 
-  const filteredEquipment = selectedCategory 
-    ? equipment.filter(e => e.category === selectedCategory)
-    : equipment;
+  const filteredEquipment = selectedCategory ?
+  equipment.filter((e) => e.category === selectedCategory) :
+  equipment;
 
   return (
     <div className="min-h-screen">
@@ -98,18 +98,18 @@ export default function Home() {
           backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
           backgroundSize: '60px 60px',
           maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%)'
         }} />
         
         <div className="relative max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-20">
           <div className="text-center max-w-3xl mx-auto">
             {/* Logo + Tagline Hero Block */}
             <div className="flex flex-col items-center mb-8 lg:mb-10">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69a08f2a394db4f3cafbc46f/0a293e3b0_Puedeshacerlaconcalidadmxima_1.png"
-                alt="BacklineGo"
-                className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]"
-              />
+              <img src="https://media.base44.com/images/public/69a08f2a394db4f3cafbc46f/67905da4d_file_000000004f7471fdb58ceb2609ec53df.png"
+
+              alt="BacklineGo" className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]" />
+
+              
               <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <span className="w-1.5 h-1.5 rounded-full pulse-sos flex-shrink-0" style={{ background: '#1DDF7A' }} />
                 <span className="text-xs font-semibold tracking-[0.2em] uppercase text-zinc-300">Glocal Marketplace</span>
@@ -127,17 +127,17 @@ export default function Home() {
             {/* Search Bar */}
             <div className="relative max-w-2xl mx-auto mb-8">
               <div className="flex items-center rounded-2xl p-2 transition-all duration-200" style={{ background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.12)' }}
-                onFocusCapture={e => e.currentTarget.style.cssText += ';border-color:#1DDF7A;box-shadow:0 0 0 3px rgba(29,223,122,0.12)'}
-                onBlurCapture={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.boxShadow = 'none'; }}>
+              onFocusCapture={(e) => e.currentTarget.style.cssText += ';border-color:#1DDF7A;box-shadow:0 0 0 3px rgba(29,223,122,0.12)'}
+              onBlurCapture={(e) => {e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';e.currentTarget.style.boxShadow = 'none';}}>
                 <div className="flex items-center flex-1 px-4">
                   <Search className="w-5 h-5 text-zinc-500 mr-3 flex-shrink-0" />
-                  <Input 
+                  <Input
                     placeholder={t('search') + '...'}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="border-0 bg-transparent text-white focus-visible:ring-0"
-                    style={{ '--placeholder-opacity': '0.3' }}
-                  />
+                    style={{ '--placeholder-opacity': '0.3' }} />
+                  
                 </div>
                 {/* Date range pickers */}
                 <div className="hidden sm:flex items-center gap-1 border-l border-zinc-700 pl-3 mr-2">
@@ -159,8 +159,8 @@ export default function Home() {
                           setOpenEnd(true);
                         }}
                         disabled={(d) => d < new Date()}
-                        className="text-white"
-                      />
+                        className="text-white" />
+                      
                     </PopoverContent>
                   </Popover>
                   <span className="text-zinc-600 text-xs">→</span>
@@ -175,18 +175,18 @@ export default function Home() {
                       <Calendar
                         mode="single"
                         selected={searchEnd}
-                        onSelect={(d) => { setSearchEnd(d); setOpenEnd(false); }}
+                        onSelect={(d) => {setSearchEnd(d);setOpenEnd(false);}}
                         disabled={(d) => d < (searchStart || new Date())}
-                        className="text-white"
-                      />
+                        className="text-white" />
+                      
                     </PopoverContent>
                   </Popover>
-                  {(searchStart || searchEnd) && (
-                    <button
-                      className="text-zinc-500 hover:text-white text-xs px-1"
-                      onClick={() => { setSearchStart(null); setSearchEnd(null); }}
-                    >✕</button>
-                  )}
+                  {(searchStart || searchEnd) &&
+                  <button
+                    className="text-zinc-500 hover:text-white text-xs px-1"
+                    onClick={() => {setSearchStart(null);setSearchEnd(null);}}>
+                    ✕</button>
+                  }
                 </div>
                 <button
                   type="button"
@@ -194,14 +194,14 @@ export default function Home() {
                     const p = new URLSearchParams();
                     if (searchQuery) p.set('q', searchQuery);
                     if (searchStart) p.set('from', format(searchStart, 'yyyy-MM-dd'));
-                    if (searchEnd)   p.set('to',   format(searchEnd,   'yyyy-MM-dd'));
+                    if (searchEnd) p.set('to', format(searchEnd, 'yyyy-MM-dd'));
                     navigate(createPageUrl('Explore') + (p.toString() ? '?' + p.toString() : ''));
                   }}
                   className="rounded-xl px-6 font-semibold h-10"
                   style={{ background: '#1DDF7A', color: '#060E18' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#17c96e'}
-                  onMouseLeave={e => e.currentTarget.style.background = '#1DDF7A'}
-                >
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#17c96e'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#1DDF7A'}>
+                  
                   {t('search')}
                 </button>
               </div>
@@ -210,23 +210,23 @@ export default function Home() {
             {/* Trust Badges */}
             <div className="flex flex-wrap justify-center gap-2.5">
               {[
-                { icon: ShieldCheck, color: '#3D8EF8', label: t('idVerified') },
-                { icon: CreditCard,  color: '#1DDF7A', label: t('escrowPayment') },
-                { icon: Zap,         color: '#E8C86A', label: t('insuranceIncluded') },
-              ].map(({ icon: Icon, color, label }) => (
-                <div key={label} className="flex items-center gap-2 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 14px' }}>
+              { icon: ShieldCheck, color: '#3D8EF8', label: t('idVerified') },
+              { icon: CreditCard, color: '#1DDF7A', label: t('escrowPayment') },
+              { icon: Zap, color: '#E8C86A', label: t('insuranceIncluded') }].
+              map(({ icon: Icon, color, label }) =>
+              <div key={label} className="flex items-center gap-2 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 14px' }}>
                   <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
                   <span className="text-zinc-300" style={{ fontSize: 13, fontWeight: 500 }}>{label}</span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
       </section>
 
       {/* SOS Mode Banner */}
-      {sosEquipment.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+      {sosEquipment.length > 0 &&
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
           <Link to={createPageUrl('MapView') + '?sos=true'}>
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-500/20 to-green-600/10 border border-green-500/30 p-6 lg:p-8 group hover:border-green-500/50 transition-all duration-300">
               <div className="absolute top-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-[80px]" />
@@ -244,15 +244,15 @@ export default function Home() {
                 
                 <div className="flex items-center gap-4">
                   <div className="hidden lg:flex items-center gap-2">
-                    {sosEquipment.slice(0, 3).map((eq, i) => (
-                      <div key={eq.id} className="w-12 h-12 rounded-lg overflow-hidden border-2 border-green-500/50">
-                        {eq.images?.[0] ? (
-                          <img src={eq.images[0]} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-zinc-800" />
-                        )}
+                    {sosEquipment.slice(0, 3).map((eq, i) =>
+                  <div key={eq.id} className="w-12 h-12 rounded-lg overflow-hidden border-2 border-green-500/50">
+                        {eq.images?.[0] ?
+                    <img src={eq.images[0]} alt="" className="w-full h-full object-cover" /> :
+
+                    <div className="w-full h-full bg-zinc-800" />
+                    }
                       </div>
-                    ))}
+                  )}
                     <span className="text-green-400 font-semibold ml-2">+{sosEquipment.length}</span>
                   </div>
                   <ChevronRight className="w-6 h-6 text-green-400 group-hover:translate-x-1 transition-transform" />
@@ -261,7 +261,7 @@ export default function Home() {
             </div>
           </Link>
         </section>
-      )}
+      }
 
       {/* Categories */}
       <section className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
@@ -274,12 +274,12 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 lg:gap-4">
-          {categories.map((cat) => (
-            <Link 
-              key={cat.id}
-              to={createPageUrl('Explore') + `?category=${cat.id}`}
-              className="group"
-            >
+          {categories.map((cat) =>
+          <Link
+            key={cat.id}
+            to={createPageUrl('Explore') + `?category=${cat.id}`}
+            className="group">
+            
               <div className={`aspect-square rounded-2xl bg-gradient-to-br ${cat.color} p-0.5 group-hover:scale-105 transition-transform duration-300`}>
                 <div className="w-full h-full rounded-2xl bg-zinc-900 flex flex-col items-center justify-center gap-2 group-hover:bg-zinc-900/80 transition-colors">
                   <CategoryIcon category={cat.id} className="w-8 h-8 text-white" />
@@ -287,14 +287,14 @@ export default function Home() {
                 </div>
               </div>
             </Link>
-          ))}
+          )}
 
           {/* Directorio Internacional */}
           <Link to={createPageUrl('Directory')} className="group">
             <div className="aspect-square rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 p-0.5 group-hover:scale-105 transition-transform duration-300">
               <div className="w-full h-full rounded-2xl bg-zinc-900 flex flex-col items-center justify-center gap-2 group-hover:bg-zinc-900/80 transition-colors">
                 <Globe className="w-8 h-8 text-teal-400" />
-                <span className="text-xs lg:text-sm font-medium text-zinc-300 text-center leading-tight">Directorio<br/>Global</span>
+                <span className="text-xs lg:text-sm font-medium text-zinc-300 text-center leading-tight">Directorio<br />Global</span>
               </div>
             </div>
           </Link>
@@ -315,23 +315,23 @@ export default function Home() {
           <CategoryFilter selected={selectedCategory} onChange={setSelectedCategory} />
         </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="aspect-[4/5] rounded-xl bg-zinc-800/50 animate-pulse" />
-            ))}
-          </div>
-        ) : filteredEquipment.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredEquipment.map(eq => (
-              <EquipmentCard key={eq.id} equipment={eq} searchStart={searchStart} searchEnd={searchEnd} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
+        {isLoading ?
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) =>
+          <div key={i} className="aspect-[4/5] rounded-xl bg-zinc-800/50 animate-pulse" />
+          )}
+          </div> :
+        filteredEquipment.length > 0 ?
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {filteredEquipment.map((eq) =>
+          <EquipmentCard key={eq.id} equipment={eq} searchStart={searchStart} searchEnd={searchEnd} />
+          )}
+          </div> :
+
+        <div className="text-center py-12">
             <p className="text-zinc-500">{t('noResults')}</p>
           </div>
-        )}
+        }
       </section>
 
       {/* Specialists Banner */}
@@ -380,17 +380,17 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
         <div className="grid grid-cols-2 gap-3">
           {[
-            { icon: QrCode, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'QR de Entrega', desc: 'Confirmación segura con código único' },
-            { icon: ShieldCheck, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', title: 'Pago Escrow', desc: 'El dinero queda retenido hasta la entrega' },
-            { icon: CreditCard, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', title: 'Seguro incluido', desc: '8% cubre daños y robos' },
-            { icon: Star, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', title: 'Perfiles verificados', desc: 'ID verificado en cada arrendador' },
-          ].map((item) => (
-            <div key={item.title} className={`rounded-xl border p-4 ${item.bg}`}>
+          { icon: QrCode, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'QR de Entrega', desc: 'Confirmación segura con código único' },
+          { icon: ShieldCheck, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', title: 'Pago Escrow', desc: 'El dinero queda retenido hasta la entrega' },
+          { icon: CreditCard, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', title: 'Seguro incluido', desc: '8% cubre daños y robos' },
+          { icon: Star, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', title: 'Perfiles verificados', desc: 'ID verificado en cada arrendador' }].
+          map((item) =>
+          <div key={item.title} className={`rounded-xl border p-4 ${item.bg}`}>
               <item.icon className={`w-6 h-6 ${item.color} mb-2`} />
               <p className="text-sm font-semibold text-white">{item.title}</p>
               <p className="text-xs text-zinc-500 mt-0.5">{item.desc}</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -416,6 +416,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 }
