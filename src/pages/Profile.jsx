@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -30,6 +30,7 @@ import {
 import EquipmentCard from '@/components/equipment/EquipmentCard';
 import QRDeliveryModal from '@/components/qr/QRDeliveryModal';
 import CancelBookingModal from '@/components/booking/CancelBookingModal';
+import PullToRefresh from '@/components/mobile/PullToRefresh';
 
 export default function Profile() {
   const { t, lang } = useTranslation();
@@ -135,6 +136,14 @@ export default function Profile() {
   const handleLogout = () => {
     base44.auth.logout(createPageUrl('Home'));
   };
+
+  const refreshMyBookings = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['bookings', 'mine', user?.id] });
+  }, [queryClient, user?.id]);
+
+  const refreshIncoming = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['bookings', 'incoming', user?.id] });
+  }, [queryClient, user?.id]);
 
   if (loading) {
     return (
@@ -338,6 +347,7 @@ export default function Profile() {
         </TabsContent>
 
         <TabsContent value="bookings" className="mt-6">
+          <PullToRefresh onRefresh={refreshMyBookings}>
           {myBookings.length > 0 ? (
             <div className="space-y-4">
               {myBookings.map(booking => {
@@ -432,9 +442,11 @@ export default function Profile() {
               </Link>
             </div>
           )}
+          </PullToRefresh>
         </TabsContent>
 
         <TabsContent value="incoming" className="mt-6">
+          <PullToRefresh onRefresh={refreshIncoming}>
           {incomingBookings.length > 0 ? (
             <div className="space-y-4">
               {incomingBookings.map(booking => {
@@ -528,6 +540,7 @@ export default function Profile() {
               <p className="text-zinc-500">Aún no hay reservas de tu equipo</p>
             </div>
           )}
+          </PullToRefresh>
         </TabsContent>
       </Tabs>
 

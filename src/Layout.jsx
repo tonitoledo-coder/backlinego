@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
+import PageTransition from '@/components/mobile/PageTransition';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
@@ -15,7 +16,8 @@ import {
   Trophy,
   Crown,
   Ban,
-  XCircle
+  XCircle,
+  ChevronLeft
 } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
@@ -155,6 +157,10 @@ export default function Layout({ children, currentPageName }) {
 
   const isActive = (pageName) => currentPageName === pageName;
 
+  // Root tab pages — no back button
+  const ROOT_PAGES = new Set(['Home', 'Explore', 'MapView', 'Specialists', 'Profile', 'Rewards', 'Onboarding', 'PendingApproval']);
+  const isSubPage = !ROOT_PAGES.has(currentPageName);
+
   // Hide layout on these pages
   if (currentPageName === 'Onboarding' || currentPageName === 'PendingApproval') {
     return <>{children}</>;
@@ -251,22 +257,37 @@ export default function Layout({ children, currentPageName }) {
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b" style={{background:'#1a1a2e', borderColor:'rgba(255,255,255,0.08)', paddingTop:'env(safe-area-inset-top)'}}>
         <div className="px-4 h-14 flex items-center justify-between">
-          <Link to={createPageUrl('Home')} className="flex items-center">
-            <span className="text-lg font-bold text-white tracking-tight">Backline<span style={{color:'#1DDF7A'}}>Go</span></span>
-          </Link>
+          {isSubPage ? (
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-1 text-zinc-300 hover:text-white transition-colors -ml-1 pr-2"
+              aria-label="Volver"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              <span className="text-sm font-medium">Volver</span>
+            </button>
+          ) : (
+            <Link to={createPageUrl('Home')} className="flex items-center">
+              <span className="text-lg font-bold text-white tracking-tight">Backline<span style={{color:'#1DDF7A'}}>Go</span></span>
+            </Link>
+          )}
 
           <div className="flex items-center gap-2">
             {user && <NotificationBell userEmail={user.email} />}
-            <Button size="sm" onClick={handleAddEquipmentClick} className="font-semibold" style={{background:'#1DDF7A', color:'#060E18'}}>
-              <Plus className="w-4 h-4" />
-            </Button>
+            {!isSubPage && (
+              <Button size="sm" onClick={handleAddEquipmentClick} className="font-semibold" style={{background:'#1DDF7A', color:'#060E18'}}>
+                <Plus className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="pt-14 lg:pt-16 pb-20 lg:pb-8">
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
       </main>
 
       <IOSInstallBanner />

@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/translations';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,8 @@ import {
   X,
   Zap,
   ArrowUpDown,
-  CalendarIcon
+  CalendarIcon,
+  Check
 } from 'lucide-react';
 import {
   Sheet,
@@ -30,14 +31,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import CategoryFilter from '@/components/equipment/CategoryFilter';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
+import PullToRefresh from '@/components/mobile/PullToRefresh';
+
+const SORT_OPTIONS = [
+  { value: 'newest',     label: 'Más reciente' },
+  { value: 'price_asc',  label: 'Precio ↑' },
+  { value: 'price_desc', label: 'Precio ↓' },
+  { value: 'condition',  label: 'Mejor estado' },
+];
 
 export default function Explore() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const params = new URLSearchParams(window.location.search);
   
   const [searchQuery, setSearchQuery] = useState(params.get('q') || '');
@@ -46,6 +63,7 @@ export default function Explore() {
   const [sosOnly, setSosOnly] = useState(params.get('sos') === 'true');
   const [sortBy, setSortBy] = useState('newest');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortDrawerOpen, setSortDrawerOpen] = useState(false);
   const [searchStart, setSearchStart] = useState(
     params.get('from') ? parseISO(params.get('from')) : null
   );
@@ -57,6 +75,10 @@ export default function Explore() {
     queryKey: ['equipment', 'all'],
     queryFn: () => base44.entities.Equipment.filter({ status: 'available' }, '-created_date', 100),
   });
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['equipment', 'all'] });
+  }, [queryClient]);
 
   const filteredEquipment = useMemo(() => {
     let filtered = [...equipment];
@@ -166,19 +188,51 @@ export default function Explore() {
             SOS 24h
           </Button>
 
-          {/* Sort */}
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[160px] bg-zinc-900/80 border-zinc-800 text-zinc-300">
-              <ArrowUpDown className="w-4 h-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-zinc-900 border-zinc-800">
-              <SelectItem value="newest">Más reciente</SelectItem>
-              <SelectItem value="price_asc">Precio ↑</SelectItem>
-              <SelectItem value="price_desc">Precio ↓</SelectItem>
-              <SelectItem value="condition">Mejor estado</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Sort — Drawer on mobile, Select on desktop */}
+          <div className="lg:hidden">
+            <Drawer open={sortDrawerOpen} onOpenChange={setSortDrawerOpen}>
+              <DrawerTrigger asChild>
+                <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                  <ArrowUpDown className="w-4 h-4 mr-2" />
+                  {SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Ordenar'}
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="bg-zinc-900 border-zinc-800">
+                <DrawerHeader>
+                  <DrawerTitle className="text-white">Ordenar por</DrawerTitle>
+                </DrawerHeader>
+                <div className="px-4 pb-8 space-y-1">
+                  {SORT_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setSortBy(opt.value); setSortDrawerOpen(false); }}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-colors"
+                      style={{
+                        background: sortBy === opt.value ? 'rgba(29,223,122,0.12)' : 'transparent',
+                        color: sortBy === opt.value ? '#1DDF7A' : '#d4d4d8',
+                      }}
+                    >
+                      {opt.label}
+                      {sortBy === opt.value && <Check className="w-4 h-4" />}
+                    </button>
+                  ))}
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
+          <div className="hidden lg:block">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[160px] bg-zinc-900/80 border-zinc-800 text-zinc-300">
+                <ArrowUpDown className="w-4 h-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800">
+                {SORT_OPTIONS.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Filters Sheet */}
           <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
@@ -287,6 +341,7 @@ export default function Explore() {
       </div>
 
       {/* Results */}
+      <PullToRefresh onRefresh={handleRefresh}>
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(12)].map((_, i) => (
@@ -311,6 +366,7 @@ export default function Explore() {
           </Button>
         </div>
       )}
+      </PullToRefresh>
     </div>
   );
 }
