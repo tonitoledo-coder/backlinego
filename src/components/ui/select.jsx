@@ -107,11 +107,11 @@ function MobileSelect({ children, value, onValueChange, defaultValue, disabled, 
 const SelectGroup = SelectPrimitive.Group;
 const SelectValue = React.forwardRef(({ placeholder, children, ...props }, ref) => {
   const ctx = React.useContext(SelectContext);
-  if (ctx?.isMobile) {
-    // Store placeholder for trigger display
-    React.useEffect(() => { ctx.setPlaceholder?.(placeholder || ''); }, [placeholder]);
-    return null; // rendered inside SelectTrigger for mobile
-  }
+  // Must call hooks unconditionally before any early return
+  React.useEffect(() => {
+    if (ctx?.isMobile) ctx.setPlaceholder?.(placeholder || '');
+  }, [placeholder, ctx?.isMobile]);
+  if (ctx?.isMobile) return null;
   return <SelectPrimitive.Value ref={ref} placeholder={placeholder} {...props}>{children}</SelectPrimitive.Value>;
 });
 SelectValue.displayName = 'SelectValue';
