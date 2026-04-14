@@ -177,7 +177,7 @@ export default function Layout({ children, currentPageName }) {
         />
       )}
       {/* Desktop Header */}
-      <header className="hidden lg:block fixed top-0 left-0 right-0 z-50 border-b" style={{background:'#1a1a2e', borderColor:'rgba(255,255,255,0.08)'}}>
+      <header className="hidden lg:block fixed top-0 left-0 right-0 z-50 border-b" style={{background:'#1a1a2e', borderColor:'rgba(255,255,255,0.08)', paddingTop:'env(safe-area-inset-top)'}}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to={createPageUrl('Home')} className="flex items-center">
             <span className="text-xl font-bold text-white tracking-tight">Backline<span style={{color:'#1DDF7A'}}>Go</span></span>
@@ -249,7 +249,7 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b" style={{background:'#1a1a2e', borderColor:'rgba(255,255,255,0.08)'}}>
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 border-b" style={{background:'#1a1a2e', borderColor:'rgba(255,255,255,0.08)', paddingTop:'env(safe-area-inset-top)'}}>
         <div className="px-4 h-14 flex items-center justify-between">
           <Link to={createPageUrl('Home')} className="flex items-center">
             <span className="text-lg font-bold text-white tracking-tight">Backline<span style={{color:'#1DDF7A'}}>Go</span></span>

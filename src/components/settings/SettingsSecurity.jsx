@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Shield, Monitor, Smartphone, Globe, LogOut } from 'lucide-react';
+import { Shield, Monitor, Smartphone, Globe, LogOut, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { base44 } from '@/api/base44Client';
 
 const MOCK_SESSIONS = [
@@ -10,6 +11,24 @@ const MOCK_SESSIONS = [
 
 export default function SettingsSecurity({ user }) {
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'ELIMINAR') return;
+    setDeleting(true);
+    try {
+      // Delete user profile record
+      const profiles = await base44.entities.UserProfile.filter({ email: user?.email });
+      for (const p of profiles) {
+        await base44.entities.UserProfile.delete(p.id);
+      }
+      base44.auth.logout();
+    } catch (e) {
+      setDeleting(false);
+    }
+  };
 
   const handleLogoutAll = () => {
     setLoggingOut(true);
@@ -75,6 +94,55 @@ export default function SettingsSecurity({ user }) {
           })}
         </div>
       </div>
+      {/* Delete account */}
+      <div className="rounded-xl border p-5 space-y-4" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.2)' }}>
+        <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wider">Zona de peligro</h3>
+        <p className="text-sm text-zinc-400">
+          Eliminar tu cuenta es permanente. Se borrarán tus datos de perfil y no podrás recuperar el acceso.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-red-800 text-red-400 hover:bg-red-900/20"
+          onClick={() => setShowDeleteDialog(true)}
+        >
+          <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Eliminar cuenta
+        </Button>
+      </div>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-400" /> Eliminar cuenta
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Esta acción es irreversible. Escribe <span className="text-white font-mono font-semibold">ELIMINAR</span> para confirmar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <input
+              type="text"
+              value={deleteConfirm}
+              onChange={e => setDeleteConfirm(e.target.value)}
+              placeholder="ELIMINAR"
+              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white text-sm focus:outline-none focus:border-red-500"
+            />
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1 border-zinc-700 text-zinc-300" onClick={() => { setShowDeleteDialog(false); setDeleteConfirm(''); }}>
+                Cancelar
+              </Button>
+              <Button
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                disabled={deleteConfirm !== 'ELIMINAR' || deleting}
+                onClick={handleDeleteAccount}
+              >
+                {deleting ? 'Eliminando…' : 'Eliminar'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -47,23 +47,24 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import AddEquipment from './pages/AddEquipment';
-import Admin from './pages/Admin';
-import Chat from './pages/Chat';
-import CompleteProfile from './pages/CompleteProfile';
-import Directory from './pages/Directory';
-import EquipmentDetail from './pages/EquipmentDetail';
-import Explore from './pages/Explore';
-import Home from './pages/Home';
-import MapView from './pages/MapView';
-import Onboarding from './pages/Onboarding';
-import Partners from './pages/Partners';
-import PendingApproval from './pages/PendingApproval';
-import Profile from './pages/Profile';
-import PublicProfile from './pages/PublicProfile';
-import Rewards from './pages/Rewards';
-import Settings from './pages/Settings';
-import Specialists from './pages/Specialists';
+import { lazy } from 'react';
+const AddEquipment = lazy(() => import('./pages/AddEquipment'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Chat = lazy(() => import('./pages/Chat'));
+const CompleteProfile = lazy(() => import('./pages/CompleteProfile'));
+const Directory = lazy(() => import('./pages/Directory'));
+const EquipmentDetail = lazy(() => import('./pages/EquipmentDetail'));
+const Explore = lazy(() => import('./pages/Explore'));
+const Home = lazy(() => import('./pages/Home'));
+const MapView = lazy(() => import('./pages/MapView'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const Partners = lazy(() => import('./pages/Partners'));
+const PendingApproval = lazy(() => import('./pages/PendingApproval'));
+const Profile = lazy(() => import('./pages/Profile'));
+const PublicProfile = lazy(() => import('./pages/PublicProfile'));
+const Rewards = lazy(() => import('./pages/Rewards'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Specialists = lazy(() => import('./pages/Specialists'));
 import __Layout from './Layout.jsx';
 
 

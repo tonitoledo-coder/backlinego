@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile WebView optimizations */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable text selection globally for native feel */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection only in content areas */
+p, span, h1, h2, h3, h4, h5, h6, li, td, th, label, input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Disable selection on interactive/structural elements */
+button, a, nav, header, footer, [role="tab"], [role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

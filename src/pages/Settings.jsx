@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, User, CreditCard, Bell, Lock, Shield } from 'lucide-react';
+import { Loader2, User, CreditCard, Bell, Lock, Shield, ChevronLeft } from 'lucide-react';
 import SettingsProfile from '@/components/settings/SettingsProfile.jsx';
 import SettingsBilling from '@/components/settings/SettingsBilling.jsx';
 import SettingsSecurity from '@/components/settings/SettingsSecurity.jsx';
@@ -56,6 +56,12 @@ export default function Settings() {
     <div className="min-h-screen py-8 px-4" style={{ background: '#0d0d1a' }}>
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1 text-zinc-500 hover:text-white text-sm mb-4 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" /> Volver
+          </button>
           <h1 className="text-2xl font-bold text-white">Configuración de cuenta</h1>
           <p className="text-zinc-400 text-sm mt-1">{user?.email}</p>
         </div>

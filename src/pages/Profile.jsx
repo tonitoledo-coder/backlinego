@@ -117,7 +117,18 @@ export default function Profile() {
 
   const confirmReturnMutation = useMutation({
     mutationFn: (bookingId) => base44.entities.Booking.update(bookingId, { status: 'completed', escrow_status: 'released' }),
-    onSuccess: () => queryClient.invalidateQueries(['bookings', 'incoming']),
+    onMutate: async (bookingId) => {
+      await queryClient.cancelQueries(['bookings', 'incoming', user?.id]);
+      const prev = queryClient.getQueryData(['bookings', 'incoming', user?.id]);
+      queryClient.setQueryData(['bookings', 'incoming', user?.id], (old = []) =>
+        old.map(b => b.id === bookingId ? { ...b, status: 'completed', escrow_status: 'released' } : b)
+      );
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(['bookings', 'incoming', user?.id], ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries(['bookings', 'incoming']),
   });
 
 
