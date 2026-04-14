@@ -107,7 +107,7 @@ export default function Home() {
             <div className="flex flex-col items-center mb-8 lg:mb-10">
               <img src="https://media.base44.com/images/public/69a08f2a394db4f3cafbc46f/67905da4d_file_000000004f7471fdb58ceb2609ec53df.png"
 
-              alt="BacklineGo" className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]" style={{ opacity: 0.75, mixBlendMode: 'lighten' }} />
+              alt="BacklineGo" className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]" style={{ opacity: 0, mixBlendMode: 'lighten' }} />
 
               
               <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
