@@ -8,6 +8,7 @@ import {
   ExternalLink, User, ChevronLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 const USER_TYPE_CONFIG = {
   musico:        { icon: Music,      color: '#a78bfa', label: 'Músico' },

@@ -19,14 +19,12 @@ export default function CancelBookingModal({ booking, cancelledBy, open, onClose
   const queryClient = useQueryClient();
   const [done, setDone] = useState(false);
 
-  if (!booking) return null;
-
-  const totalPaid = booking.total_price ?? 0;
-  const policy    = calcCancellationPolicy(cancelledBy, booking.start_date, totalPaid);
+  const totalPaid = booking?.total_price ?? 0;
+  const policy    = calcCancellationPolicy(cancelledBy, booking?.start_date, totalPaid);
 
   const cancelMutation = useMutation({
     mutationFn: () =>
-      base44.entities.Booking.update(booking.id, {
+      base44.entities.Booking.update(booking?.id, {
         status:                  'cancelled',
         cancelled_by:            cancelledBy,
         cancellation_refund_pct: policy.refundPct,
@@ -38,6 +36,8 @@ export default function CancelBookingModal({ booking, cancelledBy, open, onClose
       setDone(true);
     },
   });
+
+  if (!booking) return null;
 
   const refundColor =
     policy.refundPct === 100 ? 'text-green-400' :
