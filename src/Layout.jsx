@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
 import PageTransition from '@/components/mobile/PageTransition';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
+
+// Eagerly keep the 5 mobile tab pages mounted to preserve scroll & state
+const TabHome        = lazy(() => import('./pages/Home'));
+const TabExplore     = lazy(() => import('./pages/Explore'));
+const TabMapView     = lazy(() => import('./pages/MapView'));
+const TabSpecialists = lazy(() => import('./pages/Specialists'));
+const TabProfile     = lazy(() => import('./pages/Profile'));
+
+const MOBILE_TABS = ['Home', 'Explore', 'MapView', 'Specialists', 'Profile'];
+const TAB_COMPONENTS = { Home: TabHome, Explore: TabExplore, MapView: TabMapView, Specialists: TabSpecialists, Profile: TabProfile };
 import { useTranslation } from '@/components/i18n/translations';
 import {
   Home,
@@ -267,11 +277,36 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      <main className="pt-14 lg:pt-16 pb-20 lg:pb-8">
+      {/* Desktop: normal render */}
+      <main className="hidden lg:block pt-16 pb-8">
         <PageTransition>
           {children}
         </PageTransition>
       </main>
+
+      {/* Mobile: keep all 5 tab pages mounted; show/hide via CSS to preserve scroll & state */}
+      <div className="lg:hidden pt-14 pb-20" style={{ overscrollBehavior: 'none' }}>
+        {MOBILE_TABS.map((tabName) => {
+          const TabPage = TAB_COMPONENTS[tabName];
+          const isTabActive = currentPageName === tabName;
+          return (
+            <div
+              key={tabName}
+              style={{ display: isTabActive ? 'block' : 'none' }}
+            >
+              <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+                <TabPage />
+              </Suspense>
+            </div>
+          );
+        })}
+        {/* Sub-pages (non-tab) render normally */}
+        {!MOBILE_TABS.includes(currentPageName) && (
+          <PageTransition>
+            {children}
+          </PageTransition>
+        )}
+      </div>
 
       <IOSInstallBanner />
 
@@ -279,18 +314,19 @@ export default function Layout({ children, currentPageName }) {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t" style={{ background: '#1a1a2e', borderColor: 'rgba(255,255,255,0.08)' }}>
         <div className="flex items-center justify-around h-16 px-1" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           {mobileNavItems.map((item) => (
-            <Link
+            <button
               key={item.name}
-              to={createPageUrl(item.name)}
+              type="button"
+              onClick={() => { if (!isActive(item.name)) navigate(createPageUrl(item.name)); }}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 min-w-0",
+                "flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 min-w-0 bg-transparent border-0",
                 isActive(item.name) ? "text-white" : "text-zinc-500"
               )}
               style={isActive(item.name) ? { color: '#1DDF7A' } : {}}
             >
               <item.icon className={cn("w-5 h-5 mb-0.5 shrink-0", isActive(item.name) && "scale-110")} />
               <span className="text-[9px] font-medium truncate w-full text-center px-0.5">{item.label}</span>
-            </Link>
+            </button>
           ))}
         </div>
       </nav>
