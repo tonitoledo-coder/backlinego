@@ -32,6 +32,13 @@ const DEPOSIT_ACTION_LABELS = {
   none:              'Sin acción en fianza',
 };
 
+const RESOLUTION_LABELS = {
+  resolved_owner:   'Razón dada al propietario',
+  resolved_renter:  'Razón dada al arrendatario',
+  resolved_partial: 'Resolución parcial acordada',
+  closed:           'Disputa cerrada',
+};
+
 function DisputeRow({ dispute, adminEmail, onResolved }) {
   const [expanded, setExpanded] = useState(false);
   const [notes, setNotes] = useState('');
