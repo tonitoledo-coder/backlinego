@@ -13,6 +13,8 @@ import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
 export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, searchStart, searchEnd }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  if (!equipment) return null;
   const [availability, setAvailability] = useState(null); // null | 'available' | 'occupied'
   const cardRef = useRef(null);
   const fetchedRef = useRef(false);
