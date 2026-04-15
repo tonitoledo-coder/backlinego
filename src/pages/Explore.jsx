@@ -324,6 +324,7 @@ export default function Explore() {
   const [openDateFrom, setOpenDateFrom] = useState(false);
   const [openDateTo, setOpenDateTo] = useState(false);
   const [hoveredId, setHoveredId] = useState(null);
+  const [showSosModal, setShowSosModal] = useState(false);
   const cardRefs = useRef({});
 
   // Sync filters → URL
@@ -579,6 +580,17 @@ export default function Explore() {
                 <span className="hidden sm:inline ml-1.5">SOS</span>
               </Button>
 
+              {/* Request SOS button */}
+              <Button
+                onClick={() => setShowSosModal(true)}
+                className="h-11 rounded-xl font-semibold"
+                style={{ background: 'rgba(29,223,122,0.15)', color: '#1DDF7A', border: '1px solid rgba(29,223,122,0.3)' }}
+              >
+                <Zap className="w-4 h-4 mr-1.5" />
+                <span className="hidden sm:inline">Necesito equipo HOY</span>
+                <span className="sm:hidden">SOS!</span>
+              </Button>
+
               {/* Filters sheet — mobile drawer */}
               <Drawer open={filtersOpen} onOpenChange={setFiltersOpen}>
                 <DrawerTrigger asChild>
@@ -817,6 +829,13 @@ export default function Explore() {
           )}
         </PullToRefresh>
       )}
+
+      {/* SOS Modal */}
+      <SosRequestModal
+        open={showSosModal}
+        onClose={() => setShowSosModal(false)}
+        initialCategory={filters.cats[0] || ''}
+      />
 
       {/* ── Pagination ──────────────────────────────────────────────────── */}
       {filters.view !== 'map' && totalPages > 1 && (

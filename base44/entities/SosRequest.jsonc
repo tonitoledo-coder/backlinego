@@ -1,0 +1,72 @@
+{
+  "name": "SosRequest",
+  "type": "object",
+  "properties": {
+    "requester_email": {
+      "type": "string",
+      "description": "Email del solicitante"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "cuerdas",
+        "teclados",
+        "percusion",
+        "dj_gear",
+        "sonido_pa",
+        "estudio_podcast"
+      ],
+      "description": "Categor\u00eda de equipo necesaria"
+    },
+    "city": {
+      "type": "string",
+      "description": "Ciudad donde se necesita"
+    },
+    "pickup_time": {
+      "type": "string",
+      "description": "Hora de recogida deseada (HH:MM)"
+    },
+    "duration_hours": {
+      "type": "number",
+      "description": "Duraci\u00f3n estimada en horas"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n breve de la necesidad"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "accepted",
+        "expired",
+        "cancelled"
+      ],
+      "default": "active",
+      "description": "Estado de la solicitud"
+    },
+    "accepted_by": {
+      "type": "string",
+      "description": "Email del propietario que acepta"
+    },
+    "accepted_equipment_id": {
+      "type": "string",
+      "description": "ID del equipo ofrecido"
+    },
+    "expires_at": {
+      "type": "string",
+      "description": "ISO timestamp de expiraci\u00f3n (24h)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de creaci\u00f3n"
+    }
+  },
+  "required": [
+    "requester_email",
+    "category",
+    "city",
+    "description"
+  ]
+}

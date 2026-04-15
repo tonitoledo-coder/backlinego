@@ -26,7 +26,8 @@ import {
   Sparkles,
   X,
   AlertTriangle,
-  MessageSquare
+  MessageSquare,
+  Zap
 } from 'lucide-react';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
 import QRDeliveryModal from '@/components/qr/QRDeliveryModal';
@@ -36,6 +37,7 @@ import DisputeModal from '@/components/disputes/DisputeModal';
 import DisputeResponseModal from '@/components/disputes/DisputeResponseModal';
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
 import ReviewBanner from '@/components/reviews/ReviewBanner';
+import SosDashboard from '@/components/sos/SosDashboard';
 
 // Returns ms remaining in the 48h dispute window after a booking completes
 function disputeWindowMs(booking) {
@@ -457,6 +459,9 @@ export default function Profile() {
           <TabsTrigger value="incoming" className="data-[state=active]:bg-green-600">
             <Package className="w-4 h-4 mr-2" />Reservas entrantes
           </TabsTrigger>
+          <TabsTrigger value="sos" className="data-[state=active]:bg-green-600">
+            <Zap className="w-4 h-4 mr-2" />SOS
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="equipment" className="mt-6">
@@ -526,6 +531,10 @@ export default function Profile() {
               </div>
             )}
           </PullToRefresh>
+        </TabsContent>
+
+        <TabsContent value="sos" className="mt-6">
+          <SosDashboard userEmail={user?.email} myEquipment={myEquipment} />
         </TabsContent>
       </Tabs>
 

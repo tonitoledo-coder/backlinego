@@ -162,18 +162,55 @@ export default function Step3Pricing({ data, onChange, errors }) {
       </div>
 
       {/* SOS */}
-      <div className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
-        <div className="flex items-center gap-3">
-          <Zap className="w-5 h-5 text-green-400" />
-          <div>
-            <p className="text-white font-medium text-sm">{t('sosMode')}</p>
-            <p className="text-zinc-400 text-xs">{t('sosDescription')}</p>
+      <div className="space-y-3 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Zap className="w-5 h-5 text-green-400" />
+            <div>
+              <p className="text-white font-medium text-sm">{t('sosMode')}</p>
+              <p className="text-zinc-400 text-xs">{t('sosDescription')}</p>
+            </div>
           </div>
+          <Switch
+            checked={data.sos_available || false}
+            onCheckedChange={v => set('sos_available', v)}
+          />
         </div>
-        <Switch
-          checked={data.sos_available || false}
-          onCheckedChange={v => set('sos_available', v)}
-        />
+
+        {data.sos_available && (
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-green-500/20">
+            <div>
+              <Label className="text-zinc-400 text-xs mb-1.5 block">Tiempo máx. respuesta (min)</Label>
+              <Input
+                type="number"
+                min="30"
+                step="30"
+                value={data.sos_response_time_minutes || ''}
+                onChange={e => set('sos_response_time_minutes', parseInt(e.target.value) || '')}
+                placeholder="Ej: 120"
+                className="bg-zinc-800/50 border-zinc-700 text-white"
+              />
+              <p className="text-zinc-600 text-[10px] mt-0.5">60 = 1h, 120 = 2h, 240 = 4h</p>
+            </div>
+            <div>
+              <Label className="text-zinc-400 text-xs mb-1.5 block">Multiplicador precio SOS</Label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  min="1"
+                  max="3"
+                  step="0.1"
+                  value={data.sos_price_multiplier || 1}
+                  onChange={e => set('sos_price_multiplier', parseFloat(e.target.value) || 1)}
+                  placeholder="1.0"
+                  className="bg-zinc-800/50 border-zinc-700 text-white pr-6"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs">×</span>
+              </div>
+              <p className="text-zinc-600 text-[10px] mt-0.5">1.5 = +50% en urgencias</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Location */}

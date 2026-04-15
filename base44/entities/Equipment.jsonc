@@ -148,6 +148,15 @@
       "default": false,
       "description": "Disponible para entrega inmediata 24h"
     },
+    "sos_response_time_minutes": {
+      "type": "number",
+      "description": "Tiempo m\u00e1ximo de respuesta SOS garantizado (minutos, ej: 60, 120, 240)"
+    },
+    "sos_price_multiplier": {
+      "type": "number",
+      "default": 1.0,
+      "description": "Multiplicador de precio para reservas SOS (ej: 1.5 = +50%)"
+    },
     "status": {
       "type": "string",
       "enum": [
