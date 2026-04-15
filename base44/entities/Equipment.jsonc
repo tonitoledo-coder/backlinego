@@ -1,0 +1,210 @@
+{
+  "name": "Equipment",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Nombre del equipo"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "cuerdas",
+        "teclados",
+        "percusion",
+        "dj_gear",
+        "sonido_pa",
+        "estudio_podcast"
+      ],
+      "description": "Categor\u00eda del equipo"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "Subcategor\u00eda espec\u00edfica"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Marca del equipo"
+    },
+    "model": {
+      "type": "string",
+      "description": "Modelo"
+    },
+    "year": {
+      "type": "number",
+      "description": "A\u00f1o de fabricaci\u00f3n"
+    },
+    "condition": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Estado del equipo (1-10)"
+    },
+    "condition_label": {
+      "type": "string",
+      "enum": [
+        "new",
+        "excellent",
+        "good",
+        "acceptable"
+      ],
+      "description": "Etiqueta de conservaci\u00f3n legible"
+    },
+    "listing_type": {
+      "type": "string",
+      "enum": [
+        "equipment",
+        "space"
+      ],
+      "default": "equipment",
+      "description": "Tipo de listing: equipo o espacio"
+    },
+    "declared_value": {
+      "type": "number",
+      "description": "Valor de mercado declarado en EUR (para seguro/escrow)"
+    },
+    "price_per_day": {
+      "type": "number",
+      "description": "Precio por d\u00eda en EUR"
+    },
+    "price_per_hour": {
+      "type": "number",
+      "description": "Precio por hora en EUR (espacios)"
+    },
+    "min_rental_price": {
+      "type": "number",
+      "description": "Precio m\u00ednimo de alquiler en EUR"
+    },
+    "deposit": {
+      "type": "number",
+      "description": "Fianza requerida en EUR"
+    },
+    "owner_required_protection": {
+      "type": "string",
+      "enum": [
+        "both",
+        "insurance_only",
+        "escrow_only"
+      ],
+      "default": "both",
+      "description": "Protecci\u00f3n requerida por el propietario"
+    },
+    "pickup_type": {
+      "type": "string",
+      "enum": [
+        "in_person",
+        "shipping",
+        "both"
+      ],
+      "default": "in_person",
+      "description": "Modalidad de recogida"
+    },
+    "delivery_radius_km": {
+      "type": "number",
+      "description": "Radio de entrega en km"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de im\u00e1genes"
+    },
+    "specs": {
+      "type": "object",
+      "description": "Especificaciones t\u00e9cnicas"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        },
+        "city": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
+    "owner_type": {
+      "type": "string",
+      "enum": [
+        "particular",
+        "professional"
+      ],
+      "default": "particular"
+    },
+    "sos_available": {
+      "type": "boolean",
+      "default": false,
+      "description": "Disponible para entrega inmediata 24h"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "rented",
+        "maintenance"
+      ],
+      "default": "available"
+    },
+    "views": {
+      "type": "number",
+      "default": 0
+    },
+    "min_rental_days": {
+      "type": "number",
+      "default": 1,
+      "description": "M\u00ednimo de d\u00edas por reserva"
+    },
+    "max_rental_days": {
+      "type": "number",
+      "default": 30,
+      "description": "M\u00e1ximo de d\u00edas por reserva"
+    },
+    "min_rental_hours": {
+      "type": "number",
+      "default": 1,
+      "description": "M\u00ednimo de horas por reserva (espacios)"
+    },
+    "advance_notice_days": {
+      "type": "number",
+      "default": 0,
+      "description": "D\u00edas de antelaci\u00f3n m\u00ednima para reservar"
+    },
+    "blocked_dates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Fechas bloqueadas manualmente por el propietario (yyyy-MM-dd)"
+    },
+    "pricing_config": {
+      "type": "object",
+      "description": "Configuraci\u00f3n de tarifas din\u00e1micas: multiplicadores de fin de semana/verano y descuentos por volumen"
+    },
+    "capacity_people": {
+      "type": "number",
+      "description": "Aforo m\u00e1ximo de personas (espacios)"
+    },
+    "included_equipment": {
+      "type": "string",
+      "description": "Equipamiento incluido en el espacio"
+    }
+  },
+  "required": [
+    "title",
+    "category",
+    "price_per_day"
+  ]
+}

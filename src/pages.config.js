@@ -48,7 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import { lazy } from 'react';
-const AddEquipment = lazy(() => import('./pages/AddEquipment'));
+const AddEquipment = lazy(() => import('./pages/AddEquipment.jsx'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Chat = lazy(() => import('./pages/Chat'));
 const CompleteProfile = lazy(() => import('./pages/CompleteProfile'));
