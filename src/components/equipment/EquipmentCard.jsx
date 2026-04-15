@@ -14,12 +14,11 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  if (!equipment) return null;
   const [availability, setAvailability] = useState(null); // null | 'available' | 'occupied'
   const cardRef = useRef(null);
   const fetchedRef = useRef(false);
 
-  const isOwner = currentUserEmail && equipment.created_by === currentUserEmail;
+  const isOwner = currentUserEmail && equipment?.created_by === currentUserEmail;
 
   const handleEdit = (e) => {
     e.preventDefault();
@@ -51,7 +50,9 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
     }, { threshold: 0.1 });
     if (cardRef.current) observer.observe(cardRef.current);
     return () => observer.disconnect();
-  }, [equipment.id]);
+  }, [equipment?.id]);
+
+  if (!equipment) return null;
 
   const conditionColor = equipment.condition >= 8 ? 'text-green-400' : 
                          equipment.condition >= 5 ? 'text-yellow-400' : 'text-red-400';
