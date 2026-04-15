@@ -5,7 +5,7 @@ import CategoryIcon from '../ui/CategoryIcon';
 import { cn } from '@/lib/utils';
 
 const categories = [
-  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa'
+  'cuerdas', 'teclados', 'percusion', 'dj_gear', 'sonido_pa', 'estudio_podcast'
 ];
 
 export default function CategoryFilter({ selected, onChange }) {
@@ -41,7 +41,7 @@ export default function CategoryFilter({ selected, onChange }) {
           )}
         >
           <CategoryIcon category={cat} className="w-4 h-4 mr-2" />
-          {t(cat)}
+          {cat === 'estudio_podcast' ? 'Estudio/Podcast' : t(cat)}
         </Button>
       ))}
     </div>
