@@ -39,6 +39,19 @@ const categories = [
 
 
 
+const trustBadges = [
+  { icon: ShieldCheck, color: '#3D8EF8', label_key: 'idVerified' },
+  { icon: CreditCard, color: '#1DDF7A', label_key: 'escrowPayment' },
+  { icon: Zap, color: '#E8C86A', label_key: 'insuranceIncluded' },
+];
+
+const securityItems = [
+  { icon: QrCode, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'QR de Entrega', desc: 'Confirmación segura con código único' },
+  { icon: ShieldCheck, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', title: 'Pago Escrow', desc: 'El dinero queda retenido hasta la entrega' },
+  { icon: CreditCard, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', title: 'Seguro incluido', desc: '8% cubre daños y robos' },
+  { icon: Star, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', title: 'Perfiles verificados', desc: 'ID verificado en cada arrendador' },
+];
+
 export default function Home() {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
@@ -185,16 +198,12 @@ export default function Home() {
 
             {/* Trust Badges */}
             <div className="flex flex-wrap justify-center gap-2.5">
-              {[
-              { icon: ShieldCheck, color: '#3D8EF8', label: t('idVerified') },
-              { icon: CreditCard, color: '#1DDF7A', label: t('escrowPayment') },
-              { icon: Zap, color: '#E8C86A', label: t('insuranceIncluded') }].
-              map(({ icon: Icon, color, label }) =>
-              <div key={label} className="flex items-center gap-2 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 14px' }}>
+              {trustBadges.map(({ icon: Icon, color, label_key }) => (
+                <div key={label_key} className="flex items-center gap-2 rounded-full" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', padding: '6px 14px' }}>
                   <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
-                  <span className="text-zinc-300" style={{ fontSize: 13, fontWeight: 500 }}>{label}</span>
+                  <span className="text-zinc-300" style={{ fontSize: 13, fontWeight: 500 }}>{t(label_key)}</span>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
@@ -355,18 +364,16 @@ export default function Home() {
       {/* Trust & QR Security Strip */}
       <section className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
         <div className="grid grid-cols-2 gap-3">
-          {[
-          { icon: QrCode, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', title: 'QR de Entrega', desc: 'Confirmación segura con código único' },
-          { icon: ShieldCheck, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20', title: 'Pago Escrow', desc: 'El dinero queda retenido hasta la entrega' },
-          { icon: CreditCard, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', title: 'Seguro incluido', desc: '8% cubre daños y robos' },
-          { icon: Star, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20', title: 'Perfiles verificados', desc: 'ID verificado en cada arrendador' }].
-          map((item) =>
-          <div key={item.title} className={`rounded-xl border p-4 ${item.bg}`}>
-              <item.icon className={`w-6 h-6 ${item.color} mb-2`} />
-              <p className="text-sm font-semibold text-white">{item.title}</p>
-              <p className="text-xs text-zinc-500 mt-0.5">{item.desc}</p>
-            </div>
-          )}
+          {securityItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className={`rounded-xl border p-4 ${item.bg}`}>
+                <Icon className={`w-6 h-6 ${item.color} mb-2`} />
+                <p className="text-sm font-semibold text-white">{item.title}</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{item.desc}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
