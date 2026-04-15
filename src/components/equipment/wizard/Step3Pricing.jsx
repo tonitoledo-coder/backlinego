@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/components/i18n/translations';
-import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Zap } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Zap, MapPin, Loader2, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+async function geocodeCity(query) {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+  const res = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+  const data = await res.json();
+  if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  return null;
+}
 
 const IS_SPACE = (cat) => cat === 'estudio_podcast';
 
@@ -19,9 +27,33 @@ const PICKUP_OPTIONS = [
 export default function Step3Pricing({ data, onChange, errors }) {
   const { t } = useTranslation();
   const [calMonth, setCalMonth] = useState(new Date());
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocoded, setGeocoded] = useState(false);
+  const geocodeTimer = useRef(null);
+  const geocodedCoordsRef = useRef(null);
   const isSpace = IS_SPACE(data.category);
 
   const set = (field, value) => onChange({ ...data, [field]: value });
+
+  const handleCityChange = (city) => {
+    onChange({ ...data, location: { ...(data.location || {}), city } });
+    setGeocoded(false);
+    clearTimeout(geocodeTimer.current);
+    if (city.length < 3) return;
+    // Capture latest data via a ref-like approach using the city string in closure
+    const citySnapshot = city;
+    geocodeTimer.current = setTimeout(async () => {
+      setGeocoding(true);
+      const coords = await geocodeCity(citySnapshot);
+      if (coords) {
+        setGeocoded(true);
+        // We store coords in a ref so parent can pick them up on next render
+        geocodedCoordsRef.current = { lat: coords.lat, lng: coords.lng };
+        onChange({ ...data, location: { ...(data.location || {}), city: citySnapshot, lat: coords.lat, lng: coords.lng } });
+      }
+      setGeocoding(false);
+    }, 800);
+  };
 
   const blockedDates = data.blocked_dates || [];
 
@@ -142,6 +174,34 @@ export default function Step3Pricing({ data, onChange, errors }) {
           checked={data.sos_available || false}
           onCheckedChange={v => set('sos_available', v)}
         />
+      </div>
+
+      {/* Location */}
+      <div className="space-y-3 p-4 rounded-xl bg-zinc-800/30 border border-zinc-700">
+        <Label className="text-zinc-300 text-sm font-semibold block">Ubicación del equipo</Label>
+
+        <div>
+          <Label className="text-zinc-400 text-xs mb-1 block">Ciudad *</Label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+            <Input
+              value={data.location?.city || ''}
+              onChange={e => handleCityChange(e.target.value)}
+              placeholder="Ej: Barcelona"
+              className={cn("pl-9 bg-zinc-800 border-zinc-700 text-white pr-8", errors?.city && "border-red-500")}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {geocoding && <Loader2 className="w-4 h-4 text-zinc-500 animate-spin" />}
+              {!geocoding && geocoded && <CheckCircle className="w-4 h-4 text-green-400" />}
+            </div>
+          </div>
+          {geocoded && (
+            <p className="text-green-400 text-xs mt-1">
+              📍 Ubicación encontrada ({data.location?.lat?.toFixed(4)}, {data.location?.lng?.toFixed(4)})
+            </p>
+          )}
+          {errors?.city && <p className="text-red-400 text-xs mt-1">{errors.city}</p>}
+        </div>
       </div>
 
       {/* Blocked dates calendar */}

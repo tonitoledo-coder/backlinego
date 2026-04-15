@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -9,11 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { format, parseISO, isWithinInterval, parseISO as pi } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { format, parseISO } from 'date-fns';
 import {
   Search, SlidersHorizontal, X, Zap, ArrowUpDown, Check,
-  LayoutGrid, List, MapPin, ShieldCheck, Star, ChevronLeft, ChevronRight,
+  LayoutGrid, List, MapPin, ShieldCheck, Map, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger,
@@ -25,6 +24,7 @@ import DatePickerDrawer from '@/components/ui/DatePickerDrawer';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
+import ExploreMap from '@/components/map/ExploreMap';
 import { cn } from '@/lib/utils';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -323,6 +323,8 @@ export default function Explore() {
   const [sortDrawerOpen, setSortDrawerOpen] = useState(false);
   const [openDateFrom, setOpenDateFrom] = useState(false);
   const [openDateTo, setOpenDateTo] = useState(false);
+  const [hoveredId, setHoveredId] = useState(null);
+  const cardRefs = useRef({});
 
   // Sync filters → URL
   useEffect(() => {
@@ -610,14 +612,23 @@ export default function Explore() {
                 <button
                   onClick={() => setFilter('view', 'grid')}
                   className={cn("p-2.5 transition-colors", filters.view === 'grid' ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300")}
+                  title="Vista grid"
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setFilter('view', 'list')}
                   className={cn("p-2.5 transition-colors", filters.view === 'list' ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300")}
+                  title="Vista lista"
                 >
                   <List className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setFilter('view', 'map')}
+                  className={cn("p-2.5 transition-colors", filters.view === 'map' ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300")}
+                  title="Vista mapa"
+                >
+                  <Map className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -686,43 +697,129 @@ export default function Explore() {
       </div>
 
       {/* ── Results ─────────────────────────────────────────────────────── */}
-      <PullToRefresh onRefresh={handleRefresh}>
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="aspect-[4/5] rounded-xl bg-zinc-800/50 animate-pulse" />
-            ))}
-          </div>
-        ) : paginated.length > 0 ? (
-          filters.view === 'list' ? (
-            <div className="space-y-3">
-              {paginated.map(eq => (
-                <EquipmentListRow key={eq.id} equipment={eq} searchStart={filters.from} searchEnd={filters.to} />
-              ))}
+
+      {/* MAP VIEW */}
+      {filters.view === 'map' && (
+        <div className="relative">
+          {/* Desktop: split map + list */}
+          <div className="hidden lg:flex gap-4" style={{ height: '70vh' }}>
+            {/* Left: scrollable list */}
+            <div className="w-80 shrink-0 overflow-y-auto space-y-2 pr-1 scrollbar-hide">
+              {isLoading ? (
+                [...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-xl bg-zinc-800/50 animate-pulse" />)
+              ) : filtered.length === 0 ? (
+                <div className="text-center py-12 text-zinc-500 text-sm">Sin resultados</div>
+              ) : (
+                filtered.map(eq => (
+                  <div
+                    key={eq.id}
+                    ref={el => { if (el) cardRefs.current[eq.id] = el; }}
+                    onMouseEnter={() => setHoveredId(eq.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className={cn(
+                      "cursor-pointer rounded-xl border transition-all",
+                      hoveredId === eq.id ? "border-white/40 bg-zinc-800" : "border-zinc-800 bg-zinc-900/60"
+                    )}
+                  >
+                    <EquipmentListRow equipment={eq} searchStart={filters.from} searchEnd={filters.to} />
+                  </div>
+                ))
+              )}
             </div>
-          ) : (
+            {/* Right: map */}
+            <div className="flex-1 rounded-xl overflow-hidden">
+              <ExploreMap
+                equipment={filtered}
+                hoveredId={hoveredId}
+                searchStart={filters.from}
+                searchEnd={filters.to}
+                className="w-full h-full"
+                onMarkerClick={(id) => {
+                  setHoveredId(id);
+                  const el = cardRefs.current[id];
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Mobile: full-screen map + floating list button */}
+          <div className="lg:hidden" style={{ height: 'calc(100vh - 200px)' }}>
+            <ExploreMap
+              equipment={filtered}
+              hoveredId={hoveredId}
+              searchStart={filters.from}
+              searchEnd={filters.to}
+              className="w-full h-full rounded-xl overflow-hidden"
+              onMarkerClick={(id) => setHoveredId(id)}
+            />
+            {/* Floating switch to list */}
+            <button
+              onClick={() => setFilter('view', 'grid')}
+              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-full font-semibold text-sm shadow-2xl"
+              style={{ background: '#1DDF7A', color: '#060E18' }}
+            >
+              <List className="w-4 h-4" />
+              Ver lista ({filtered.length})
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* GRID / LIST VIEW */}
+      {filters.view !== 'map' && (
+        <PullToRefresh onRefresh={handleRefresh}>
+          {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {paginated.map(eq => (
-                <EquipmentCard key={eq.id} equipment={eq} searchStart={filters.from} searchEnd={filters.to} />
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="aspect-[4/5] rounded-xl bg-zinc-800/50 animate-pulse" />
               ))}
             </div>
-          )
-        ) : (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-zinc-600" />
+          ) : paginated.length > 0 ? (
+            filters.view === 'list' ? (
+              <div className="space-y-3">
+                {paginated.map(eq => (
+                  <div
+                    key={eq.id}
+                    ref={el => { if (el) cardRefs.current[eq.id] = el; }}
+                    onMouseEnter={() => setHoveredId(eq.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    <EquipmentListRow equipment={eq} searchStart={filters.from} searchEnd={filters.to} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {paginated.map(eq => (
+                  <div
+                    key={eq.id}
+                    ref={el => { if (el) cardRefs.current[eq.id] = el; }}
+                    onMouseEnter={() => setHoveredId(eq.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    <EquipmentCard equipment={eq} searchStart={filters.from} searchEnd={filters.to} />
+                  </div>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-zinc-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">{t('noResults')}</h3>
+              <p className="text-zinc-500 mb-4">Intenta cambiar los filtros de búsqueda</p>
+              <Button variant="outline" onClick={clearFilters} className="border-zinc-700 text-zinc-300">
+                Limpiar filtros
+              </Button>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">{t('noResults')}</h3>
-            <p className="text-zinc-500 mb-4">Intenta cambiar los filtros de búsqueda</p>
-            <Button variant="outline" onClick={clearFilters} className="border-zinc-700 text-zinc-300">
-              Limpiar filtros
-            </Button>
-          </div>
-        )}
-      </PullToRefresh>
+          )}
+        </PullToRefresh>
+      )}
 
       {/* ── Pagination ──────────────────────────────────────────────────── */}
-      {totalPages > 1 && (
+      {filters.view !== 'map' && totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-8">
           <button
             disabled={currentPage <= 1}
