@@ -7,6 +7,7 @@ import {
   MapPin, Globe, Instagram, Youtube, Linkedin, Lock, Shield,
   ExternalLink, User, ChevronLeft
 } from 'lucide-react';
+import UserReviews from '@/components/reviews/UserReviews';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
@@ -274,6 +275,12 @@ export default function PublicProfile() {
             <p className="text-sm font-medium" style={{ color: '#34d399' }}>Acepta encargos ahora mismo</p>
           </div>
         )}
+
+        {/* Reviews */}
+        <div>
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Valoraciones</h2>
+          <UserReviews userEmail={profileUser?.email} isOwner={isOwner} />
+        </div>
 
         {/* Owner actions */}
         {isOwner && (

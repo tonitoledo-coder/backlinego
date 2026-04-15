@@ -35,6 +35,7 @@ import PullToRefresh from '@/components/mobile/PullToRefresh';
 import DisputeModal from '@/components/disputes/DisputeModal';
 import DisputeResponseModal from '@/components/disputes/DisputeResponseModal';
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
+import ReviewBanner from '@/components/reviews/ReviewBanner';
 
 // Returns ms remaining in the 48h dispute window after a booking completes
 function disputeWindowMs(booking) {
@@ -335,6 +336,13 @@ export default function Profile() {
               )}
             </div>
           </div>
+
+          {/* Review banner - shown after 48h dispute window, within 14 days */}
+          {booking.status === 'completed' && user?.email && (
+            <div className="mt-3">
+              <ReviewBanner booking={booking} currentUserEmail={user.email} />
+            </div>
+          )}
         </CardContent>
       </Card>
     );

@@ -1,0 +1,65 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "booking_id": {
+      "type": "string",
+      "description": "ID de la reserva relacionada"
+    },
+    "reviewer_email": {
+      "type": "string",
+      "description": "Email del que hace la valoraci\u00f3n"
+    },
+    "reviewed_email": {
+      "type": "string",
+      "description": "Email del valorado"
+    },
+    "reviewer_role": {
+      "type": "string",
+      "enum": [
+        "renter",
+        "owner"
+      ],
+      "description": "Rol del que hace la valoraci\u00f3n"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Puntuaci\u00f3n del 1 al 5"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Comentario libre (m\u00e1x 500 chars)"
+    },
+    "quick_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Tags generados por respuestas r\u00e1pidas"
+    },
+    "response": {
+      "type": "string",
+      "description": "Respuesta del valorado (m\u00e1x 300 chars)"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Visible p\u00fablicamente"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de creaci\u00f3n"
+    }
+  },
+  "required": [
+    "booking_id",
+    "reviewer_email",
+    "reviewed_email",
+    "reviewer_role",
+    "rating"
+  ]
+}

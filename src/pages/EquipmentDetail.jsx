@@ -33,6 +33,7 @@ import CategoryIcon from '@/components/ui/CategoryIcon';
 import { createNotification } from '@/components/notifications/createNotification';
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
 import PaymentModal from '@/components/booking/PaymentModal';
+import OwnerRatingBadge from '@/components/reviews/OwnerRatingBadge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 
@@ -503,6 +504,16 @@ export default function EquipmentDetail() {
               <div className="flex items-center gap-2 mt-3 text-zinc-500">
                 <MapPin className="w-4 h-4" />
                 <span>{equipment.location.address || equipment.location.city}</span>
+              </div>
+            )}
+
+            {/* Owner rating + verified badge */}
+            {equipment.created_by && (
+              <div className="mt-3">
+                <OwnerRatingBadge
+                  ownerEmail={equipment.created_by}
+                  identityStatus={equipment.owner_identity_status}
+                />
               </div>
             )}
           </div>

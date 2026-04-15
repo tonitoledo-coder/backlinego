@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Zap, ShieldCheck, Pencil, Trash2 } from 'lucide-react';
+import { MapPin, Zap, ShieldCheck, Pencil, Trash2, Star } from 'lucide-react';
 import { useTranslation } from '../i18n/translations';
 import CategoryIcon from '../ui/CategoryIcon';
 import { base44 } from '@/api/base44Client';
@@ -190,6 +190,15 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
               <ShieldCheck className="w-4 h-4 text-blue-500" />
             </div>
           </div>
+
+          {/* Owner rating inline */}
+          {equipment._ownerRating && (
+            <div className="flex items-center gap-1 mt-2 text-xs text-zinc-500">
+              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+              <span className="text-amber-400 font-medium">{equipment._ownerRating.toFixed(1)}</span>
+              <span>· {equipment._ownerRatingCount} reseña{equipment._ownerRatingCount !== 1 ? 's' : ''}</span>
+            </div>
+          )}
         </CardContent>
       </Card>
     </Link>
