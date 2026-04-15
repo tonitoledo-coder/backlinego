@@ -1,0 +1,193 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID del usuario"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email del usuario"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Nombre visible"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "admin",
+        "moderator"
+      ],
+      "default": "user",
+      "description": "Rol del usuario"
+    },
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Estado de la cuenta"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cuenta verificada"
+    },
+    "is_banned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Cuenta baneada"
+    },
+    "ban_reason": {
+      "type": "string",
+      "description": "Motivo del ban"
+    },
+    "access_level": {
+      "type": "number",
+      "default": 1,
+      "description": "Nivel de acceso"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas internas del administrador"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Onboarding completado"
+    },
+    "profile_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "Perfil completo"
+    },
+    "subscription_plan": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro",
+        "business"
+      ],
+      "default": "free",
+      "description": "Plan de suscripci\u00f3n"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "past_due",
+        "trialing"
+      ],
+      "description": "Estado de la suscripci\u00f3n"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez visto"
+    },
+    "equipment_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de equipos publicados"
+    },
+    "bookings_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de reservas realizadas"
+    },
+    "total_revenue": {
+      "type": "number",
+      "default": 0,
+      "description": "Ingresos totales en EUR"
+    },
+    "rating": {
+      "type": "number",
+      "description": "Valoraci\u00f3n media"
+    },
+    "reviews_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de rese\u00f1as recibidas"
+    },
+    "id_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Identidad verificada (legacy)"
+    },
+    "id_verification_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha de verificaci\u00f3n de identidad"
+    },
+    "flagged": {
+      "type": "boolean",
+      "default": false,
+      "description": "Usuario marcado para revisi\u00f3n"
+    },
+    "flag_reason": {
+      "type": "string",
+      "description": "Motivo del marcado"
+    },
+    "terms_version_accepted": {
+      "type": "string",
+      "description": "Versi\u00f3n de T&C aceptada, ej. 1.0"
+    },
+    "privacy_version_accepted": {
+      "type": "string",
+      "description": "Versi\u00f3n de Pol\u00edtica de Privacidad aceptada"
+    },
+    "legal_accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp de la aceptaci\u00f3n de documentos legales"
+    },
+    "identity_doc_front": {
+      "type": "string",
+      "description": "URL foto frontal del documento de identidad"
+    },
+    "identity_doc_back": {
+      "type": "string",
+      "description": "URL foto trasera del documento de identidad"
+    },
+    "identity_selfie": {
+      "type": "string",
+      "description": "URL selfie sosteniendo el documento de identidad"
+    },
+    "identity_status": {
+      "type": "string",
+      "enum": [
+        "not_submitted",
+        "pending_review",
+        "verified",
+        "rejected"
+      ],
+      "default": "not_submitted",
+      "description": "Estado de la verificaci\u00f3n de identidad KYC"
+    },
+    "identity_submitted_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha en que se enviaron los documentos"
+    },
+    "identity_reviewed_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha en que se revisaron los documentos"
+    },
+    "identity_rejection_reason": {
+      "type": "string",
+      "description": "Motivo del rechazo de la verificaci\u00f3n de identidad"
+    }
+  },
+  "required": [
+    "user_id",
+    "email"
+  ]
+}

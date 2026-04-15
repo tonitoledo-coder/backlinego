@@ -15,12 +15,13 @@ import {
 import {
   Crown, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
   Star, UserCog, User, Package, BookOpen, Edit2,
-  Guitar, CreditCard, FileText
+  Guitar, CreditCard, FileText, Fingerprint
 } from 'lucide-react';
 import AdminEquipmentTab from '@/components/admin/AdminEquipmentTab';
 import AdminBookingsTab from '@/components/admin/AdminBookingsTab';
 import AdminTransactionsTab from '@/components/admin/AdminTransactionsTab';
 import AdminLegalTab from '@/components/admin/AdminLegalTab';
+import AdminKycTab from '@/components/admin/AdminKycTab';
 
 // ─── Access Guard ────────────────────────────────────────────────────────────
 function AccessDenied() {
@@ -225,6 +226,9 @@ function ProfileRow({ profile, onEdit, onVerify, onBan }) {
           {profile.is_verified && <ShieldCheck className="w-3.5 h-3.5 inline ml-1 text-green-400" />}
           {profile.is_banned && <Ban className="w-3.5 h-3.5 inline ml-1 text-red-400" />}
           {profile.flagged && <AlertTriangle className="w-3.5 h-3.5 inline ml-1 text-amber-400" />}
+          {profile.identity_status === 'pending_review' && <span className="inline-flex items-center ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30">KYC pendiente</span>}
+          {profile.identity_status === 'verified' && <span className="inline-flex items-center ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">KYC ✓</span>}
+          {profile.identity_status === 'rejected' && <span className="inline-flex items-center ml-1.5 px-1.5 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 border border-red-500/30">KYC rechazado</span>}
         </div>
         <div className="text-xs text-zinc-500 truncate">{profile.email}</div>
       </div>
@@ -405,6 +409,11 @@ export default function Admin() {
             <FileText className="w-4 h-4" />
             Legal
           </TabsTrigger>
+          <TabsTrigger value="kyc" style={tabTriggerStyle('kyc')}
+            className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 transition-all">
+            <Fingerprint className="w-4 h-4" />
+            KYC
+          </TabsTrigger>
         </TabsList>
 
         {/* ── Usuarios ── */}
@@ -505,6 +514,11 @@ export default function Admin() {
         {/* ── Legal ── */}
         <TabsContent value="legal">
           <AdminLegalTab enabled={authState === 'ok' && activeTab === 'legal'} />
+        </TabsContent>
+
+        {/* ── KYC ── */}
+        <TabsContent value="kyc">
+          <AdminKycTab enabled={authState === 'ok' && activeTab === 'kyc'} />
         </TabsContent>
       </Tabs>
     </div>

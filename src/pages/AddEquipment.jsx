@@ -25,7 +25,8 @@ import {
   Zap, 
   Camera,
   Loader2,
-  CheckCircle
+  CheckCircle,
+  ShieldAlert
 } from 'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 
@@ -76,6 +77,16 @@ export default function AddEquipment() {
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(!!editId);
+  const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(async (isAuth) => {
+      if (!isAuth) return;
+      const u = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ email: u.email });
+      if (profiles?.[0]) setUserProfile(profiles[0]);
+    });
+  }, []);
 
   useEffect(() => {
     if (!editId) return;
@@ -230,6 +241,24 @@ export default function AddEquipment() {
 
       <h1 className="text-3xl font-bold text-white mb-2">{editId ? 'Editar equipo' : t('addEquipment')}</h1>
       <p className="text-zinc-400 mb-8">{t('onboardingTitle')}</p>
+
+      {/* KYC gate — solo bloquea publicación, no el draft */}
+      {userProfile && userProfile.identity_status !== 'verified' && !editId && (
+        <div className="flex items-start gap-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 mb-6">
+          <ShieldAlert className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-amber-300 font-semibold text-sm">Verifica tu identidad para publicar</p>
+            <p className="text-amber-400/80 text-xs mt-1">
+              Para publicar equipos necesitas verificar tu identidad. Esto protege a la comunidad y activa tu perfil de propietario.
+            </p>
+          </div>
+          <Link to={createPageUrl('Settings') + '?tab=identity'}>
+            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-semibold shrink-0">
+              Verificar
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Images */}
@@ -637,7 +666,7 @@ export default function AddEquipment() {
         <Button 
           type="submit" 
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
-          disabled={!formData.title || !formData.category || !formData.price_per_day || createMutation.isPending}
+          disabled={!formData.title || !formData.category || !formData.price_per_day || createMutation.isPending || (!editId && userProfile && userProfile.identity_status !== 'verified')}
         >
           {createMutation.isPending ? (
             <>

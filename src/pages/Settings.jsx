@@ -4,24 +4,27 @@ import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, User, CreditCard, Bell, Lock, Shield, ChevronLeft } from 'lucide-react';
+import { Loader2, User, CreditCard, Bell, Lock, Shield, ChevronLeft, Fingerprint } from 'lucide-react';
 import SettingsProfile from '@/components/settings/SettingsProfile.jsx';
 import SettingsBilling from '@/components/settings/SettingsBilling.jsx';
 import SettingsSecurity from '@/components/settings/SettingsSecurity.jsx';
 import SettingsNotifications from '@/components/settings/SettingsNotifications.jsx';
 import SettingsPrivacy from '@/components/settings/SettingsPrivacy.jsx';
+import IdentityVerificationForm from '@/components/identity/IdentityVerificationForm';
 
 const TABS = [
-  { id: 'profile',       icon: User,       label: 'Perfil' },
-  { id: 'billing',       icon: CreditCard, label: 'Facturación' },
-  { id: 'security',      icon: Shield,     label: 'Seguridad' },
-  { id: 'notifications', icon: Bell,       label: 'Notificaciones' },
-  { id: 'privacy',       icon: Lock,       label: 'Privacidad' },
+  { id: 'profile',       icon: User,        label: 'Perfil' },
+  { id: 'identity',      icon: Fingerprint, label: 'Identidad' },
+  { id: 'billing',       icon: CreditCard,  label: 'Facturación' },
+  { id: 'security',      icon: Shield,      label: 'Seguridad' },
+  { id: 'notifications', icon: Bell,        label: 'Notificaciones' },
+  { id: 'privacy',       icon: Lock,        label: 'Privacidad' },
 ];
 
 export default function Settings() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Read active tab from URL
@@ -35,6 +38,8 @@ export default function Settings() {
       if (!isAuth) { base44.auth.redirectToLogin(window.location.href); return; }
       const u = await base44.auth.me();
       setUser(u);
+      const profiles = await base44.entities.UserProfile.filter({ email: u.email });
+      if (profiles?.[0]) setUserProfile(profiles[0]);
       setLoading(false);
     })();
   }, []);
@@ -83,6 +88,12 @@ export default function Settings() {
 
           <TabsContent value="profile">
             <SettingsProfile user={user} onSaved={refreshUser} />
+          </TabsContent>
+          <TabsContent value="identity">
+            <IdentityVerificationForm
+              userProfile={userProfile}
+              onUpdated={(updated) => setUserProfile(updated)}
+            />
           </TabsContent>
           <TabsContent value="billing">
             <SettingsBilling user={user} onSaved={refreshUser} paymentResult={paymentResult} />
