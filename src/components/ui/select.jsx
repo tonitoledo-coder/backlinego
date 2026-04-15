@@ -188,15 +188,17 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
     const collected = [];
     const traverse = (nodes) => {
       React.Children.forEach(nodes, (child) => {
-        if (!child) return;
+        if (!child || typeof child !== 'object') return;
         if (child.type === SelectItem || (child.type && child.type.displayName === 'SelectItem')) {
           collected.push({
-            value: child.props.value,
-            label: typeof child.props.children === 'string' ? child.props.children : child.props.value,
-            disabled: child.props.disabled || false,
+            value: child.props?.value,
+            label: typeof child.props?.children === 'string' ? child.props.children : child.props?.value,
+            disabled: child.props?.disabled || false,
           });
         } else if (child.props?.children) {
-          traverse(child.props.children);
+          try {
+            traverse(child.props.children);
+          } catch (_) {}
         }
       });
     };
