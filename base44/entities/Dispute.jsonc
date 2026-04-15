@@ -1,0 +1,97 @@
+{
+  "name": "Dispute",
+  "type": "object",
+  "properties": {
+    "booking_id": {
+      "type": "string",
+      "description": "ID de la reserva relacionada"
+    },
+    "opened_by": {
+      "type": "string",
+      "description": "Email del usuario que abre la disputa"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "damage",
+        "missing_items",
+        "not_returned",
+        "other"
+      ],
+      "description": "Tipo de disputa"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del problema (m\u00edn. 50 chars)"
+    },
+    "evidence_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "URLs de fotos de evidencia del abridor"
+    },
+    "respondent_response": {
+      "type": "string",
+      "description": "Respuesta de la otra parte"
+    },
+    "respondent_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Fotos de evidencia de la otra parte"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "awaiting_response",
+        "under_review",
+        "resolved_owner",
+        "resolved_renter",
+        "resolved_partial",
+        "closed"
+      ],
+      "default": "open",
+      "description": "Estado de la disputa"
+    },
+    "resolution_notes": {
+      "type": "string",
+      "description": "Notas de resoluci\u00f3n del admin"
+    },
+    "resolved_by": {
+      "type": "string",
+      "description": "Email del admin que resuelve"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de resoluci\u00f3n"
+    },
+    "deposit_action": {
+      "type": "string",
+      "enum": [
+        "return_to_renter",
+        "transfer_to_owner",
+        "split",
+        "none"
+      ],
+      "default": "none",
+      "description": "Instrucci\u00f3n para el equipo de pagos"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de creaci\u00f3n"
+    }
+  },
+  "required": [
+    "booking_id",
+    "opened_by",
+    "type",
+    "description"
+  ]
+}

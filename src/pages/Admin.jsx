@@ -15,13 +15,14 @@ import {
 import {
   Crown, RefreshCw, Users, ShieldCheck, Ban, AlertTriangle,
   Star, UserCog, User, Package, BookOpen, Edit2,
-  Guitar, CreditCard, FileText, Fingerprint
+  Guitar, CreditCard, FileText, Fingerprint, Scale
 } from 'lucide-react';
 import AdminEquipmentTab from '@/components/admin/AdminEquipmentTab';
 import AdminBookingsTab from '@/components/admin/AdminBookingsTab';
 import AdminTransactionsTab from '@/components/admin/AdminTransactionsTab';
 import AdminLegalTab from '@/components/admin/AdminLegalTab';
 import AdminKycTab from '@/components/admin/AdminKycTab';
+import AdminDisputesTab from '@/components/admin/AdminDisputesTab';
 
 // ─── Access Guard ────────────────────────────────────────────────────────────
 function AccessDenied() {
@@ -280,6 +281,7 @@ export default function Admin() {
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPlan, setFilterPlan] = useState('all');
+  const [adminUser, setAdminUser] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -292,6 +294,7 @@ export default function Admin() {
       if (!profiles?.length || profiles[0].role !== 'admin') {
         setAuthState('denied');
       } else {
+        setAdminUser(user);
         setAuthState('ok');
       }
     })();
@@ -414,6 +417,11 @@ export default function Admin() {
             <Fingerprint className="w-4 h-4" />
             KYC
           </TabsTrigger>
+          <TabsTrigger value="disputas" style={tabTriggerStyle('disputas')}
+            className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 transition-all">
+            <Scale className="w-4 h-4" />
+            Disputas
+          </TabsTrigger>
         </TabsList>
 
         {/* ── Usuarios ── */}
@@ -519,6 +527,11 @@ export default function Admin() {
         {/* ── KYC ── */}
         <TabsContent value="kyc">
           <AdminKycTab enabled={authState === 'ok' && activeTab === 'kyc'} />
+        </TabsContent>
+
+        {/* ── Disputas ── */}
+        <TabsContent value="disputas">
+          <AdminDisputesTab enabled={authState === 'ok' && activeTab === 'disputas'} adminEmail={adminUser?.email} />
         </TabsContent>
       </Tabs>
     </div>
