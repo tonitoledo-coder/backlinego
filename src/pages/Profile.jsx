@@ -34,6 +34,7 @@ import CancelBookingModal from '@/components/booking/CancelBookingModal';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
 import DisputeModal from '@/components/disputes/DisputeModal';
 import DisputeResponseModal from '@/components/disputes/DisputeResponseModal';
+import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
 // Returns ms remaining in the 48h dispute window after a booking completes
 function disputeWindowMs(booking) {
@@ -155,6 +156,16 @@ export default function Profile() {
     },
     onError: (_err, _id, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(['bookings', 'incoming', user?.id], ctx.prev);
+    },
+    onSuccess: (_data, bookingId) => {
+      const booking = incomingBookings.find(b => b.id === bookingId);
+      if (booking) {
+        sendBookingEmail('return_confirmed', booking, {
+          equipmentTitle: equipmentMap[booking.equipment_id]?.title,
+          renterEmail:    booking.renter_email || booking.renter_id,
+          ownerEmail:     booking.owner_email  || user?.email,
+        });
+      }
     },
     onSettled: () => queryClient.invalidateQueries(['bookings', 'incoming']),
   });

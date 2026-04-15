@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
 // ── QRDisplay ─────────────────────────────────────────────────────────────────
 
@@ -142,9 +143,19 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
   const fmtSlot = (h) => h != null ? String(h).padStart(2, '0') + ':00h' : null;
 
   const updateMutation = useMutation({
-    mutationFn: (data) => base44.entities.Booking.update(booking.id, data),
-    onSuccess: () => {
+    mutationFn: (data) => ({ data, result: base44.entities.Booking.update(booking.id, data) }),
+    onSuccess: ({ data: mutData }) => {
       queryClient.invalidateQueries(['bookings']);
+      const emailExtra = {
+        equipmentTitle: booking.equipment_title || `Reserva #${booking.id?.slice(-8)}`,
+        renterEmail:    booking.renter_email || booking.renter_id,
+        ownerEmail:     booking.owner_email  || booking.owner_id,
+      };
+      if (mutData.status === 'active') {
+        sendBookingEmail('delivery_confirmed', booking, emailExtra);
+      } else if (mutData.status === 'completed' || mutData.status === 'returning') {
+        sendBookingEmail('return_confirmed', booking, emailExtra);
+      }
       setDone(true);
     }
   });

@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, ChevronDown, ChevronUp, CheckCircle, Loader2, Scale } from 'lucide-react';
+import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
 const STATUS_LABELS = {
   open:              { label: 'Abierta',           color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
@@ -46,8 +47,22 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
       resolved_at: new Date().toISOString().split('T')[0],
       deposit_action: depositAction,
     }),
-    onSuccess: () => {
+    onSuccess: (_data, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'disputes'] });
+      // Fetch the booking to get renter/owner emails for the notification
+      base44.entities.Booking.filter({ id: dispute.booking_id }).then(bookings => {
+        const booking = bookings?.[0];
+        if (booking) {
+          sendBookingEmail('dispute_resolved', booking, {
+            equipmentTitle:     booking.equipment_title || `Reserva #${dispute.booking_id?.slice(-8)}`,
+            renterEmail:        booking.renter_email || booking.renter_id,
+            ownerEmail:         booking.owner_email  || booking.owner_id,
+            resolutionLabel:    RESOLUTION_LABELS[status] || status,
+            resolutionNotes:    notes,
+            depositActionLabel: DEPOSIT_ACTION_LABELS[depositAction] || depositAction,
+          });
+        }
+      });
       onResolved?.();
     },
   });

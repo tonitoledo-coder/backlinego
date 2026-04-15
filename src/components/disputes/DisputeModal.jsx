@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { sendBookingEmail } from '@/utils/sendBookingEmail';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,20 +55,11 @@ export default function DisputeModal({ booking, currentUserEmail, otherPartyEmai
 
       await base44.entities.Booking.update(booking.id, { status: 'disputed' });
 
-      // Notify other party
-      if (otherPartyEmail) {
-        await base44.integrations.Core.SendEmail({
-          to: otherPartyEmail,
-          subject: 'Se ha abierto una disputa en tu reserva — BacklineGo',
-          body: `Hola,\n\nSe ha abierto una disputa en la reserva #${booking.id?.slice(-8)}.\n\nMotivo: ${DISPUTE_TYPES.find(t => t.value === type)?.label || type}\n\nPor favor, accede a tu perfil en BacklineGo para responder.\n\nEl equipo de BacklineGo revisará las evidencias en un plazo de 48-72h.\n\nBacklineGo`,
-        });
-      }
-
-      // Notify admin
-      await base44.integrations.Core.SendEmail({
-        to: 'hola@backlinego.com',
-        subject: `[DISPUTA] Nueva disputa en reserva #${booking.id?.slice(-8)}`,
-        body: `Se ha abierto una disputa.\n\nReserva: ${booking.id}\nAbierta por: ${currentUserEmail}\nTipo: ${type}\nDescripción: ${description}\n\nRevisa el panel de admin → tab Disputas.`,
+      sendBookingEmail('dispute_opened', booking, {
+        equipmentTitle:  booking.equipment_title,
+        otherPartyEmail: otherPartyEmail,
+        openedBy:        currentUserEmail,
+        disputeType:     DISPUTE_TYPES.find(dt => dt.value === type)?.label || type,
       });
 
       setSuccess(true);

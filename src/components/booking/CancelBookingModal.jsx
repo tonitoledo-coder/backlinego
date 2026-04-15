@@ -6,6 +6,7 @@ import { AlertTriangle, XCircle, Loader2, Ban } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { calcCancellationPolicy } from './calcCancellationPolicy';
+import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
 /**
  * Modal reutilizable de cancelación.
@@ -33,6 +34,14 @@ export default function CancelBookingModal({ booking, cancelledBy, open, onClose
       }),
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
+      sendBookingEmail('booking_cancelled', booking, {
+        equipmentTitle: booking.equipment_title || `Reserva #${booking.id?.slice(-8)}`,
+        renterEmail:    booking.renter_email || booking.renter_id,
+        ownerEmail:     booking.owner_email  || booking.owner_id,
+        cancelledBy,
+        refundPct:      policy.refundPct,
+        refundAmount:   policy.refundAmount?.toFixed(2),
+      });
       setDone(true);
     },
   });

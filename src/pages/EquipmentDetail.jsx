@@ -31,6 +31,7 @@ import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
 import { es, enUS } from 'date-fns/locale';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import { createNotification } from '@/components/notifications/createNotification';
+import { sendBookingEmail } from '@/utils/sendBookingEmail';
 import PaymentModal from '@/components/booking/PaymentModal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
@@ -307,7 +308,7 @@ export default function EquipmentDetail() {
           link_page: 'Profile',
         });
       }
-      await bookingMutation.mutateAsync({
+      const newBooking = await bookingMutation.mutateAsync({
         equipment_id: equipmentId,
         renter_id: user.id,
         owner_id: equipment.created_by,
@@ -324,6 +325,24 @@ export default function EquipmentDetail() {
         is_sos: equipment.sos_available,
         delivery_slot: deliverySlot,
         return_slot: returnSlot,
+      });
+      // Email al owner: nueva reserva
+      sendBookingEmail('booking_created', newBooking || {
+        id: 'new', start_date: format(startDate, 'yyyy-MM-dd'),
+        end_date: format(endDate, 'yyyy-MM-dd'), total_price: totalPrice,
+      }, {
+        equipmentTitle: equipment.title,
+        ownerEmail:     equipment.created_by,
+        renterEmail:    user.email,
+      });
+      // Email al renter: confirmación (el booking ya se crea confirmed)
+      sendBookingEmail('booking_confirmed', newBooking || {
+        id: 'new', start_date: format(startDate, 'yyyy-MM-dd'),
+        end_date: format(endDate, 'yyyy-MM-dd'), total_price: totalPrice,
+      }, {
+        equipmentTitle: equipment.title,
+        renterEmail:    user.email,
+        ownerEmail:     equipment.created_by,
       });
     } finally {
       setIsBooking(false);
