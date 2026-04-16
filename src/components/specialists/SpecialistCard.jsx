@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Star, CheckCircle, Wrench, Clock, Home } from 'lucide-react';
-import { useTranslation } from '@/components/i18n/translations';
 
 const specialtyLabels = {
   luthier_cuerda: 'Luthier de Cuerda',
