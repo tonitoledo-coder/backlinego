@@ -128,11 +128,14 @@ export default function Home() {
             </div>
             
             <h1 className="text-2xl lg:text-4xl font-bold text-white mb-4 lg:mb-6 leading-tight">
-              {t('heroTitle')}
+              {t('hero.headline')}
             </h1>
             
-            <p className="text-base lg:text-xl text-zinc-400 mb-6 lg:mb-8 px-2 lg:px-0">
-              {t('heroSubtitle')}
+            <p className="text-base lg:text-xl text-zinc-400 mb-3 lg:mb-4 px-2 lg:px-0">
+              {t('hero.paragraph1')}
+            </p>
+            <p className="text-sm lg:text-base text-zinc-500 mb-6 lg:mb-8 px-2 lg:px-0">
+              {t('hero.paragraph2')}
             </p>
 
             {/* Search Bar */}

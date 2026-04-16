@@ -29,6 +29,9 @@ export const translations = {
     yourLocation: 'Tu ubicación', particular: 'Particular', professional: 'Profesional',
     heroTitle: 'Alquila equipo musical y audiovisual cerca de ti',
     heroSubtitle: 'Conectamos músicos y profesionales. Alquiler con pago Escrow y seguro incluido.',
+    'hero.headline': 'Donde tu equipo se conecta.',
+    'hero.paragraph1': 'Alquila lo que necesitas — instrumentos, sonido, iluminación, estudios de grabación o podcast — con pago seguro, seguro incluido y entrega verificada.',
+    'hero.paragraph2': 'Encuentra espacios para ensayar, grabar o actuar. Conecta con músicos, técnicos y profesionales del sector.',
   },
   en: {
     home: 'Home', explore: 'Explore', map: 'Map', myEquipment: 'My Equipment',
@@ -60,6 +63,9 @@ export const translations = {
     yourLocation: 'Your location', particular: 'Individual', professional: 'Professional',
     heroTitle: 'Rent musical & audiovisual equipment near you',
     heroSubtitle: 'Connecting musicians and professionals. Secure rental with Escrow payment and insurance included.',
+    'hero.headline': 'Where your gear connects.',
+    'hero.paragraph1': 'Rent what you need — instruments, sound, lighting, recording or podcast studios — with secure payments, insurance included and QR-verified delivery.',
+    'hero.paragraph2': 'Find spaces to rehearse, record or perform. Connect with musicians, technicians and industry professionals.',
   },
   fr: {
     home: 'Accueil', explore: 'Explorer', map: 'Carte', myEquipment: 'Mon Équipement',
@@ -91,6 +97,9 @@ export const translations = {
     yourLocation: 'Votre position', particular: 'Particulier', professional: 'Professionnel',
     heroTitle: 'Louez du matériel musical et audiovisuel près de chez vous',
     heroSubtitle: 'Mise en relation de musiciens et professionnels. Location sécurisée avec paiement Escrow et assurance incluse.',
+    'hero.headline': "Là où ton équipe se connecte.",
+    'hero.paragraph1': "Loue ce dont tu as besoin — instruments, son, éclairage, studios d'enregistrement ou podcast — avec paiement sécurisé, assurance incluse et livraison vérifiée.",
+    'hero.paragraph2': "Trouve des espaces pour répéter, enregistrer ou jouer. Connecte-toi avec des musiciens, techniciens et professionnels du secteur.",
   },
   de: {
     home: 'Startseite', explore: 'Entdecken', map: 'Karte', myEquipment: 'Mein Equipment',
@@ -122,6 +131,9 @@ export const translations = {
     yourLocation: 'Dein Standort', particular: 'Privat', professional: 'Professionell',
     heroTitle: 'Musikalisches und audiovisuelles Equipment in deiner Nähe mieten',
     heroSubtitle: 'Musiker und Profis verbinden. Sichere Vermietung mit Escrow-Zahlung und Versicherung inklusive.',
+    'hero.headline': 'Wo dein Equipment sich verbindet.',
+    'hero.paragraph1': 'Miete, was du brauchst — Instrumente, Sound, Beleuchtung, Aufnahme- oder Podcast-Studios — mit sicherer Zahlung, Versicherung inklusive und QR-verifizierter Übergabe.',
+    'hero.paragraph2': 'Finde Räume zum Proben, Aufnehmen oder Auftreten. Vernetze dich mit Musikern, Technikern und Branchenprofis.',
   },
   it: {
     home: 'Home', explore: 'Esplora', map: 'Mappa', myEquipment: 'Il Mio Equipaggiamento',
