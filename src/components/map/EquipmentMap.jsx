@@ -123,8 +123,9 @@ export default function EquipmentMap({ equipment = [], sosMode = false, classNam
         whenReady={() => setMapReady(true)}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; <a href="https://carto.com/">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          opacity={0.85}
         />
         
         <LocationMarker position={userPosition} sosMode={sosMode} />
