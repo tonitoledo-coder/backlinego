@@ -13,6 +13,41 @@ const TabMapView     = lazy(() => import('./pages/MapView'));
 const TabSpecialists = lazy(() => import('./pages/Specialists'));
 const TabProfile     = lazy(() => import('./pages/Profile'));
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error('[BacklineGo] ErrorBoundary caught:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 24, background: '#0a0a0f' }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 28 }}>⚠️</span>
+          </div>
+          <h2 style={{ color: 'white', fontWeight: 700, fontSize: '1.25rem', margin: 0 }}>Algo ha ido mal</h2>
+          <p style={{ color: '#71717a', fontSize: '0.875rem', textAlign: 'center', maxWidth: 320, margin: 0 }}>
+            {this.state.error?.message || 'Error inesperado'}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ background: '#3b82f6', color: 'white', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer' }}
+          >
+            Recargar página
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const MOBILE_TABS = ['Home', 'Explore', 'MapView', 'Specialists', 'Profile'];
 const TAB_COMPONENTS = { Home: TabHome, Explore: TabExplore, MapView: TabMapView, Specialists: TabSpecialists, Profile: TabProfile };
 import { useTranslation } from '@/components/i18n/translations';
@@ -281,9 +316,11 @@ export default function Layout({ children, currentPageName }) {
       {/* Main Content */}
       {/* Desktop: normal render */}
       <main className="hidden lg:block pt-16 pb-8">
-        <PageTransition>
-          {children}
-        </PageTransition>
+        <ErrorBoundary>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </ErrorBoundary>
       </main>
 
       {/* Mobile: keep all 5 tab pages mounted; show/hide via CSS to preserve scroll & state */}
@@ -296,9 +333,11 @@ export default function Layout({ children, currentPageName }) {
               key={tabName}
               style={{ display: isTabActive ? 'block' : 'none' }}
             >
-              <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
-                <TabPage />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+                  <TabPage />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           );
         })}
