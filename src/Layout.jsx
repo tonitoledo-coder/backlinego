@@ -319,9 +319,7 @@ export default function Layout({ children, currentPageName }) {
       {/* Desktop: normal render */}
       <main className="hidden lg:block pt-16 pb-8">
         <ErrorBoundary>
-          <PageTransition>
-            {children}
-          </PageTransition>
+          {children}
         </ErrorBoundary>
       </main>
 
