@@ -13,35 +13,47 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     (async () => {
-      const [terms, privacy] = await Promise.all([
-        base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
-        base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
-      ]);
-      const termsResult = terms?.[0] || null;
-      const privacyResult = privacy?.[0] || null;
-      setTermsDoc(termsResult);
-      setPrivacyDoc(privacyResult);
-      setLoading(false);
-      if (!termsResult && !privacyResult) {
-        onAccepted({ terms_version_accepted: null, privacy_version_accepted: null });
+      try {
+        const [terms, privacy] = await Promise.all([
+          base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
+          base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
+        ]);
+        if (!mounted) return;
+        const termsResult = terms?.[0] || null;
+        const privacyResult = privacy?.[0] || null;
+        setTermsDoc(termsResult);
+        setPrivacyDoc(privacyResult);
+        setLoading(false);
+        if (!termsResult && !privacyResult) {
+          onAccepted({ terms_version_accepted: null, privacy_version_accepted: null });
+        }
+      } catch (e) {
+        if (!mounted) return;
+        setLoading(false);
       }
     })();
+    return () => { mounted = false; };
   }, []);
 
   const handleConfirm = async () => {
     if (!termsAccepted || !privacyAccepted) return;
     setSaving(true);
-    await base44.entities.UserProfile.update(userProfile.id, {
-      terms_version_accepted: termsDoc?.version || '1.0',
-      privacy_version_accepted: privacyDoc?.version || '1.0',
-      legal_accepted_at: new Date().toISOString(),
-    });
-    setSaving(false);
-    onAccepted({
-      terms_version_accepted: termsDoc?.version || '1.0',
-      privacy_version_accepted: privacyDoc?.version || '1.0',
-    });
+    try {
+      await base44.entities.UserProfile.update(userProfile.id, {
+        terms_version_accepted: termsDoc?.version || '1.0',
+        privacy_version_accepted: privacyDoc?.version || '1.0',
+        legal_accepted_at: new Date().toISOString(),
+      });
+      onAccepted({
+        terms_version_accepted: termsDoc?.version || '1.0',
+        privacy_version_accepted: privacyDoc?.version || '1.0',
+      });
+    } catch (e) {
+      console.error('[LegalModal] Error guardando aceptación:', e);
+      setSaving(false);
+    }
   };
 
   const canContinue = termsAccepted && privacyAccepted;
