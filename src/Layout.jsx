@@ -1,7 +1,6 @@
 import * as Sentry from "@sentry/react";
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
-import PageTransition from '@/components/mobile/PageTransition';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
@@ -343,9 +342,9 @@ export default function Layout({ children, currentPageName }) {
         })}
         {/* Sub-pages (non-tab) render normally */}
         {!MOBILE_TABS.includes(routePageName) && (
-          <PageTransition>
+          <>
             {children}
-          </PageTransition>
+          </>
         )}
       </div>
 
