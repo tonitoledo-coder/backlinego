@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/translations';
@@ -18,10 +18,23 @@ export default function MapView() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [viewMode, setViewMode] = useState('map');
   const [mapKey, setMapKey] = useState(0);
+  const containerRef = useRef(null);
 
-  // Force Leaflet re-mount when this tab becomes visible
+  // Force Leaflet re-mount when the tab container becomes visible
+  // (the layout hides tabs with display:none, so Leaflet can't calc size until visible)
   useEffect(() => {
-    setMapKey(k => k + 1);
+    if (!containerRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setMapKey(k => k + 1);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.01 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, []);
 
   const { data: equipment = [], isLoading } = useQuery({
@@ -36,7 +49,7 @@ export default function MapView() {
   });
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-4rem)] flex flex-col">
+    <div ref={containerRef} className="h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-4rem)] flex flex-col">
       {/* Controls Bar */}
       <div className="px-4 lg:px-6 py-4 bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800">
         <div className="max-w-7xl mx-auto space-y-4">

@@ -75,7 +75,7 @@ function readParams(search) {
     city:         p.get('city') || '',
     from:         p.get('from') ? parseISO(p.get('from')) : null,
     to:           p.get('to')   ? parseISO(p.get('to'))   : null,
-    cats:         p.get('cats') ? p.get('cats').split(',') : [],
+    cats:         p.get('cats') ? p.get('cats').split(',') : (p.get('category') ? [p.get('category')] : []),
     listingType:  p.get('lt') || '',
     priceMin:     parseInt(p.get('pmin') || '0', 10),
     priceMax:     parseInt(p.get('pmax') || '500', 10),

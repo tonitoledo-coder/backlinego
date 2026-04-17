@@ -139,7 +139,8 @@ export default function Home() {
             </p>
 
             {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto mb-8">
+            <div className="relative max-w-2xl mx-auto mb-8 space-y-2">
+              {/* Row 1: text input + search button */}
               <div className="flex items-center rounded-2xl p-2 transition-all duration-200" style={{ background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.12)' }}
               onFocusCapture={(e) => e.currentTarget.style.cssText += ';border-color:#1DDF7A;box-shadow:0 0 0 3px rgba(29,223,122,0.12)'}
               onBlurCapture={(e) => {e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';e.currentTarget.style.boxShadow = 'none';}}>
@@ -151,10 +152,26 @@ export default function Home() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="border-0 bg-transparent text-white focus-visible:ring-0"
                     style={{ '--placeholder-opacity': '0.3' }} />
-                  
                 </div>
-                {/* Date range pickers */}
-                <div className="flex items-center gap-1 border-l border-zinc-700 pl-3 mr-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = new URLSearchParams();
+                    if (searchQuery) p.set('q', searchQuery);
+                    if (searchStart) p.set('from', format(searchStart, 'yyyy-MM-dd'));
+                    if (searchEnd) p.set('to', format(searchEnd, 'yyyy-MM-dd'));
+                    navigate(createPageUrl('Explore') + (p.toString() ? '?' + p.toString() : ''));
+                  }}
+                  className="rounded-xl px-5 font-semibold h-10 shrink-0"
+                  style={{ background: '#1DDF7A', color: '#060E18' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#17c96e'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#1DDF7A'}>
+                  {t('search')}
+                </button>
+              </div>
+              {/* Row 2: date pickers */}
+              <div className="flex items-center justify-center gap-2 px-2">
+                <div className="flex items-center gap-1 rounded-xl px-3 h-10" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <DatePickerDrawer
                     label="Desde"
                     value={searchStart}
@@ -180,22 +197,6 @@ export default function Home() {
                     </button>
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const p = new URLSearchParams();
-                    if (searchQuery) p.set('q', searchQuery);
-                    if (searchStart) p.set('from', format(searchStart, 'yyyy-MM-dd'));
-                    if (searchEnd) p.set('to', format(searchEnd, 'yyyy-MM-dd'));
-                    navigate(createPageUrl('Explore') + (p.toString() ? '?' + p.toString() : ''));
-                  }}
-                  className="rounded-xl px-6 font-semibold h-10"
-                  style={{ background: '#1DDF7A', color: '#060E18' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#17c96e'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#1DDF7A'}>
-                  
-                  {t('search')}
-                </button>
               </div>
             </div>
 
