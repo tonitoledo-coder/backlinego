@@ -5,7 +5,7 @@ import App from '@/App.jsx'
 import '@/index.css'
 
 Sentry.init({
-  dsn: "SENTRY_DSN_AQUI",
+  dsn: "https://6382dec6c747979372211a8ed5bb70a2@o4510959314862080.ingest.de.sentry.io/4511234509242448",
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
