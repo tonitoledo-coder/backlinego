@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/react";
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
 import PageTransition from '@/components/mobile/PageTransition';
@@ -169,6 +170,7 @@ export default function Layout({ children, currentPageName }) {
   }
 
   return (
+    <Sentry.ErrorBoundary fallback={<p>Ha ocurrido un error inesperado.</p>} showDialog>
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
       {showLegalModal && currentUserProfile && (
         <LegalAcceptanceModal
@@ -331,5 +333,6 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </nav>
     </div>
+    </Sentry.ErrorBoundary>
   );
 }
