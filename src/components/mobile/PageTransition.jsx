@@ -12,7 +12,7 @@ export default function PageTransition({ children }) {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="sync" initial={false}>
       <motion.div
         key={location.pathname}
         variants={variants}
