@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/react";
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
 import PageTransition from '@/components/mobile/PageTransition';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
 
@@ -88,6 +88,8 @@ function RejectedScreen() {
 export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const routePageName = location.pathname.replace('/', '') || 'Home';
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -176,8 +178,8 @@ export default function Layout({ children, currentPageName }) {
     navigate(createPageUrl('AddEquipment'));
   };
 
-  const isActive = (pageName) => currentPageName === pageName;
-  const isSubPage = !ROOT_PAGES.has(currentPageName);
+  const isActive = (pageName) => routePageName === pageName;
+  const isSubPage = !ROOT_PAGES.has(routePageName);
 
   const navItems = [
     { name: 'Home', icon: Home, label: t('home') },
@@ -196,7 +198,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Profile', icon: User, label: t('profile') },
   ];
 
-  if (currentPageName === 'Onboarding' || currentPageName === 'PendingApproval') {
+  if (routePageName === 'Onboarding' || routePageName === 'PendingApproval') {
     return <>{children}</>;
   }
 
@@ -327,7 +329,7 @@ export default function Layout({ children, currentPageName }) {
       <div className="lg:hidden pt-14 pb-20" style={{ overscrollBehavior: 'none' }}>
         {MOBILE_TABS.map((tabName) => {
           const TabPage = TAB_COMPONENTS[tabName];
-          const isTabActive = currentPageName === tabName;
+          const isTabActive = routePageName === tabName;
           return (
             <div
               key={tabName}
@@ -342,7 +344,7 @@ export default function Layout({ children, currentPageName }) {
           );
         })}
         {/* Sub-pages (non-tab) render normally */}
-        {!MOBILE_TABS.includes(currentPageName) && (
+        {!MOBILE_TABS.includes(routePageName) && (
           <PageTransition>
             {children}
           </PageTransition>
