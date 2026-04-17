@@ -323,7 +323,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Mobile: keep all 5 tab pages mounted; show/hide via CSS to preserve scroll & state */}
-      <div className="lg:hidden pt-14 pb-20" style={{ overscrollBehavior: 'none' }}>
+      <div className="lg:hidden pb-20" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))', overscrollBehavior: 'none' }}>
         {MOBILE_TABS.map((tabName) => {
           const TabPage = TAB_COMPONENTS[tabName];
           const isTabActive = routePageName === tabName;

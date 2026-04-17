@@ -86,6 +86,17 @@ function LocationMarker({ position, sosMode }) {
   );
 }
 
+function MapResizer() {
+  const map = useMap();
+  useEffect(() => {
+    // Give the DOM time to settle, then force Leaflet to recalculate size
+    const t1 = setTimeout(() => map.invalidateSize(), 100);
+    const t2 = setTimeout(() => map.invalidateSize(), 400);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [map]);
+  return null;
+}
+
 export default function EquipmentMap({ equipment = [], sosMode = false, className = "" }) {
   const { t } = useTranslation();
   const [userPosition, setUserPosition] = useState(null);
@@ -127,7 +138,8 @@ export default function EquipmentMap({ equipment = [], sosMode = false, classNam
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           opacity={0.85}
         />
-        
+
+        <MapResizer />
         <LocationMarker position={userPosition} sosMode={sosMode} />
         
         {filteredEquipment.map(item => {

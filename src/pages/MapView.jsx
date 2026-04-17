@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/translations';
@@ -17,6 +17,12 @@ export default function MapView() {
   const [sosMode, setSosMode] = useState(params.get('sos') === 'true');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [viewMode, setViewMode] = useState('map');
+  const [mapKey, setMapKey] = useState(0);
+
+  // Force Leaflet re-mount when this tab becomes visible
+  useEffect(() => {
+    setMapKey(k => k + 1);
+  }, []);
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', 'map'],
@@ -84,7 +90,8 @@ export default function MapView() {
       {/* Map / List View */}
       <div className="flex-1 relative">
         {viewMode === 'map' ? (
-          <EquipmentMap 
+          <EquipmentMap
+            key={mapKey}
             equipment={filteredEquipment} 
             sosMode={sosMode}
             className="w-full h-full"
