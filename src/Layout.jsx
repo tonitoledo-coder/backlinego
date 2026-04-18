@@ -329,7 +329,7 @@ export default function Layout({ children, currentPageName }) {
           const isTabActive = routePageName === tabName;
           // Don't pre-mount protected tabs for unauthenticated users — prevents
           // Profile's useEffect from triggering redirectToLogin while browsing public pages.
-          if (!user && !loading && PROTECTED_PAGES.includes(tabName) && !isTabActive) {
+          if (!user && PROTECTED_PAGES.includes(tabName) && !isTabActive) {
             return <div key={tabName} style={{ display: 'none' }} />;
           }
           return (
