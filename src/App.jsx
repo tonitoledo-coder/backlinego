@@ -38,11 +38,10 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
     }
+    // auth_required: NO redirigir globalmente.
+    // Layout.jsx gestiona la protección por página mediante PROTECTED_PAGES.
+    // Esto permite browsing público en Home, Explore, MapView, Specialists.
   }
 
   // Render the main app
