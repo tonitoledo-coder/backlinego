@@ -68,8 +68,12 @@ export default function Profile() {
       if (!isAuth) { base44.auth.redirectToLogin(); return; }
       const userData = await base44.auth.me();
       setUser(userData);
-      const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
-      setUserProfile(profiles?.[0] || null);
+      try {
+        const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
+        setUserProfile(profiles?.[0] || null);
+      } catch (profileErr) {
+        console.warn('[Profile] Could not load user profile:', profileErr);
+      }
     } catch (e) {
       base44.auth.redirectToLogin();
     } finally {
