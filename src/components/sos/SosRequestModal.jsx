@@ -42,6 +42,11 @@ export default function SosRequestModal({ open, onClose, initialCategory = '' })
 
   const handleSubmit = async () => {
     if (!form.category || !form.city || !form.description) return;
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) {
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
     setSubmitting(true);
     try {
       const user = await base44.auth.me();
