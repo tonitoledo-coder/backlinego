@@ -116,8 +116,8 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
         </div>
 
         {/* Document content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', minHeight: 0 }}
-          className="prose prose-invert prose-sm max-w-none">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', minHeight: 0, background: '#ffffff', color: '#111827' }}
+          className="prose prose-sm max-w-none">
           {loading ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0' }}>
               <Loader2 style={{ width: 24, height: 24, color: '#a1a1aa' }} className="animate-spin" />
