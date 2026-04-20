@@ -42,13 +42,13 @@ export default function PublicProfile() {
 
   useEffect(() => {
     (async () => {
-      // Get username from URL
-      const path = window.location.pathname;
-      const username = path.split('/').filter(Boolean).pop();
+      const params = new URLSearchParams(window.location.search);
+      const email = params.get('email');
+      if (!email) { setNotFound(true); setLoading(false); return; }
 
       try {
         const [allUsers, authStatus] = await Promise.all([
-          base44.entities.User.filter({ username }),
+          base44.entities.User.filter({ email }),
           base44.auth.isAuthenticated(),
         ]);
 

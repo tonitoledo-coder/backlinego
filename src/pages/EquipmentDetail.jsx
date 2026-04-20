@@ -73,7 +73,10 @@ function BookingAccessModal({ type, onClose }) {
             Nuestro equipo está verificando tu solicitud. Te avisaremos cuando puedas realizar reservas.
           </DialogDescription>
         </DialogHeader>
-        <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 mt-2" onClick={onClose}>Cerrar</Button>
+        <div className="flex flex-col gap-2 mt-2">
+          <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => navigate(createPageUrl('PendingApproval'))}>Ver estado de cuenta</Button>
+          <Button variant="outline" className="w-full border-zinc-700 text-zinc-300" onClick={onClose}>Cerrar</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -510,10 +513,12 @@ export default function EquipmentDetail() {
             {/* Owner rating + verified badge */}
             {equipment.created_by && (
               <div className="mt-3">
+                <Link to={createPageUrl('PublicProfile') + '?email=' + encodeURIComponent(equipment.created_by)}>
                 <OwnerRatingBadge
                   ownerEmail={equipment.created_by}
                   identityStatus={equipment.owner_identity_status}
                 />
+                </Link>
               </div>
             )}
           </div>

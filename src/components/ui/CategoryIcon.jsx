@@ -1,5 +1,5 @@
 import React from 'react';
-import { Guitar, Piano, Drum, Disc3, Speaker } from 'lucide-react';
+import { Guitar, Piano, Drum, Disc3, Speaker, Mic2 } from 'lucide-react';
 
 const icons = {
   cuerdas: Guitar,
@@ -7,6 +7,7 @@ const icons = {
   percusion: Drum,
   dj_gear: Disc3,
   sonido_pa: Speaker,
+  estudio_podcast: Mic2,
 };
 
 export default function CategoryIcon({ category, className = "w-5 h-5" }) {

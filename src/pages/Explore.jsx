@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import SosRequestModal from '@/components/sos/SosRequestModal';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useTranslation } from '@/components/i18n/translations';
@@ -113,12 +114,12 @@ function buildParams(filters) {
 function EquipmentListRow({ equipment, searchStart, searchEnd }) {
   const { t } = useTranslation();
   return (
-    <a
-      href={(() => {
+    <Link
+      to={(() => {
         const p = new URLSearchParams({ id: equipment.id });
         if (searchStart) p.set('from', format(searchStart, 'yyyy-MM-dd'));
         if (searchEnd)   p.set('to',   format(searchEnd,   'yyyy-MM-dd'));
-        return '/EquipmentDetail?' + p.toString();
+        return createPageUrl('EquipmentDetail') + '?' + p.toString();
       })()}
       className="flex gap-4 p-3 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:border-zinc-600 transition-all"
     >
@@ -153,7 +154,7 @@ function EquipmentListRow({ equipment, searchStart, searchEnd }) {
           <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 

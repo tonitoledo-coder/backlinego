@@ -35,7 +35,8 @@ const categories = [
 { id: 'teclados', icon: 'teclados', color: 'from-yellow-500  to-amber-500' },
 { id: 'percusion', icon: 'percusion', color: 'from-orange-500  to-orange-600' },
 { id: 'dj_gear', icon: 'dj_gear', color: 'from-amber-400   to-yellow-500' },
-{ id: 'sonido_pa', icon: 'sonido_pa', color: 'from-emerald-500 to-teal-500' }];
+{ id: 'sonido_pa', icon: 'sonido_pa', color: 'from-emerald-500 to-teal-500' },
+{ id: 'estudio_podcast', icon: 'estudio_podcast', color: 'from-violet-500 to-purple-600' }];
 
 
 
