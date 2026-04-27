@@ -65,6 +65,7 @@ const PublicProfile = lazy(() => import('./pages/PublicProfile'));
 const Rewards = lazy(() => import('./pages/Rewards'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Specialists = lazy(() => import('./pages/Specialists'));
+const BulletinBoard = lazy(() => import('./pages/BulletinBoard'));
 import __Layout from './Layout.jsx';
 
 
@@ -86,6 +87,7 @@ export const PAGES = {
     "Rewards": Rewards,
     "Settings": Settings,
     "Specialists": Specialists,
+    "BulletinBoard": BulletinBoard,
 }
 
 export const pagesConfig = {
