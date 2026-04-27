@@ -1,0 +1,37 @@
+{
+  "name": "BulletinReply",
+  "type": "object",
+  "properties": {
+    "post_id": {
+      "type": "string",
+      "description": "ID del BulletinPost al que pertenece"
+    },
+    "parent_reply_id": {
+      "type": "string",
+      "description": "ID de la respuesta padre (para hilos anidados, nullable)"
+    },
+    "body": {
+      "type": "string",
+      "description": "Contenido de la respuesta"
+    },
+    "depth": {
+      "type": "number",
+      "default": 0,
+      "description": "Nivel de anidaci\u00f3n (0 = respuesta directa al post)"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Respuesta eliminada (soft delete)"
+    },
+    "report_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de reportes recibidos"
+    }
+  },
+  "required": [
+    "post_id",
+    "body"
+  ]
+}

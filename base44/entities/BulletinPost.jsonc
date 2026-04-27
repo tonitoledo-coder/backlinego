@@ -1,0 +1,70 @@
+{
+  "name": "BulletinPost",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo del anuncio"
+    },
+    "body": {
+      "type": "string",
+      "description": "Cuerpo del anuncio"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "busco_banda",
+        "alquila_local",
+        "colaboracion",
+        "vendo_material"
+      ],
+      "description": "Categor\u00eda del anuncio"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de im\u00e1genes adjuntas"
+    },
+    "city": {
+      "type": "string",
+      "description": "Ciudad del anuncio"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "closed",
+        "deleted"
+      ],
+      "default": "active",
+      "description": "Estado del anuncio"
+    },
+    "is_pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Anuncio fijado en la parte superior"
+    },
+    "reply_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de respuestas"
+    },
+    "is_banned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Anuncio baneado por moderaci\u00f3n"
+    },
+    "report_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de reportes recibidos"
+    }
+  },
+  "required": [
+    "title",
+    "body",
+    "category"
+  ]
+}
