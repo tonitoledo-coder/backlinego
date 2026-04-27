@@ -327,7 +327,15 @@ export default function Explore() {
   const [openDateTo, setOpenDateTo] = useState(false);
   const [hoveredId, setHoveredId] = useState(null);
   const [showSosModal, setShowSosModal] = useState(false);
+  const [isLgScreen, setIsLgScreen] = useState(() => window.innerWidth >= 1024);
   const cardRefs = useRef({});
+
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const handler = () => setIsLgScreen(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   // Sync filters → URL
   useEffect(() => {
@@ -715,68 +723,70 @@ export default function Explore() {
       {/* MAP VIEW */}
       {filters.view === 'map' && (
         <div className="relative">
-          {/* Desktop: split map + list */}
-          <div className="hidden lg:flex gap-4" style={{ height: '70vh' }}>
-            {/* Left: scrollable list */}
-            <div className="w-80 shrink-0 overflow-y-auto space-y-2 pr-1 scrollbar-hide">
-              {isLoading ? (
-                [...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-xl bg-zinc-800/50 animate-pulse" />)
-              ) : filtered.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500 text-sm">Sin resultados</div>
-              ) : (
-                filtered.map(eq => (
-                  <div
-                    key={eq.id}
-                    ref={el => { if (el) cardRefs.current[eq.id] = el; }}
-                    onMouseEnter={() => setHoveredId(eq.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                    className={cn(
-                      "cursor-pointer rounded-xl border transition-all",
-                      hoveredId === eq.id ? "border-white/40 bg-zinc-800" : "border-zinc-800 bg-zinc-900/60"
-                    )}
-                  >
-                    <EquipmentListRow equipment={eq} searchStart={filters.from} searchEnd={filters.to} />
-                  </div>
-                ))
-              )}
+          {isLgScreen ? (
+            /* Desktop: split map + list — single ExploreMap instance */
+            <div className="flex gap-4" style={{ height: '70vh' }}>
+              {/* Left: scrollable list */}
+              <div className="w-80 shrink-0 overflow-y-auto space-y-2 pr-1 scrollbar-hide">
+                {isLoading ? (
+                  [...Array(6)].map((_, i) => <div key={i} className="h-24 rounded-xl bg-zinc-800/50 animate-pulse" />)
+                ) : filtered.length === 0 ? (
+                  <div className="text-center py-12 text-zinc-500 text-sm">Sin resultados</div>
+                ) : (
+                  filtered.map(eq => (
+                    <div
+                      key={eq.id}
+                      ref={el => { if (el) cardRefs.current[eq.id] = el; }}
+                      onMouseEnter={() => setHoveredId(eq.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                      className={cn(
+                        "cursor-pointer rounded-xl border transition-all",
+                        hoveredId === eq.id ? "border-white/40 bg-zinc-800" : "border-zinc-800 bg-zinc-900/60"
+                      )}
+                    >
+                      <EquipmentListRow equipment={eq} searchStart={filters.from} searchEnd={filters.to} />
+                    </div>
+                  ))
+                )}
+              </div>
+              {/* Right: map */}
+              <div className="flex-1 rounded-xl overflow-hidden">
+                <ExploreMap
+                  equipment={filtered}
+                  hoveredId={hoveredId}
+                  searchStart={filters.from}
+                  searchEnd={filters.to}
+                  className="w-full h-full"
+                  onMarkerClick={(id) => {
+                    setHoveredId(id);
+                    const el = cardRefs.current[id];
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
+                />
+              </div>
             </div>
-            {/* Right: map */}
-            <div className="flex-1 rounded-xl overflow-hidden">
+          ) : (
+            /* Mobile: full-screen map + floating list button — single ExploreMap instance */
+            <div style={{ height: 'calc(100vh - 200px)' }}>
               <ExploreMap
                 equipment={filtered}
                 hoveredId={hoveredId}
                 searchStart={filters.from}
                 searchEnd={filters.to}
-                className="w-full h-full"
-                onMarkerClick={(id) => {
-                  setHoveredId(id);
-                  const el = cardRefs.current[id];
-                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
+                className="w-full h-full rounded-xl overflow-hidden"
+                onMarkerClick={(id) => setHoveredId(id)}
               />
+              {/* Floating switch to list */}
+              <button
+                onClick={() => setFilter('view', 'grid')}
+                className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-full font-semibold text-sm shadow-2xl"
+                style={{ background: '#1DDF7A', color: '#060E18' }}
+              >
+                <List className="w-4 h-4" />
+                Ver lista ({filtered.length})
+              </button>
             </div>
-          </div>
-
-          {/* Mobile: full-screen map + floating list button */}
-          <div className="lg:hidden" style={{ height: 'calc(100vh - 200px)' }}>
-            <ExploreMap
-              equipment={filtered}
-              hoveredId={hoveredId}
-              searchStart={filters.from}
-              searchEnd={filters.to}
-              className="w-full h-full rounded-xl overflow-hidden"
-              onMarkerClick={(id) => setHoveredId(id)}
-            />
-            {/* Floating switch to list */}
-            <button
-              onClick={() => setFilter('view', 'grid')}
-              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-full font-semibold text-sm shadow-2xl"
-              style={{ background: '#1DDF7A', color: '#060E18' }}
-            >
-              <List className="w-4 h-4" />
-              Ver lista ({filtered.length})
-            </button>
-          </div>
+          )}
         </div>
       )}
 
