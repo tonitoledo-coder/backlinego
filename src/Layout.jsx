@@ -61,7 +61,8 @@ import {
   Trophy,
   Crown,
   Ban,
-  ChevronLeft
+  ChevronLeft,
+  MessageSquare
 } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
@@ -69,7 +70,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const PROTECTED_PAGES = ['Profile', 'Settings', 'AddEquipment', 'Chat', 'Rewards'];
-const ROOT_PAGES = new Set(['Home', 'Explore', 'MapView', 'Specialists', 'Profile', 'Rewards', 'Onboarding', 'PendingApproval']);
+const ROOT_PAGES = new Set(['Home', 'Explore', 'MapView', 'Specialists', 'Profile', 'Rewards', 'Onboarding', 'PendingApproval', 'BulletinBoard']);
 
 function RejectedScreen() {
   return (
@@ -185,6 +186,7 @@ export default function Layout({ children, currentPageName }) {
     { name: 'Explore', icon: Search, label: t('explore') },
     { name: 'MapView', icon: Map, label: t('map') },
     { name: 'Specialists', icon: Wrench, label: 'Técnicos' },
+    { name: 'BulletinBoard', icon: MessageSquare, label: 'Tablón' },
     { name: 'Rewards', icon: Trophy, label: 'Rewards' },
     { name: 'Profile', icon: User, label: t('profile') },
   ];
