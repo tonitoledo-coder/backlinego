@@ -24,7 +24,8 @@ import {
   Star,
   CheckCircle,
   Trophy,
-  Globe } from
+  Globe,
+  MessageSquare } from
 'lucide-react';
 import CategoryIcon from '@/components/ui/CategoryIcon';
 import EquipmentCard from '@/components/equipment/EquipmentCard';
@@ -340,6 +341,27 @@ export default function Home() {
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
+      </section>
+
+      {/* Bulletin Board Banner */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-6 py-4">
+        <Link to={createPageUrl('BulletinBoard')}>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600/20 to-violet-800/10 border border-violet-500/30 p-5 lg:p-6 group hover:border-violet-500/60 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/20 rounded-full blur-[60px]" />
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-violet-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Tablón de la Comunidad</h3>
+                  <p className="text-violet-400/80 text-sm">Busca banda · Alquila local · Colaboraciones · Vende material</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-violet-400 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
         </Link>
