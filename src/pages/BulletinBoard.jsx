@@ -16,6 +16,7 @@ import PullToRefresh from '@/components/mobile/PullToRefresh';
 const CATEGORIES = [
   { value: 'all',             label: 'Todos' },
   { value: 'busco_banda',     label: 'Busco banda' },
+  { value: 'busco_musico',    label: 'Busco músico' },
   { value: 'alquila_local',   label: 'Local de ensayo' },
   { value: 'colaboracion',    label: 'Colaboración' },
   { value: 'vendo_material',  label: 'Vendo material' },
@@ -23,6 +24,7 @@ const CATEGORIES = [
 
 const CAT_STYLES = {
   busco_banda:    { bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-purple-500/30' },
+  busco_musico:   { bg: 'bg-rose-500/15',   text: 'text-rose-300',   border: 'border-rose-500/30' },
   alquila_local:  { bg: 'bg-blue-500/15',   text: 'text-blue-300',   border: 'border-blue-500/30' },
   colaboracion:   { bg: 'bg-green-500/15',  text: 'text-green-300',  border: 'border-green-500/30' },
   vendo_material: { bg: 'bg-amber-500/15',  text: 'text-amber-300',  border: 'border-amber-500/30' },
@@ -30,6 +32,7 @@ const CAT_STYLES = {
 
 const CAT_LABELS = {
   busco_banda:    'Busco banda',
+  busco_musico:   'Busco músico',
   alquila_local:  'Local de ensayo',
   colaboracion:   'Colaboración',
   vendo_material: 'Vendo material',
@@ -149,7 +152,7 @@ export default function BulletinBoard() {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['bulletin', 'posts'],
-    queryFn: () => base44.entities.BulletinPost.filter({ status: 'active' }, '-created_date', 50),
+    queryFn: () => base44.entities.BulletinPost.filter({ status: 'active' }),
     staleTime: 30_000,
   });
 
