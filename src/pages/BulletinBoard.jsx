@@ -152,7 +152,19 @@ export default function BulletinBoard() {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['bulletin', 'posts'],
-    queryFn: () => base44.entities.BulletinPost.filter({ status: 'active' }),
+    queryFn: async () => {
+      try {
+        return await base44.entities.BulletinPost.filter({ status: 'active' });
+      } catch (e) {
+        if (e?.status === 405 || e?.message?.includes('Method')) {
+          // filter() blocked for unauthenticated users — fallback
+          const isAuth = await base44.auth.isAuthenticated();
+          if (!isAuth) return [];
+          return await base44.entities.BulletinPost.filter({ status: 'active' });
+        }
+        throw e;
+      }
+    },
     staleTime: 30_000,
   });
 
