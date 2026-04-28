@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -146,6 +146,12 @@ export default function BulletinBoard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [isAuth, setIsAuth] = useState(null);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(setIsAuth);
+  }, []);
+
   const [category, setCategory] = useState('all');
   const [city, setCity] = useState('');
   const [sort, setSort] = useState('newest');
@@ -165,6 +171,7 @@ export default function BulletinBoard() {
         throw e;
       }
     },
+    enabled: isAuth === true,
     staleTime: 30_000,
   });
 
@@ -210,6 +217,32 @@ export default function BulletinBoard() {
 
     return list;
   }, [posts, category, city, sort]);
+
+  if (isAuth === false) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 lg:px-6 py-6">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Tablón</h1>
+            <p className="text-zinc-500 text-sm mt-0.5">Anuncios de la comunidad</p>
+          </div>
+        </div>
+        <div className="text-center py-24">
+          <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="w-8 h-8 text-zinc-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">Únete a la comunidad</h3>
+          <p className="text-zinc-500 mb-6 max-w-sm mx-auto">Inicia sesión para ver y publicar anuncios de la comunidad BacklineGo</p>
+          <Button
+            onClick={() => base44.auth.redirectToLogin(window.location.href)}
+            className="font-semibold bg-blue-600 hover:bg-blue-700"
+          >
+            Iniciar sesión
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 lg:px-6 py-6">
