@@ -47,8 +47,8 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const MOBILE_TABS = ['Home', 'Explore', 'MapView', 'Specialists', 'Profile'];
-const TAB_COMPONENTS = { Home: TabHome, Explore: TabExplore, MapView: TabMapView, Specialists: TabSpecialists, Profile: TabProfile };
+const MOBILE_TABS = ['Home', 'Explore', 'Specialists', 'Profile'];
+const TAB_COMPONENTS = { Home: TabHome, Explore: TabExplore, Specialists: TabSpecialists, Profile: TabProfile };
 import { useTranslation } from '@/components/i18n/translations';
 import {
   Home,
