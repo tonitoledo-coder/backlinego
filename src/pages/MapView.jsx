@@ -19,16 +19,20 @@ export default function MapView() {
   const [viewMode, setViewMode] = useState('map');
   const [mapKey, setMapKey] = useState(0);
   const containerRef = useRef(null);
+  const wasHiddenRef = useRef(false);
 
-  // Force Leaflet re-mount when the tab container becomes visible
-  // (the layout hides tabs with display:none, so Leaflet can't calc size until visible)
+  // Force Leaflet re-mount each time this tab becomes visible after being hidden
+  // (the layout uses display:none, which causes Leaflet "already initialized" errors on re-show)
   useEffect(() => {
     if (!containerRef.current) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        const isVisible = entries[0].isIntersecting;
+        if (isVisible && wasHiddenRef.current) {
           setMapKey(k => k + 1);
-          observer.disconnect();
+          wasHiddenRef.current = false;
+        } else if (!isVisible) {
+          wasHiddenRef.current = true;
         }
       },
       { threshold: 0.01 }
