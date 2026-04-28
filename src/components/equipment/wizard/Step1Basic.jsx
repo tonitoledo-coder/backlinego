@@ -102,8 +102,7 @@ export default function Step1Basic({ data, onChange, errors }) {
               key={opt.value}
               type="button"
               onClick={() => {
-                set('condition_label', opt.value);
-                set('condition', CONDITION_SCORE[opt.value]);
+                onChange({ ...data, condition_label: opt.value, condition: CONDITION_SCORE[opt.value] });
               }}
               className={cn(
                 "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all",
