@@ -13,7 +13,7 @@ import Step2Photos from '@/components/equipment/wizard/Step2Photos';
 import Step3Pricing from '@/components/equipment/wizard/Step3Pricing';
 import Step4Protection from '@/components/equipment/wizard/Step4Protection';
 
-const DRAFT_KEY = 'backlinego_equipment_draft';
+const getDraftKey = (email) => `backlinego_equipment_draft_${email || 'anon'}`;
 
 const SPACE_CATEGORY = 'estudio_podcast';
 
@@ -94,28 +94,29 @@ export default function AddEquipment() {
   const [errors, setErrors] = useState({});
   const [loadingEdit, setLoadingEdit] = useState(!!editId);
   const [userProfile, setUserProfile] = useState(null);
+  const [userEmail, setUserEmail] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  // Load user profile
+  // Load user profile and then draft
   useEffect(() => {
     base44.auth.isAuthenticated().then(async (isAuth) => {
       if (!isAuth) return;
       const u = await base44.auth.me();
+      setUserEmail(u.email);
       const profiles = await base44.entities.UserProfile.filter({ email: u.email });
       if (profiles?.[0]) setUserProfile(profiles[0]);
-    });
-  }, []);
 
-  // Load draft from localStorage (only when not editing)
-  useEffect(() => {
-    if (editId) return;
-    try {
-      const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setFormData(prev => ({ ...prev, ...parsed }));
+      // Load draft only after knowing the user (only when not editing)
+      if (!editId) {
+        try {
+          const saved = localStorage.getItem(getDraftKey(u.email));
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setFormData(prev => ({ ...prev, ...parsed }));
+          }
+        } catch (_) {}
       }
-    } catch (_) {}
+    });
   }, []);
 
   // Load existing equipment for editing
@@ -135,11 +136,11 @@ export default function AddEquipment() {
 
   // Auto-save draft on change
   const saveDraft = useCallback((data) => {
-    if (editId) return;
+    if (editId || !userEmail) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+      localStorage.setItem(getDraftKey(userEmail), JSON.stringify(data));
     } catch (_) {}
-  }, [editId]);
+  }, [editId, userEmail]);
 
   const handleChange = (newData) => {
     // Auto-set listing_type based on category
@@ -172,7 +173,7 @@ export default function AddEquipment() {
       return base44.entities.Equipment.create(data);
     },
     onSuccess: () => {
-      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(getDraftKey(userEmail));
       setSuccess(true);
       setTimeout(() => navigate(createPageUrl('Profile')), 2000);
     },
