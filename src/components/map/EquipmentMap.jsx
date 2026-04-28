@@ -135,8 +135,8 @@ export default function EquipmentMap({ equipment = [], sosMode = false, classNam
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          opacity={0.85}
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          opacity={1}
         />
 
         <MapResizer />
