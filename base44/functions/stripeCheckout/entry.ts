@@ -13,6 +13,22 @@ Deno.serve(async (req) => {
     const { action } = body;
 
     // ── Create or retrieve Stripe customer ──────────────────────────
+    if (action === 'check_connect_status') {
+  const account = await stripe.accounts.retrieve();
+  
+  return Response.json({
+    id: account.id,
+    country: account.country,
+    charges_enabled: account.charges_enabled,
+    payouts_enabled: account.payouts_enabled,
+    capabilities: account.capabilities,
+    controller: account.controller,          // ← clave para Connect
+    settings: {
+      dashboard: account.settings?.dashboard,
+    },
+    type: account.type,                      // standard | express | custom
+  });
+}
     if (action === 'create_customer') {
       let customerId = user.stripe_customer_id;
 
