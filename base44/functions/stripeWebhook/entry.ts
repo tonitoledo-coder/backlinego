@@ -6,19 +6,30 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'), {
 });
 
 const WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
+const WEBHOOK_SECRET_CONNECT = Deno.env.get('STRIPE_WEBHOOK_SECRET_CONNECT') || '';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-
-  // Verificar firma del webhook
   const signature = req.headers.get('stripe-signature') || '';
   const rawBody = await req.text();
 
   let event;
   try {
-    event = WEBHOOK_SECRET
-      ? stripe.webhooks.constructEvent(rawBody, signature, WEBHOOK_SECRET)
-      : JSON.parse(rawBody);
+    // Intentar verificar con el secret principal
+    // Si falla, intentar con el secret de Connect
+    if (WEBHOOK_SECRET) {
+      try {
+        event = stripe.webhooks.constructEvent(rawBody, signature, WEBHOOK_SECRET);
+      } catch {
+        if (WEBHOOK_SECRET_CONNECT) {
+          event = stripe.webhooks.constructEvent(rawBody, signature, WEBHOOK_SECRET_CONNECT);
+        } else {
+          throw new Error('Invalid signature');
+        }
+      }
+    } else {
+      event = JSON.parse(rawBody);
+    }
   } catch (err) {
     return Response.json({ error: `Webhook error: ${err.message}` }, { status: 400 });
   }
