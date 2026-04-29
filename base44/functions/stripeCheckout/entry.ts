@@ -29,6 +29,31 @@ Deno.serve(async (req) => {
     type: account.type,                      // standard | express | custom
   });
 }
+    if (action === 'test_create_connect') {
+      try {
+        const account = await stripe.accounts.create({
+          type: 'express',
+          country: 'ES',
+          email: 'test-connect@backlinego.com',
+          capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+          },
+        });
+        return Response.json({ 
+          success: true, 
+          account_id: account.id,
+          type: account.type 
+        });
+      } catch (err) {
+        return Response.json({ 
+          success: false, 
+          error: err.message,
+          code: err.code
+        });
+      }
+    }
+
     if (action === 'create_customer') {
       let customerId = user.stripe_customer_id;
 
