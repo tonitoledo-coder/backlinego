@@ -1,0 +1,174 @@
+{
+  "name": "Booking",
+  "type": "object",
+  "properties": {
+    "equipment_id": {
+      "type": "string",
+      "description": "ID del equipo reservado"
+    },
+    "equipment_title": {
+      "type": "string",
+      "description": "T\u00edtulo del equipo (desnormalizado para historial)"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email del propietario del equipo"
+    },
+    "renter_email": {
+      "type": "string",
+      "description": "Email del arrendatario"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de inicio del alquiler"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de fin del alquiler"
+    },
+    "days": {
+      "type": "number",
+      "description": "N\u00famero de d\u00edas de la reserva"
+    },
+    "base_price": {
+      "type": "number",
+      "description": "Precio base sin fees (price_per_day \u00d7 d\u00edas \u00d7 multiplicadores)"
+    },
+    "protection_fee": {
+      "type": "number",
+      "description": "Fee de protecci\u00f3n / damage waiver cobrado al arrendatario"
+    },
+    "protection_rate": {
+      "type": "number",
+      "description": "Tasa aplicada para el protection fee (ej: 0.08)"
+    },
+    "platform_fee": {
+      "type": "number",
+      "description": "Comisi\u00f3n de BacklineGo (12% del base_price)"
+    },
+    "deposit_amount": {
+      "type": "number",
+      "description": "Importe del dep\u00f3sito retenido (no cobrado, solo autorizado)"
+    },
+    "total_charged": {
+      "type": "number",
+      "description": "Total cobrado al arrendatario (base_price + protection_fee)"
+    },
+    "owner_payout": {
+      "type": "number",
+      "description": "Importe que recibir\u00e1 el propietario (base_price - platform_fee)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_payment",
+        "confirmed",
+        "active",
+        "completed",
+        "cancelled",
+        "disputed",
+        "refunded"
+      ],
+      "default": "pending_payment",
+      "description": "Estado de la reserva"
+    },
+    "protection_plan": {
+      "type": "string",
+      "enum": [
+        "damage_waiver",
+        "escrow_only",
+        "none"
+      ],
+      "default": "damage_waiver",
+      "description": "Tipo de protecci\u00f3n aplicada en esta reserva"
+    },
+    "stripe_payment_intent_id": {
+      "type": "string",
+      "description": "ID del PaymentIntent de Stripe para el pago principal"
+    },
+    "stripe_deposit_intent_id": {
+      "type": "string",
+      "description": "ID del PaymentIntent de Stripe para el dep\u00f3sito (capture_method: manual)"
+    },
+    "stripe_transfer_id": {
+      "type": "string",
+      "description": "ID de la transferencia a la cuenta Connect del propietario"
+    },
+    "deposit_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "held",
+        "captured",
+        "released"
+      ],
+      "default": "none",
+      "description": "Estado del dep\u00f3sito retenido"
+    },
+    "pickup_confirmed_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha en que se confirm\u00f3 la recogida del equipo"
+    },
+    "return_confirmed_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha en que se confirm\u00f3 la devoluci\u00f3n del equipo"
+    },
+    "pickup_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "URLs de fotos tomadas en la entrega"
+    },
+    "return_photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "URLs de fotos tomadas en la devoluci\u00f3n"
+    },
+    "cancellation_reason": {
+      "type": "string",
+      "description": "Motivo de cancelaci\u00f3n si aplica"
+    },
+    "cancelled_by": {
+      "type": "string",
+      "description": "Email de quien cancel\u00f3 la reserva"
+    },
+    "cancelled_at": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de cancelaci\u00f3n"
+    },
+    "refund_amount": {
+      "type": "number",
+      "description": "Importe devuelto en caso de cancelaci\u00f3n o disputa"
+    },
+    "is_sos": {
+      "type": "boolean",
+      "default": false,
+      "description": "True si la reserva se origin\u00f3 desde SOS Mode"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales del arrendatario al hacer la reserva"
+    }
+  },
+  "required": [
+    "equipment_id",
+    "owner_email",
+    "renter_email",
+    "start_date",
+    "end_date",
+    "days",
+    "base_price",
+    "total_charged",
+    "status"
+  ]
+}
