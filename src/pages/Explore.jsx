@@ -187,6 +187,7 @@ function FiltersPanel({ filters, setFilter, t }) {
             <button
               key={opt.value}
               type="button"
+              data-vaul-no-drag
               onClick={() => { setFilter('listingType', opt.value); setFilter('page', 1); }}
               className={cn(
                 "flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-all",
@@ -211,6 +212,7 @@ function FiltersPanel({ filters, setFilter, t }) {
               <button
                 key={cat.value}
                 type="button"
+                data-vaul-no-drag
                 onClick={() => toggleCat(cat.value)}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
@@ -248,6 +250,7 @@ function FiltersPanel({ filters, setFilter, t }) {
             <button
               key={opt.value}
               type="button"
+              data-vaul-no-drag
               onClick={() => { setFilter('rating', opt.value); setFilter('page', 1); }}
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
@@ -270,6 +273,7 @@ function FiltersPanel({ filters, setFilter, t }) {
             <button
               key={opt.value}
               type="button"
+              data-vaul-no-drag
               onClick={() => togglePickup(opt.value)}
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
