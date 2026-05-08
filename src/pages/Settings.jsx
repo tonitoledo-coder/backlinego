@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, User, CreditCard, Bell, Lock, Shield, ChevronLeft, Fingerprint } from 'lucide-react';
@@ -23,6 +24,7 @@ const TABS = [
 
 export default function Settings() {
   const navigate = useNavigate();
+  const { user: authUser, isAuthenticated, isLoadingAuth, navigateToLogin } = useAuth();
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,21 +34,38 @@ export default function Settings() {
   const defaultTab = urlParams.get('tab') || 'profile';
   const paymentResult = urlParams.get('payment');
 
-  useEffect(() => {
-    (async () => {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) { base44.auth.redirectToLogin(window.location.href); return; }
-      const u = await base44.auth.me();
-      setUser(u);
-      const profiles = await base44.entities.UserProfile.filter({ email: u.email });
-      if (profiles?.[0]) setUserProfile(profiles[0]);
-      setLoading(false);
-    })();
+  const loadProfile = useCallback(async (userId) => {
+    const { data, error } = await supabase
+      .from('user_profile')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error) {
+      console.warn('Settings: user_profile lookup failed:', error.message);
+      return null;
+    }
+    return data;
   }, []);
 
+  useEffect(() => {
+    if (isLoadingAuth) return;
+    if (!isAuthenticated) {
+      navigateToLogin();
+      return;
+    }
+    if (!authUser) return;
+    (async () => {
+      setUser(authUser);
+      const profile = await loadProfile(authUser.id);
+      setUserProfile(profile);
+      setLoading(false);
+    })();
+  }, [isLoadingAuth, isAuthenticated, authUser, navigateToLogin, loadProfile]);
+
   const refreshUser = async () => {
-    const u = await base44.auth.me();
-    setUser(u);
+    if (!authUser?.id) return;
+    const profile = await loadProfile(authUser.id);
+    setUserProfile(profile);
   };
 
   if (loading) {
