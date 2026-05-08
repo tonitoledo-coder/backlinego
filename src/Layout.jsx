@@ -3,7 +3,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
 // Eagerly keep the 5 mobile tab pages mounted to preserve scroll & state
@@ -120,22 +120,34 @@ export default function Layout({ children, currentPageName }) {
       const userData = authUser;
       setUser(userData);
       try {
-        const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
-        if (profiles.length === 0) {
-          base44.entities.UserProfile.create({
-            user_id: userData.id,
-            email: userData.email,
-            display_name: userData.full_name || userData.username || userData.email,
-            role: 'user',
-            account_status: 'approved',
-            is_verified: false,
-            is_banned: false,
-            profile_complete: !!userData.onboarding_completed,
-            onboarding_completed: !!userData.onboarding_completed,
-            subscription_plan: 'free',
-          }).catch(() => {});
+        let profile = null;
+        const { data: foundProfile, error: profileErr } = await supabase
+          .from('user_profile')
+          .select('*')
+          .eq('email', userData.email)
+          .maybeSingle();
+        if (profileErr) {
+          console.warn('user_profile lookup failed:', profileErr.message);
         }
-        const profile = profiles?.[0];
+        profile = foundProfile;
+
+        if (!profile) {
+          const { data: inserted, error: insertErr } = await supabase
+            .from('user_profile')
+            .insert({
+              id: userData.id,
+              email: userData.email,
+              display_name: userData.display_name || userData.email,
+            })
+            .select('*')
+            .maybeSingle();
+          if (insertErr) {
+            console.warn('user_profile insert failed:', insertErr.message);
+          } else {
+            profile = inserted;
+          }
+        }
+
         if (profile) {
           setIsBanned(profile.is_banned || false);
           setProfileComplete(profile.profile_complete || false);
@@ -143,12 +155,18 @@ export default function Layout({ children, currentPageName }) {
           setCurrentUserProfile(profile);
 
           if (profile.onboarding_completed) {
-            const [termsDocs, privacyDocs] = await Promise.all([
-              base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
-              base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
-            ]);
-            const activeTerms = termsDocs?.[0];
-            const activePrivacy = privacyDocs?.[0];
+            let activeTerms = null;
+            let activePrivacy = null;
+            try {
+              const [termsRes, privacyRes] = await Promise.all([
+                supabase.from('legal_document').select('*').eq('type', 'terms').eq('is_active', true),
+                supabase.from('legal_document').select('*').eq('type', 'privacy').eq('is_active', true),
+              ]);
+              if (!termsRes.error) activeTerms = termsRes.data?.[0] ?? null;
+              if (!privacyRes.error) activePrivacy = privacyRes.data?.[0] ?? null;
+            } catch (legalErr) {
+              console.warn('legal_document query failed, skipping:', legalErr?.message);
+            }
             const needsLegalAcceptance =
               profile.role !== 'admin' &&
               activeTerms && activePrivacy && (

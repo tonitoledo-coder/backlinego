@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, X, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,20 +19,23 @@ export default function NotificationBell({ userEmail }) {
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', userEmail],
-    queryFn: () => base44.entities.Notification.filter({ user_email: userEmail }, '-created_date', 30),
+    queryFn: async () => {
+      try {
+        // TODO(bloque-6): migrar a Supabase cuando exista la tabla `notification`.
+        return [];
+      } catch (e) {
+        console.warn('notifications fetch failed:', e?.message);
+        return [];
+      }
+    },
     enabled: !!userEmail,
     refetchInterval: 15000,
   });
 
-  // Real-time
+  // Real-time (pendiente de migrar a Supabase Realtime en bloque-6)
   useEffect(() => {
     if (!userEmail) return;
-    const unsub = base44.entities.Notification.subscribe((event) => {
-      if (event.data?.user_email === userEmail) {
-        queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] });
-      }
-    });
-    return unsub;
+    return undefined;
   }, [userEmail, queryClient]);
 
   // Close on outside click
@@ -47,23 +49,13 @@ export default function NotificationBell({ userEmail }) {
 
   const markAllRead = useMutation({
     mutationFn: async () => {
-      const unread = notifications.filter(n => !n.read);
-      await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { read: true })));
+      // TODO(bloque-6): migrar a Supabase
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] }),
   });
 
-  const markOneRead = async (notif) => {
-    if (!notif.read) {
-      try {
-        await base44.entities.Notification.update(notif.id, { read: true });
-        queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] });
-      } catch (e) {
-        // Si la API rechaza el update (ej. 405), ignoramos el error
-        // y dejamos que la navegación continúe igualmente
-        console.warn('Could not mark notification as read:', e?.message);
-      }
-    }
+  const markOneRead = async (_notif) => {
+    // TODO(bloque-6): migrar a Supabase
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
