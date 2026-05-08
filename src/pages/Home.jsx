@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/components/i18n/translations';
@@ -57,6 +58,7 @@ const securityItems = [
 export default function Home() {
   const { t, lang } = useTranslation();
   const navigate = useNavigate();
+  const { user, isAuthenticated, navigateToLogin } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchStart, setSearchStart] = useState(null);
@@ -66,14 +68,19 @@ export default function Home() {
 
   const handleAddEquipmentClick = async (e) => {
     e.preventDefault();
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) {
-      base44.auth.redirectToLogin(window.location.href);
+    if (!isAuthenticated) {
+      navigateToLogin();
       return;
     }
-    const user = await base44.auth.me();
-    const profiles = await base44.entities.UserProfile.filter({ email: user.email });
-    const profile = profiles?.[0];
+    const { data: profile, error } = await supabase
+      .from('user_profile')
+      .select('*')
+      .eq('email', user.email)
+      .single();
+    if (error) {
+      console.error('Failed to load user_profile:', error);
+      return;
+    }
     if (profile?.account_status === 'pending') {
       toast.warning('Tu cuenta está pendiente de aprobación. Podrás publicar equipo una vez sea verificada.');
       return;
@@ -87,12 +94,31 @@ export default function Home() {
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', 'featured'],
-    queryFn: () => base44.entities.Equipment.filter({ status: 'available' }, '-created_date', 12)
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .eq('status', 'available')
+        .order('created_at', { ascending: false })
+        .limit(12);
+      if (error) throw error;
+      return data ?? [];
+    }
   });
 
   const { data: sosEquipment = [] } = useQuery({
     queryKey: ['equipment', 'sos'],
-    queryFn: () => base44.entities.Equipment.filter({ sos_available: true, status: 'available' }, '-created_date', 4)
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .eq('status', 'available')
+        .eq('sos_available', true)
+        .order('created_at', { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      return data ?? [];
+    }
   });
 
   const filteredEquipment = selectedCategory ?
