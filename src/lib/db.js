@@ -262,13 +262,59 @@ const storage = {
   },
 }
 
-// ── Integrations stub (compatibilidad con código Base44 no migrado) ─────────
+// ── Integrations (compatibilidad con API Base44) ────────────────────────────
+// Mapeo de contexto → bucket. Los componentes no necesitan saber el bucket.
+const UPLOAD_BUCKET_MAP = {
+  equipment:  'equipment-photos',
+  avatar:     'equipment-photos',   // avatares van al bucket público por ahora
+  identity:   'identity-docs',
+  dispute:    'handover-photos',
+  handover:   'handover-photos',
+  bulletin:   'bulletin-images',
+  chat:       'chat-attachments',
+}
+
 const integrations = {
   Core: {
-    async UploadFile() {
-      console.warn('[db] integrations.Core.UploadFile — pendiente migración a storage.upload')
-      return { file_url: null }
+    /**
+     * UploadFile({ file, context? })
+     * Compatible con base44.integrations.Core.UploadFile({ file })
+     * Devuelve { file_url } con URL pública o signed según bucket.
+     *
+     * context: 'equipment'|'avatar'|'identity'|'dispute'|'handover'|'bulletin'|'chat'
+     *          Si no se pasa, se infiere del MIME type o se usa 'equipment-photos'.
+     */
+    async UploadFile({ file, context } = {}) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      // Determinar bucket
+      const bucket = UPLOAD_BUCKET_MAP[context] || 'equipment-photos'
+      const isPublic = ['equipment-photos', 'bulletin-images'].includes(bucket)
+
+      // Path: {uid}/{timestamp}_{filename}
+      const safeName = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_')
+      const path = `${user.id}/${Date.now()}_${safeName}`
+
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(path, file, { upsert: false })
+      if (error) throw error
+
+      let file_url
+      if (isPublic) {
+        const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path)
+        file_url = urlData.publicUrl
+      } else {
+        const { data: signed } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(data.path, 60 * 60 * 24 * 7) // 7 días
+        file_url = signed?.signedUrl
+      }
+
+      return { file_url, path: data.path, bucket }
     },
+
     async SendEmail() {
       console.warn('[db] integrations.Core.SendEmail — pendiente migración a edge function')
       return null
