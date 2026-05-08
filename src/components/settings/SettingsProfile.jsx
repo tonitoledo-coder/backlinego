@@ -42,7 +42,7 @@ export default function SettingsProfile({ user, onSaved }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingAvatar(true);
-    const res = await base44.integrations.Core.UploadFile({ file });
+    const res = await base44.integrations.Core.UploadFile({ file, context: 'avatar' });
     set('avatar_url', res.file_url);
     setUploadingAvatar(false);
   };

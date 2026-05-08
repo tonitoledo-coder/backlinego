@@ -25,7 +25,7 @@ export default function StepPublicPresence({ formData, updateField }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingAvatar(true);
-    const res = await base44.integrations.Core.UploadFile({ file });
+    const res = await base44.integrations.Core.UploadFile({ file, context: 'avatar' });
     updateField('avatar_url', res.file_url);
     setUploadingAvatar(false);
   };

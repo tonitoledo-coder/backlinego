@@ -167,7 +167,7 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
     try {
       const urls = await Promise.all(
         files.slice(0, 3).map(async (file) => {
-          const res = await base44.integrations.Core.UploadFile({ file });
+          const res = await base44.integrations.Core.UploadFile({ file, context: 'handover' });
           return res.file_url;
         })
       );

@@ -26,7 +26,7 @@ export default function DisputeResponseModal({ dispute, open, onClose, onRespond
     setUploading(true);
     const uploaded = [];
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file, context: 'dispute' });
       uploaded.push(file_url);
     }
     setPhotos(prev => [...prev, ...uploaded]);

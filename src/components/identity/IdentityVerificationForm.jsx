@@ -41,7 +41,7 @@ function DocUploadSlot({ label, hint, value, onChange, uploading }) {
     if (!file) return;
     setSlotUploading(true);
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
+      const result = await base44.integrations.Core.UploadFile({ file, context: 'identity' });
       onChange(result.file_url);
     } finally {
       setSlotUploading(false);

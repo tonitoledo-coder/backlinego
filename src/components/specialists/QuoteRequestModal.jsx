@@ -78,7 +78,7 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
     if (!files.length) return;
     setUploading(true);
     const urls = await Promise.all(
-      files.map(f => base44.integrations.Core.UploadFile({ file: f }).then(r => r.file_url))
+      files.map(f => base44.integrations.Core.UploadFile({ file: f, context: 'equipment' }).then(r => r.file_url))
     );
     setPhotos(prev => [...prev, ...urls].slice(0, 5));
     setUploading(false);
