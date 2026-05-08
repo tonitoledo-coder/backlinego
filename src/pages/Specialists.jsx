@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +24,15 @@ export default function Specialists() {
 
   const { data: specialists = [], isLoading } = useQuery({
     queryKey: ['specialists'],
-    queryFn: () => base44.entities.Specialist.list('-rating', 100),
+    queryFn: async () => {
+      try {
+        // TODO(bloque-6): migrar a Supabase cuando exista la tabla `specialist`.
+        return [];
+      } catch (e) {
+        console.warn('specialists fetch failed:', e?.message);
+        return [];
+      }
+    },
   });
 
   const filtered = specialists.filter(s => {
