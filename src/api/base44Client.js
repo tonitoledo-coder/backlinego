@@ -8,6 +8,13 @@ const TABLE_MAP = {
   Notification: 'notification',
 };
 
+const COLUMN_MAP = {
+  created_date: 'created_at',
+  updated_date: 'updated_at',
+};
+
+const mapCol = (col) => COLUMN_MAP[col] || col;
+
 const camelToSnake = (s) =>
   s.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
 
@@ -20,12 +27,12 @@ function createEntityProxy(tableName) {
       try {
         let query = supabase.from(tableName).select('*');
         for (const [key, value] of Object.entries(filters)) {
-          query = query.eq(key, value);
+          query = query.eq(mapCol(key), value);
         }
         if (sortField) {
           const ascending = !sortField.startsWith('-');
-          const column = ascending ? sortField : sortField.slice(1);
-          query = query.order(column, { ascending });
+          const rawColumn = ascending ? sortField : sortField.slice(1);
+          query = query.order(mapCol(rawColumn), { ascending });
         }
         if (limit) query = query.limit(limit);
         const { data, error } = await query;
