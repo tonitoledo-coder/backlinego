@@ -4,6 +4,7 @@ import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 // Eagerly keep the 5 mobile tab pages mounted to preserve scroll & state
 const TabHome        = lazy(() => import('./pages/Home'));
@@ -73,6 +74,7 @@ const PROTECTED_PAGES = ['Profile', 'Settings', 'AddEquipment', 'Chat', 'Rewards
 const ROOT_PAGES = new Set(['Home', 'Explore', 'MapView', 'Specialists', 'Profile', 'Rewards', 'Onboarding', 'PendingApproval', 'BulletinBoard']);
 
 function RejectedScreen() {
+  const { logout } = useAuth();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: '#0d0d1a' }}>
       <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
@@ -80,7 +82,7 @@ function RejectedScreen() {
       </div>
       <h1 className="text-2xl font-bold text-white">Cuenta suspendida</h1>
       <p className="text-zinc-400 text-center max-w-sm">Tu cuenta ha sido suspendida temporalmente. Contacta con nosotros en hola@backlinego.com</p>
-      <Button variant="ghost" className="text-zinc-400" onClick={() => base44.auth.logout()}>Cerrar sesión</Button>
+      <Button variant="ghost" className="text-zinc-400" onClick={() => logout()}>Cerrar sesión</Button>
     </div>
   );
 }
@@ -89,6 +91,7 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user: authUser, isAuthenticated, isLoadingAuth, navigateToLogin } = useAuth();
   const routePageName = location.pathname.replace('/', '') || 'Home';
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -99,21 +102,22 @@ export default function Layout({ children, currentPageName }) {
   const [currentUserProfile, setCurrentUserProfile] = useState(null);
 
   useEffect(() => {
+    if (isLoadingAuth) return;
     loadUser();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingAuth, isAuthenticated, authUser?.id]);
 
   const loadUser = async () => {
     try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) {
+      if (!isAuthenticated) {
         if (PROTECTED_PAGES.includes(currentPageName)) {
-          base44.auth.redirectToLogin(window.location.href);
+          navigateToLogin();
           return;
         }
         setLoading(false);
         return;
       }
-      const userData = await base44.auth.me();
+      const userData = authUser;
       setUser(userData);
       try {
         const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
@@ -166,9 +170,8 @@ export default function Layout({ children, currentPageName }) {
 
   const handleAddEquipmentClick = async (e) => {
     e.preventDefault();
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) {
-      base44.auth.redirectToLogin(window.location.href);
+    if (!isAuthenticated) {
+      navigateToLogin();
       return;
     }
     if (!profileComplete) {
@@ -280,7 +283,7 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               </div>
             ) : (
-              <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800" onClick={() => base44.auth.redirectToLogin()}>
+              <Button variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800" onClick={() => navigateToLogin()}>
                 <LogIn className="w-4 h-4 mr-2" />
                 {t('login')}
               </Button>
