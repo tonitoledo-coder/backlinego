@@ -122,8 +122,8 @@ export default function Layout({ children, currentPageName }) {
     if (!user || user.role === 'admin') return;
     try {
       const [termsRes, privacyRes] = await Promise.all([
-        supabase.from('legal_document').select('version').eq('doc_type', 'terms').eq('is_published', true).limit(1),
-        supabase.from('legal_document').select('version').eq('doc_type', 'privacy').eq('is_published', true).limit(1),
+        supabase.from('legal_document').select('version').eq('doc_type', 'terms').eq('is_published', true).order('published_at', { ascending: false }).limit(1),
+        supabase.from('legal_document').select('version').eq('doc_type', 'privacy').eq('is_published', true).order('published_at', { ascending: false }).limit(1),
       ]);
       const activeTerms = termsRes.data?.[0] ?? null;
       const activePrivacy = privacyRes.data?.[0] ?? null;

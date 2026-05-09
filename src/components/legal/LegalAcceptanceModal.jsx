@@ -16,9 +16,11 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
     let mounted = true;
     (async () => {
       try {
+        // Sort by published_at desc so we always pick the most recent published
+        // version when multiple is_published=true rows exist for a doc_type.
         const [terms, privacy] = await Promise.all([
-          db.entities.LegalDocument.filter({ doc_type: 'terms', is_published: true }),
-          db.entities.LegalDocument.filter({ doc_type: 'privacy', is_published: true }),
+          db.entities.LegalDocument.filter({ doc_type: 'terms', is_published: true }, '-published_at', 1),
+          db.entities.LegalDocument.filter({ doc_type: 'privacy', is_published: true }, '-published_at', 1),
         ]);
         if (!mounted) return;
         const termsResult = terms?.[0] || null;
@@ -41,11 +43,37 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
     if (!termsAccepted || !privacyAccepted) return;
     setSaving(true);
     try {
+      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null;
+
+      // 1. Persist an audit trail in legal_acceptance for each document.
+      const acceptancePromises = [];
+      if (termsDoc?.id) {
+        acceptancePromises.push(
+          db.entities.LegalAcceptance.create({
+            user_id: userProfile.id,
+            document_id: termsDoc.id,
+            user_agent: userAgent,
+          }).catch(err => console.warn('[LegalModal] could not record terms acceptance:', err?.message))
+        );
+      }
+      if (privacyDoc?.id) {
+        acceptancePromises.push(
+          db.entities.LegalAcceptance.create({
+            user_id: userProfile.id,
+            document_id: privacyDoc.id,
+            user_agent: userAgent,
+          }).catch(err => console.warn('[LegalModal] could not record privacy acceptance:', err?.message))
+        );
+      }
+      await Promise.all(acceptancePromises);
+
+      // 2. Update the user_profile snapshot of the latest accepted versions.
       await db.entities.UserProfile.update(userProfile.id, {
         terms_version_accepted: termsDoc?.version || '1.0',
         privacy_version_accepted: privacyDoc?.version || '1.0',
         legal_accepted_at: new Date().toISOString(),
       });
+
       onAccepted({
         terms_version_accepted: termsDoc?.version || '1.0',
         privacy_version_accepted: privacyDoc?.version || '1.0',

@@ -547,8 +547,8 @@ export default function AdminLegalTab({ enabled }) {
     enabled,
   });
 
-  const termsDocs = docs.filter(d => d.type === 'terms');
-  const privacyDocs = docs.filter(d => d.type === 'privacy');
+  const termsDocs = docs.filter(d => d.doc_type === 'terms');
+  const privacyDocs = docs.filter(d => d.doc_type === 'privacy');
 
   const openNew = (type) => {
     setModalType(type);
