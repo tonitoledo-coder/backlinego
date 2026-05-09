@@ -144,11 +144,10 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto">
             {/* Logo + Tagline Hero Block */}
             <div className="flex flex-col items-center mb-8 lg:mb-10">
-              <img src="https://media.db.com/images/public/69a08f2a394db4f3cafbc46f/17efb5b4e_Logo_BacklineGo.png"
+              <span className="text-5xl lg:text-7xl font-bold text-white tracking-tight drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]">
+                Backline<span style={{ color: '#1DDF7A' }}>Go</span>
+              </span>
 
-              alt="BacklineGo" className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]" />
-
-              
               <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <span className="w-1.5 h-1.5 rounded-full pulse-sos flex-shrink-0" style={{ background: '#1DDF7A' }} />
                 <span className="text-xs font-semibold tracking-[0.2em] uppercase text-zinc-300">Glocal Marketplace</span>
