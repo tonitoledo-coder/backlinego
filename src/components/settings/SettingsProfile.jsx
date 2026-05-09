@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Loader2, Save, CheckCircle, Instagram, Youtube, Linkedin, Globe } from 'lucide-react';
+import { Camera, Loader2, Save, CheckCircle } from 'lucide-react';
 
 const COUNTRIES = ['España','México','Argentina','Colombia','Chile','Perú','United Kingdom','France','Germany','Italy','Portugal','United States','Canada','Brazil','Japan','Australia','Other'];
 const TIMEZONES = ['Europe/Madrid','Europe/London','Europe/Paris','Europe/Berlin','America/New_York','America/Mexico_City','America/Bogota','America/Santiago','America/Buenos_Aires','America/Sao_Paulo','Asia/Tokyo','Australia/Sydney'];
@@ -42,18 +42,26 @@ export default function SettingsProfile({ user, onSaved }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingAvatar(true);
-    const res = await base44.integrations.Core.UploadFile({ file, context: 'avatar' });
-    set('avatar_url', res.file_url);
+    try {
+      const res = await db.integrations.Core.UploadFile({ file, context: 'avatar' });
+      set('avatar_url', res.file_url);
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+    }
     setUploadingAvatar(false);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.auth.updateMe(form);
+    try {
+      await db.auth.updateMe(form);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      onSaved?.();
+    } catch (err) {
+      console.error('Save failed:', err);
+    }
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-    onSaved?.();
   };
 
   const addTag = () => {
@@ -68,7 +76,7 @@ export default function SettingsProfile({ user, onSaved }) {
     <div className="space-y-8">
       <Section title="Foto de perfil">
         <div className="flex items-center gap-5">
-          <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border" style={{ background: '#161625', borderColor: 'rgba(167,139,250,0.3)' }}>
+          <div className="relative w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border" style={{ background: '#161625', borderColor: 'rgba(167,139,250,0.3)' }}>
             {form.avatar_url
               ? <img src={form.avatar_url} alt="" className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center text-zinc-600"><Camera className="w-7 h-7" /></div>}
@@ -163,7 +171,7 @@ export default function SettingsProfile({ user, onSaved }) {
                 <Input value={tagInput} onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                   placeholder="Añadir etiqueta..." className="text-white border-zinc-700 text-sm" style={{ background: '#1a1a2e' }} />
-                <Button type="button" onClick={addTag} size="sm" className="text-white" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">+</Button>
+                <Button type="button" onClick={addTag} size="sm" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">+</Button>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {form.professional_tags.map((tag, i) => (
@@ -180,7 +188,7 @@ export default function SettingsProfile({ user, onSaved }) {
       </Section>
 
       <div className="flex justify-end pt-2">
-        <Button onClick={handleSave} disabled={saving} className="font-semibold text-white" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
+        <Button onClick={handleSave} disabled={saving} className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900 font-semibold">
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : saved ? <CheckCircle className="w-4 h-4 mr-2 text-green-400" /> : <Save className="w-4 h-4 mr-2" />}
           {saved ? '¡Guardado!' : 'Guardar cambios'}
         </Button>
