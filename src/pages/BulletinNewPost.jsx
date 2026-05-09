@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, MapPin, Link2, X, Upload, Loader2, Plus, Music, Briefcase } from 'lucide-react';
+import { ArrowLeft, MapPin, Link2, X, Upload, Loader2, Plus, Music, Briefcase, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const CATEGORIES = [
@@ -114,6 +114,8 @@ export default function BulletinNewPost() {
     body: '',
     instrument: '',
     availability: '',
+    available_from: '',
+    available_until: '',
     images: [],
     links: [],
     tags: [],
@@ -177,6 +179,9 @@ export default function BulletinNewPost() {
     const trimmedLinks = form.links.map(l => l.trim()).filter(Boolean);
     const invalid = trimmedLinks.find(l => !isValidUrl(l));
     if (invalid) errs.links = `Enlace no válido: ${invalid}`;
+    if (form.available_from && form.available_until && form.available_until < form.available_from) {
+      errs.available_until = 'La fecha final debe ser igual o posterior a la inicial';
+    }
     return errs;
   };
 
@@ -194,6 +199,8 @@ export default function BulletinNewPost() {
         body: form.body.trim(),
         instrument: form.instrument.trim() || null,
         availability: form.availability.trim() || null,
+        available_from: form.available_from || null,
+        available_until: form.available_until || null,
         tags: form.tags,
         genres: form.genres,
         images: form.images,
@@ -296,12 +303,48 @@ export default function BulletinNewPost() {
                 <select
                   value={form.availability}
                   onChange={e => set('availability', e.target.value)}
-                  className="w-full pl-9 pr-3 h-10 rounded-md bg-zinc-800/50 border border-zinc-700 text-white text-sm focus:outline-none focus:border-zinc-500"
+                  className="w-full pl-9 pr-3 h-10 rounded-md text-white text-sm focus:outline-none focus:border-zinc-500"
+                  style={{ background: '#1a1a2e', border: '1px solid #3f3f46' }}
                 >
                   <option value="">Selecciona...</option>
                   {AVAILABILITY_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
+            </div>
+          </div>
+
+          {/* Rango de fechas disponible */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-zinc-300 mb-1.5 block">Disponible desde <span className="text-zinc-600 font-normal">(opcional)</span></Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                <input
+                  type="date"
+                  value={form.available_from}
+                  onChange={e => set('available_from', e.target.value)}
+                  className="w-full pl-9 pr-3 h-10 rounded-md text-white text-sm focus:outline-none focus:border-zinc-500"
+                  style={{ background: '#1a1a2e', border: '1px solid #3f3f46', colorScheme: 'dark' }}
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-zinc-300 mb-1.5 block">Disponible hasta <span className="text-zinc-600 font-normal">(opcional)</span></Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                <input
+                  type="date"
+                  value={form.available_until}
+                  min={form.available_from || undefined}
+                  onChange={e => set('available_until', e.target.value)}
+                  className={cn(
+                    'w-full pl-9 pr-3 h-10 rounded-md text-white text-sm focus:outline-none focus:border-zinc-500',
+                    errors.available_until && 'border-red-500'
+                  )}
+                  style={{ background: '#1a1a2e', border: '1px solid #3f3f46', colorScheme: 'dark' }}
+                />
+              </div>
+              {errors.available_until && <p className="text-red-400 text-xs mt-1">{errors.available_until}</p>}
             </div>
           </div>
 

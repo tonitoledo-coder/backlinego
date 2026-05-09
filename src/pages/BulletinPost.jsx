@@ -5,8 +5,8 @@ import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, MapPin, ExternalLink, MoreHorizontal, MessageSquare, Music, Youtube, Link2, Flag, Briefcase } from 'lucide-react';
-import { formatDistanceToNow, parseISO } from 'date-fns';
+import { ArrowLeft, MapPin, ExternalLink, MoreHorizontal, MessageSquare, Music, Youtube, Link2, Flag, Briefcase, Calendar } from 'lucide-react';
+import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -34,6 +34,17 @@ function timeAgo(dateStr) {
   if (!dateStr) return '';
   try { return formatDistanceToNow(parseISO(dateStr), { addSuffix: true, locale: es }); }
   catch { return ''; }
+}
+
+function formatLongRange(from, until) {
+  if (!from && !until) return null;
+  const fmt = (d) => {
+    try { return format(parseISO(d), 'd MMM yyyy', { locale: es }); }
+    catch { return d; }
+  };
+  if (from && until) return `${fmt(from)} — ${fmt(until)}`;
+  if (from) return `desde ${fmt(from)}`;
+  return `hasta ${fmt(until)}`;
 }
 
 function authorLabel(profile, fallbackId) {
@@ -553,6 +564,12 @@ export default function BulletinPost() {
           {post.availability && (
             <span className="flex items-center gap-1 text-sm text-zinc-500">
               <Briefcase className="w-3.5 h-3.5" />{post.availability}
+            </span>
+          )}
+          {(post.available_from || post.available_until) && (
+            <span className="flex items-center gap-1 text-sm text-emerald-400">
+              <Calendar className="w-3.5 h-3.5" />
+              Disponible: {formatLongRange(post.available_from, post.available_until)}
             </span>
           )}
           <span className="text-sm text-zinc-600">{timeAgo(post.created_at)}</span>

@@ -6,8 +6,8 @@ import { db } from '@/lib/db';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, MapPin, MessageSquare, Plus, X, Music, Youtube, Link2 } from 'lucide-react';
-import { formatDistanceToNow, parseISO } from 'date-fns';
+import { Search, MapPin, MessageSquare, Plus, X, Music, Youtube, Link2, Calendar } from 'lucide-react';
+import { formatDistanceToNow, parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import PullToRefresh from '@/components/mobile/PullToRefresh';
 
@@ -52,6 +52,17 @@ function timeAgo(dateStr) {
   if (!dateStr) return '';
   try { return formatDistanceToNow(parseISO(dateStr), { addSuffix: true, locale: es }); }
   catch { return ''; }
+}
+
+function formatRange(from, until) {
+  if (!from && !until) return null;
+  const fmt = (d) => {
+    try { return format(parseISO(d), 'd MMM', { locale: es }); }
+    catch { return d; }
+  };
+  if (from && until) return `${fmt(from)} — ${fmt(until)}`;
+  if (from) return `desde ${fmt(from)}`;
+  return `hasta ${fmt(until)}`;
 }
 
 // ── Link icon helpers ─────────────────────────────────────────────────────────
@@ -153,6 +164,11 @@ function PostCard({ post, onClick }) {
               <MapPin className="w-3 h-3" />{post.city}
             </span>
           )}
+          {(post.available_from || post.available_until) && (
+            <span className="flex items-center gap-1 text-xs text-emerald-400">
+              <Calendar className="w-3 h-3" />{formatRange(post.available_from, post.available_until)}
+            </span>
+          )}
           {post.availability && (
             <span className="text-xs text-zinc-500">{post.availability}</span>
           )}
@@ -200,6 +216,7 @@ export default function BulletinBoard() {
   const [category, setCategory] = useState('all');
   const [city, setCity] = useState('');
   const [genre, setGenre] = useState('');
+  const [availableOn, setAvailableOn] = useState('');
   const [sort, setSort] = useState('newest');
 
   const { data: posts = [], isLoading } = useQuery({
@@ -247,6 +264,17 @@ export default function BulletinBoard() {
       list = list.filter(p => p.genres?.some(pg => pg.toLowerCase() === g));
     }
 
+    if (availableOn) {
+      // Keep posts whose date range covers the chosen date.
+      // Posts with no range at all are always kept.
+      list = list.filter(p => {
+        if (!p.available_from && !p.available_until) return true;
+        const from = p.available_from || '0000-01-01';
+        const until = p.available_until || '9999-12-31';
+        return from <= availableOn && availableOn <= until;
+      });
+    }
+
     // Pinned always first; then by chosen sort
     list = [...list].sort((a, b) => {
       if (a.is_pinned && !b.is_pinned) return -1;
@@ -256,7 +284,7 @@ export default function BulletinBoard() {
     });
 
     return list;
-  }, [posts, category, city, genre, sort]);
+  }, [posts, category, city, genre, availableOn, sort]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 lg:px-6 py-6">
@@ -356,6 +384,27 @@ export default function BulletinBoard() {
             ))}
           </div>
         </div>
+
+        {/* Date filter */}
+        <div className="relative max-w-xs">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+          <input
+            type="date"
+            value={availableOn}
+            onChange={e => setAvailableOn(e.target.value)}
+            placeholder="Disponible en fecha"
+            className="w-full pl-9 pr-9 h-10 rounded-xl text-white text-sm focus:outline-none focus:border-zinc-700"
+            style={{ background: '#1a1a2e', border: '1px solid #3f3f46', colorScheme: 'dark' }}
+          />
+          {availableOn && (
+            <button
+              onClick={() => setAvailableOn('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {!isLoading && (
@@ -382,7 +431,7 @@ export default function BulletinBoard() {
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Sin anuncios</h3>
             <p className="text-zinc-500 mb-6">
-              {category !== 'all' || city || genre ? 'Prueba a cambiar los filtros' : 'Sé el primero en publicar un anuncio'}
+              {category !== 'all' || city || genre || availableOn ? 'Prueba a cambiar los filtros' : 'Sé el primero en publicar un anuncio'}
             </p>
             <Button onClick={handleNewPost} className="font-semibold bg-emerald-500 hover:bg-emerald-600 text-black">
               <Plus className="w-4 h-4 mr-1.5" />
