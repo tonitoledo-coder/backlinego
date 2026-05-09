@@ -49,7 +49,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#0d0d1a' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src={logoHorizontal} alt="BacklineGo" className="h-12 mx-auto" />
+          <img src={logoHorizontal} alt="BacklineGo" className="h-28 mx-auto" />
           <p className="text-zinc-400 text-sm mt-2">Accede con tu correo</p>
         </div>
 
