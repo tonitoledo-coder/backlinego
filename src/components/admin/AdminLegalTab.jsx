@@ -10,6 +10,7 @@ import {
   ShieldCheck, Plus, ChevronDown, ChevronUp, AlertTriangle,
   FileText, Eye, Edit3, CheckCircle, RotateCcw, Upload
 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 // ─── New Document Modal (con importación de .md / .txt / .docx) ──────────────
 // Sustituye el componente NewLegalDocumentModal en AdminLegalTab.jsx
@@ -99,22 +100,49 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
   };
 
   // ── Mutation ────────────────────────────────────────────────────────────────
+  // Upsert by (doc_type, version, language). If a row already exists, update it
+  // instead of letting Postgres throw a duplicate-key error.
   const mutation = useMutation({
     mutationFn: async (data) => {
-      return db.entities.LegalDocument.create({
+      const language = 'es';
+      const payload = {
         doc_type: data.type,
         version: data.version,
+        language,
         title: data.title,
         content_md: data.content,
         is_published: data.activate,
         published_at: data.activate ? new Date().toISOString() : null,
+      };
+      const existing = await db.entities.LegalDocument.filter({
+        doc_type: data.type,
+        version: data.version,
+        language,
       });
+      if (existing && existing.length > 0) {
+        const updated = await db.entities.LegalDocument.update(existing[0].id, payload);
+        return { record: updated, mode: 'updated' };
+      }
+      const created = await db.entities.LegalDocument.create(payload);
+      return { record: created, mode: 'created' };
     },
-    onSuccess: () => {
+    onSuccess: ({ mode }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'legal'] });
       onSaved?.();
       onClose();
       setForm({ type: defaultType || 'terms', version: '', title: '', content: '', activate: false });
+      toast({
+        title: mode === 'updated' ? 'Documento actualizado' : 'Documento creado',
+        description: 'Los cambios se han guardado correctamente.',
+      });
+    },
+    onError: (err) => {
+      console.error('[AdminLegalTab] save failed:', err);
+      toast({
+        title: 'No se pudo guardar el documento',
+        description: err?.message || 'Inténtalo de nuevo.',
+        variant: 'destructive',
+      });
     },
   });
 
