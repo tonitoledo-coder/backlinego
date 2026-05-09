@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Shield, Monitor, Smartphone, Globe, LogOut, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 
 const MOCK_SESSIONS = [
   { id: 1, device: 'Chrome · macOS', location: 'Madrid, España', last_seen: 'Ahora', current: true, icon: Monitor },
@@ -19,12 +19,10 @@ export default function SettingsSecurity({ user }) {
     if (deleteConfirm !== 'ELIMINAR') return;
     setDeleting(true);
     try {
-      // Delete user profile record
-      const profiles = await base44.entities.UserProfile.filter({ email: user?.email });
-      for (const p of profiles) {
-        await base44.entities.UserProfile.delete(p.id);
+      if (user?.id) {
+        await db.entities.UserProfile.delete(user.id);
       }
-      base44.auth.logout();
+      db.auth.logout();
     } catch (e) {
       setDeleting(false);
     }
@@ -32,7 +30,7 @@ export default function SettingsSecurity({ user }) {
 
   const handleLogoutAll = () => {
     setLoggingOut(true);
-    setTimeout(() => base44.auth.logout(), 1000);
+    setTimeout(() => db.auth.logout(), 1000);
   };
 
   return (
@@ -48,7 +46,7 @@ export default function SettingsSecurity({ user }) {
           <span className="text-xs text-zinc-400">Email asociado: <span className="text-white font-medium">{user?.email}</span></span>
         </div>
         <Button
-          onClick={() => base44.auth.redirectToLogin()}
+          onClick={() => db.auth.redirectToLogin()}
           variant="outline"
           className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
           size="sm"

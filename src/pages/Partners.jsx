@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,7 @@ export default function Partners() {
 
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ['partners'],
-    queryFn: () => base44.entities.Partner.list('-rating', 100),
+    queryFn: () => db.entities.Partner.list('-rating', 100),
   });
 
   const filteredPartners = partners.filter(p => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Ban } from 'lucide-react';
 
@@ -41,7 +41,7 @@ export default function PendingApproval() {
         <Button
           variant="ghost"
           className="text-zinc-400 hover:text-white mt-2"
-          onClick={() => base44.auth.logout()}
+          onClick={() => db.auth.logout()}
         >
           Cerrar sesión
         </Button>

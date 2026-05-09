@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ShieldCheck, CreditCard, Lock, ChevronDown, ChevronUp, Loader2, ExternalLink } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { calcBookingPrice } from './calcBookingPrice';
 
 const PLATFORM_FEE_RATE = 0.12;
@@ -40,7 +40,7 @@ export default function PaymentModal({ open, onClose, equipment, startDate, endD
           },
           body: JSON.stringify({
             action: 'create_owner_connect_account',
-            owner_email: equipment.created_by,
+            owner_id: equipment.owner_id,
             origin: window.location.origin,
           }),
         });
@@ -53,22 +53,28 @@ export default function PaymentModal({ open, onClose, equipment, startDate, endD
       // 2. Crear Booking en estado pending_payment
       let currentBookingId = bookingId;
       if (!currentBookingId) {
-        const user = await base44.auth.me();
-        const booking = await base44.entities.Booking.create({
+        const user = await db.auth.me();
+        const basePriceCents       = Math.round(pricing.finalPrice * 100);
+        const protectionFeeCents   = Math.round(pricing.insuranceFee * 100);
+        const platformFeeCents     = Math.round(platformFee * 100);
+        const totalChargedCents    = Math.round(pricing.totalPrice * 100);
+        const ownerPayoutCents     = Math.round(ownerReceives * 100);
+        const depositCents         = Math.round(deposit * 100);
+        const booking = await db.entities.Booking.create({
           equipment_id: equipment.id,
           equipment_title: equipment.title,
-          owner_email: equipment.created_by,
-          renter_email: user.email,
+          owner_id: equipment.owner_id,
+          renter_id: user.id,
           start_date: startDate.toISOString().split('T')[0],
           end_date: endDate.toISOString().split('T')[0],
           days: pricing.days,
-          base_price: pricing.finalPrice,
-          protection_fee: pricing.insuranceFee,
+          base_price_cents: basePriceCents,
+          protection_fee_cents: protectionFeeCents,
           protection_rate: pricing.insuranceFee / pricing.finalPrice,
-          platform_fee: platformFee,
-          deposit_amount: deposit,
-          total_charged: pricing.totalPrice,
-          owner_payout: ownerReceives,
+          platform_fee_cents: platformFeeCents,
+          deposit_cents: depositCents,
+          total_charged_cents: totalChargedCents,
+          owner_payout_cents: ownerPayoutCents,
           status: 'pending_payment',
           protection_plan: 'damage_waiver',
           is_sos: equipment.sos_available || false,
@@ -88,10 +94,10 @@ export default function PaymentModal({ open, onClose, equipment, startDate, endD
           booking_id: currentBookingId,
           equipment_id: equipment.id,
           equipment_title: equipment.title,
-          owner_email: equipment.created_by,
-          base_price: pricing.finalPrice,
-          protection_fee: pricing.insuranceFee,
-          deposit_amount: deposit,
+          owner_id: equipment.owner_id,
+          base_price_cents: Math.round(pricing.finalPrice * 100),
+          protection_fee_cents: Math.round(pricing.insuranceFee * 100),
+          deposit_cents: Math.round(deposit * 100),
           owner_connect_account_id: ownerConnectId,
           origin: window.location.origin,
         }),

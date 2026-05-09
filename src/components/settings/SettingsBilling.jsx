@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
 
   const { data: paymentLogs = [] } = useQuery({
     queryKey: ['payment_logs', user?.id],
-    queryFn: () => base44.entities.PaymentLog.filter({ user_id: user.id }, '-created_date', 10),
+    queryFn: () => db.entities.PaymentLog.filter({ user_id: user.id }, '-created_at', 10),
     enabled: !!user?.id,
   });
 
@@ -38,7 +38,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
     const sessionId = urlParams.get('session_id');
     if (paymentResult === 'success' && sessionId) {
       (async () => {
-        const res = await base44.functions.invoke('stripeCheckout', { action: 'verify_payment', session_id: sessionId });
+        const res = await db.functions.invoke('stripeCheckout', { action: 'verify_payment', session_id: sessionId });
         if (res.data?.success) {
           setPaymentConfirm({ amount: res.data.amount, currency: res.data.currency });
           onSaved?.();
@@ -49,7 +49,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.auth.updateMe(form);
+    await db.auth.updateMe(form);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
@@ -58,14 +58,14 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
 
   const handleConnectStripe = async () => {
     setStripeConnecting(true);
-    await base44.functions.invoke('stripeCheckout', { action: 'create_customer' });
+    await db.functions.invoke('stripeCheckout', { action: 'create_customer' });
     setStripeConnecting(false);
     onSaved?.();
   };
 
   const handleSimulatePayment = async () => {
     setStripeLoading(true);
-    const res = await base44.functions.invoke('stripeCheckout', {
+    const res = await db.functions.invoke('stripeCheckout', {
       action: 'create_checkout',
       origin: window.location.origin,
     });
@@ -77,7 +77,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
 
   const handlePortal = async () => {
     setStripeLoading(true);
-    const res = await base44.functions.invoke('stripeCheckout', {
+    const res = await db.functions.invoke('stripeCheckout', {
       action: 'customer_portal',
       origin: window.location.origin,
     });

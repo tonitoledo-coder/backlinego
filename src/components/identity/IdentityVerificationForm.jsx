@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +41,7 @@ function DocUploadSlot({ label, hint, value, onChange, uploading }) {
     if (!file) return;
     setSlotUploading(true);
     try {
-      const result = await base44.integrations.Core.UploadFile({ file, context: 'identity' });
+      const result = await db.integrations.Core.UploadFile({ file, context: 'identity' });
       onChange(result.file_url);
     } finally {
       setSlotUploading(false);
@@ -91,7 +91,7 @@ export default function IdentityVerificationForm({ userProfile, onUpdated }) {
   const canResubmit = status === 'rejected' || status === 'not_submitted';
 
   const submitMutation = useMutation({
-    mutationFn: () => base44.entities.UserProfile.update(userProfile.id, {
+    mutationFn: () => db.entities.UserProfile.update(userProfile.id, {
       identity_doc_front: front,
       identity_doc_back: back,
       identity_selfie: selfie,

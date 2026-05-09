@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ const DISPUTE_TYPES = [
   { value: 'other',         label: 'Otro motivo' },
 ];
 
-export default function DisputeModal({ booking, currentUserEmail, otherPartyEmail, open, onClose, onDisputeOpened }) {
+export default function DisputeModal({ booking, currentUserId, otherPartyEmail, open, onClose, onDisputeOpened }) {
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState([]);
@@ -32,7 +32,7 @@ export default function DisputeModal({ booking, currentUserEmail, otherPartyEmai
     setUploading(true);
     const uploaded = [];
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file, context: 'dispute' });
+      const { file_url } = await db.integrations.Core.UploadFile({ file, context: 'dispute' });
       uploaded.push(file_url);
     }
     setPhotos(prev => [...prev, ...uploaded]);
@@ -43,22 +43,21 @@ export default function DisputeModal({ booking, currentUserEmail, otherPartyEmai
     if (!type || description.length < 50) return;
     setSubmitting(true);
     try {
-      await base44.entities.Dispute.create({
+      await db.entities.Dispute.create({
         booking_id: booking.id,
-        opened_by: currentUserEmail,
+        opened_by: currentUserId,
         type,
         description,
         evidence_photos: photos,
-        status: 'awaiting_response',
-        created_at: new Date().toISOString().split('T')[0],
+        status: 'open',
       });
 
-      await base44.entities.Booking.update(booking.id, { status: 'disputed' });
+      await db.entities.Booking.update(booking.id, { status: 'disputed' });
 
       sendBookingEmail('dispute_opened', booking, {
         equipmentTitle:  booking.equipment_title,
         otherPartyEmail: otherPartyEmail,
-        openedBy:        currentUserEmail,
+        openedBy:        currentUserId,
         disputeType:     DISPUTE_TYPES.find(dt => dt.value === type)?.label || type,
       });
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -80,7 +80,7 @@ function EditModal({ profile, open, onClose, onSaved }) {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
   const mutation = useMutation({
-    mutationFn: (data) => base44.entities.UserProfile.update(profile.id, data),
+    mutationFn: (data) => db.entities.UserProfile.update(profile.id, data),
     onSuccess: () => { onSaved(); onClose(); },
     onError: (err) => console.error('Profile update failed', err),
   });
@@ -287,11 +287,11 @@ export default function Admin() {
 
   useEffect(() => {
     (async () => {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) { base44.auth.redirectToLogin(); return; }
-      const user = await base44.auth.me();
-      const profiles = await base44.entities.UserProfile.filter({ email: user.email });
-      if (!profiles?.length || profiles[0].role !== 'admin') {
+      const isAuth = await db.auth.isAuthenticated();
+      if (!isAuth) { db.auth.redirectToLogin(); return; }
+      const user = await db.auth.me();
+      const profile = await db.entities.UserProfile.get(user.id);
+      if (!profile || profile.role !== 'admin') {
         setAuthState('denied');
       } else {
         setAdminUser(user);
@@ -302,18 +302,18 @@ export default function Admin() {
 
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['admin', 'userprofiles'],
-    queryFn: () => base44.entities.UserProfile.list('-created_date', 500),
+    queryFn: () => db.entities.UserProfile.list('-created_at', 500),
     enabled: authState === 'ok',
   });
 
   const verifyMutation = useMutation({
-    mutationFn: ({ id, val }) => base44.entities.UserProfile.update(id, { is_verified: val }),
+    mutationFn: ({ id, val }) => db.entities.UserProfile.update(id, { is_verified: val }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'userprofiles'] }),
     onError: (err) => console.error('Verify failed', err),
   });
 
   const banMutation = useMutation({
-    mutationFn: ({ id, val }) => base44.entities.UserProfile.update(id, { is_banned: val }),
+    mutationFn: ({ id, val }) => db.entities.UserProfile.update(id, { is_banned: val }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'userprofiles'] }),
     onError: (err) => console.error('Ban failed', err),
   });
@@ -531,7 +531,7 @@ export default function Admin() {
 
         {/* ── Disputas ── */}
         <TabsContent value="disputas">
-          <AdminDisputesTab enabled={authState === 'ok' && activeTab === 'disputas'} adminEmail={adminUser?.email} />
+          <AdminDisputesTab enabled={authState === 'ok' && activeTab === 'disputas'} adminId={adminUser?.id} />
         </TabsContent>
       </Tabs>
     </div>

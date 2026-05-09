@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { CreditCard, CheckCircle, AlertCircle, Loader2, Shield } from 'lucide-react';
 
 export default function StepBilling({ formData, updateField }) {

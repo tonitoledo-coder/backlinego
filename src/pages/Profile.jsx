@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,7 +41,7 @@ import SosDashboard from '@/components/sos/SosDashboard';
 
 // Returns ms remaining in the 48h dispute window after a booking completes
 function disputeWindowMs(booking) {
-  const ref = booking.updated_date || booking.created_date;
+  const ref = booking.updated_at || booking.created_at;
   if (!ref) return 0;
   const completedAt = new Date(ref).getTime();
   const windowEnd = completedAt + 48 * 60 * 60 * 1000;
@@ -64,18 +64,18 @@ export default function Profile() {
 
   const loadUser = async () => {
     try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) { base44.auth.redirectToLogin(); return; }
-      const userData = await base44.auth.me();
+      const isAuth = await db.auth.isAuthenticated();
+      if (!isAuth) { db.auth.redirectToLogin(); return; }
+      const userData = await db.auth.me();
       setUser(userData);
       try {
-        const profiles = await base44.entities.UserProfile.filter({ email: userData.email });
-        setUserProfile(profiles?.[0] || null);
+        const profile = await db.entities.UserProfile.get(userData.id);
+        setUserProfile(profile || null);
       } catch (profileErr) {
         console.warn('[Profile] Could not load user profile:', profileErr);
       }
     } catch (e) {
-      base44.auth.redirectToLogin();
+      db.auth.redirectToLogin();
     } finally {
       setLoading(false);
     }
@@ -84,27 +84,27 @@ export default function Profile() {
   const queryClient = useQueryClient();
 
   const { data: myEquipment = [] } = useQuery({
-    queryKey: ['equipment', 'mine', user?.email],
-    queryFn: () => base44.entities.Equipment.filter({ created_by: user.email }, '-created_date', 50),
-    enabled: !!user?.email,
+    queryKey: ['equipment', 'mine', user?.id],
+    queryFn: () => db.entities.Equipment.filter({ owner_id: user.id }, '-created_at', 50),
+    enabled: !!user?.id,
   });
 
   const { data: myBookings = [], refetch: refetchMyBookings } = useQuery({
     queryKey: ['bookings', 'mine', user?.id],
-    queryFn: () => base44.entities.Booking.filter({ renter_id: user.id }, '-created_date', 50),
+    queryFn: () => db.entities.Booking.filter({ renter_id: user.id }, '-created_at', 50),
     enabled: !!user?.id,
   });
 
   const { data: incomingBookings = [], refetch: refetchIncoming } = useQuery({
     queryKey: ['bookings', 'incoming', user?.id],
-    queryFn: () => base44.entities.Booking.filter({ owner_id: user.id }, '-created_date', 50),
+    queryFn: () => db.entities.Booking.filter({ owner_id: user.id }, '-created_at', 50),
     enabled: !!user?.id,
   });
 
   const { data: allEquipment = [] } = useQuery({
-    queryKey: ['equipment', 'all-mine', user?.email],
-    queryFn: () => base44.entities.Equipment.filter({ created_by: user.email }, '-created_date', 100),
-    enabled: !!user?.email,
+    queryKey: ['equipment', 'all-mine', user?.id],
+    queryFn: () => db.entities.Equipment.filter({ owner_id: user.id }, '-created_at', 100),
+    enabled: !!user?.id,
   });
 
   const equipmentMap = useMemo(() => {
@@ -117,7 +117,7 @@ export default function Profile() {
 
   const { data: renterEquipmentList = [] } = useQuery({
     queryKey: ['equipment', 'renter-bookings', renterEquipmentIds],
-    queryFn: () => base44.entities.Equipment.filter({ id__in: renterEquipmentIds }),
+    queryFn: () => db.entities.Equipment.filter({ id__in: renterEquipmentIds }),
     enabled: renterEquipmentIds.length > 0,
   });
 
@@ -138,7 +138,7 @@ export default function Profile() {
     queryFn: async () => {
       if (!completedBookingIds.length) return [];
       const results = await Promise.all(
-        completedBookingIds.map(id => base44.entities.Dispute.filter({ booking_id: id }))
+        completedBookingIds.map(id => db.entities.Dispute.filter({ booking_id: id }))
       );
       return results.flat();
     },
@@ -152,32 +152,33 @@ export default function Profile() {
   }, [bookingDisputes]);
 
   const confirmReturnMutation = useMutation({
-    mutationFn: (bookingId) => base44.entities.Booking.update(bookingId, { status: 'completed', escrow_status: 'released' }),
+    mutationFn: (bookingId) => db.entities.Booking.update(bookingId, { status: 'completed', deposit_status: 'released', return_confirmed_at: new Date().toISOString() }),
     onMutate: async (bookingId) => {
       await queryClient.cancelQueries(['bookings', 'incoming', user?.id]);
       const prev = queryClient.getQueryData(['bookings', 'incoming', user?.id]);
       queryClient.setQueryData(['bookings', 'incoming', user?.id], (old = []) =>
-        old.map(b => b.id === bookingId ? { ...b, status: 'completed', escrow_status: 'released' } : b)
+        old.map(b => b.id === bookingId ? { ...b, status: 'completed', deposit_status: 'released' } : b)
       );
       return { prev };
     },
     onError: (_err, _id, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(['bookings', 'incoming', user?.id], ctx.prev);
     },
-    onSuccess: (_data, bookingId) => {
+    onSuccess: async (_data, bookingId) => {
       const booking = incomingBookings.find(b => b.id === bookingId);
       if (booking) {
+        const renter = await db.entities.UserProfile.get(booking.renter_id).catch(() => null);
         sendBookingEmail('return_confirmed', booking, {
           equipmentTitle: equipmentMap[booking.equipment_id]?.title,
-          renterEmail:    booking.renter_email || booking.renter_id,
-          ownerEmail:     booking.owner_email  || user?.email,
+          renterEmail:    renter?.email,
+          ownerEmail:     user?.email,
         });
       }
     },
     onSettled: () => queryClient.invalidateQueries(['bookings', 'incoming']),
   });
 
-  const handleLogout = () => base44.auth.logout(createPageUrl('Home'));
+  const handleLogout = () => db.auth.logout(createPageUrl('Home'));
 
   const refreshMyBookings = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['bookings', 'mine', user?.id] });
@@ -238,9 +239,9 @@ export default function Profile() {
   const canRespondToDispute = (booking) => {
     const dispute = disputeByBookingId[booking.id];
     if (!dispute) return false;
-    if (dispute.opened_by === user?.email) return false;
+    if (dispute.opened_by === user?.id) return false;
     if (dispute.respondent_response) return false;
-    return ['open', 'awaiting_response'].includes(dispute.status);
+    return ['open', 'under_review'].includes(dispute.status);
   };
 
   const renderBookingCard = (booking, role) => {
@@ -268,22 +269,16 @@ export default function Profile() {
                 <p className="text-xs mt-0.5 text-zinc-500">Reserva #{booking.id?.slice(-8)}</p>
                 <div className="flex items-center gap-1.5 text-xs text-zinc-400 mt-0.5">
                   <span>{booking.start_date}</span>
-                  {fmtSlot(booking.delivery_slot) && (
-                    <span className="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 font-mono">{fmtSlot(booking.delivery_slot)}</span>
-                  )}
                   <span className="text-zinc-600">→</span>
                   <span>{booking.end_date}</span>
-                  {fmtSlot(booking.return_slot) && (
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">{fmtSlot(booking.return_slot)}</span>
-                  )}
                 </div>
-                <p className="text-xs text-zinc-500 mt-0.5">{booking.days} días · €{booking.total_price?.toFixed ? booking.total_price.toFixed(0) : booking.total_price}</p>
+                <p className="text-xs text-zinc-500 mt-0.5">{booking.days} días · €{booking.total_charged_cents != null ? (booking.total_charged_cents / 100).toFixed(0) : '—'}</p>
 
                 {/* Dispute info banner */}
                 {dispute && (
                   <div className="flex items-center gap-1.5 mt-1.5 text-xs text-amber-400">
                     <AlertTriangle className="w-3 h-3 shrink-0" />
-                    <span>Disputa {dispute.status === 'awaiting_response' ? '· esperando respuesta' : `· ${dispute.status}`}</span>
+                    <span>Disputa · {dispute.status}</span>
                   </div>
                 )}
               </div>
@@ -344,9 +339,9 @@ export default function Profile() {
           </div>
 
           {/* Review banner - shown after 48h dispute window, within 14 days */}
-          {booking.status === 'completed' && user?.email && (
+          {booking.status === 'completed' && user?.id && (
             <div className="mt-3">
-              <ReviewBanner booking={booking} currentUserEmail={user.email} />
+              <ReviewBanner booking={booking} currentUserId={user.id} />
             </div>
           )}
         </CardContent>
@@ -475,8 +470,8 @@ export default function Profile() {
                 <EquipmentCard
                   key={eq.id}
                   equipment={eq}
-                  currentUserEmail={user?.email}
-                  onDeleted={() => queryClient.invalidateQueries(['equipment', 'mine', user?.email])}
+                  currentUserId={user?.id}
+                  onDeleted={() => queryClient.invalidateQueries(['equipment', 'mine', user?.id])}
                 />
               ))}
             </div>
@@ -557,7 +552,7 @@ export default function Profile() {
       {disputeBooking && (
         <DisputeModal
           booking={disputeBooking.booking}
-          currentUserEmail={user?.email}
+          currentUserId={user?.id}
           otherPartyEmail={disputeBooking.otherPartyEmail}
           open={!!disputeBooking}
           onClose={() => setDisputeBooking(null)}

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Star, ShieldCheck } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 
-export default function OwnerRatingBadge({ ownerEmail, identityStatus, size = 'sm' }) {
+export default function OwnerRatingBadge({ ownerId, identityStatus, size = 'sm' }) {
   const [rating, setRating] = useState(null);
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!ownerEmail) return;
-    base44.entities.Review.filter({ reviewed_email: ownerEmail, is_public: true }, '-created_at', 100)
+    if (!ownerId) return;
+    db.entities.Review.filter({ reviewed_id: ownerId, is_public: true }, '-created_at', 100)
       .then(reviews => {
         if (reviews?.length) {
           const avg = reviews.reduce((s, r) => s + r.rating, 0) / reviews.length;
@@ -17,7 +17,7 @@ export default function OwnerRatingBadge({ ownerEmail, identityStatus, size = 's
         }
       })
       .catch(() => {});
-  }, [ownerEmail]);
+  }, [ownerId]);
 
   const isVerified = identityStatus === 'verified';
 

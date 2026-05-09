@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,7 +25,7 @@ export default function Step2Photos({ data, onChange, errors }) {
     setUploading(true);
     try {
       const urls = await Promise.all(
-        toUpload.map(f => base44.integrations.Core.UploadFile({ file: f }).then(r => r.file_url))
+        toUpload.map(f => db.integrations.Core.UploadFile({ file: f }).then(r => r.file_url))
       );
       onChange({ ...data, images: [...images, ...urls].slice(0, 10) });
     } finally {

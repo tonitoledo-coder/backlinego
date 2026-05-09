@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -49,8 +49,8 @@ export default function BulletinNewPost() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then((isAuth) => {
-      if (!isAuth) base44.auth.redirectToLogin(window.location.href);
+    db.auth.isAuthenticated().then((isAuth) => {
+      if (!isAuth) db.auth.redirectToLogin(window.location.href);
     });
   }, []);
 
@@ -63,7 +63,7 @@ export default function BulletinNewPost() {
     setUploading(true);
     try {
       const urls = await Promise.all(
-        toUpload.map(f => base44.integrations.Core.UploadFile({ file: f }).then(r => r.file_url))
+        toUpload.map(f => db.integrations.Core.UploadFile({ file: f }).then(r => r.file_url))
       );
       set('images', [...form.images, ...urls].slice(0, 3));
     } finally {
@@ -103,7 +103,7 @@ export default function BulletinNewPost() {
     setErrors({});
     setSubmitting(true);
     try {
-      const post = await base44.entities.BulletinPost.create({
+      const post = await db.entities.BulletinPost.create({
         title: form.title.trim(),
         category: form.category,
         city: form.city.trim(),

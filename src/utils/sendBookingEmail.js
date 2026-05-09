@@ -21,7 +21,7 @@
  *   y llame a sendBookingEmail('reminder_24h', booking, { renterEmail, equipmentTitle }).
  */
 
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 
 const ADMIN_EMAIL = 'hola@backlinego.com';
 const APP_URL = 'https://backlinego.com';
@@ -179,7 +179,7 @@ export async function sendBookingEmail(event, booking, extra = {}) {
 
   await Promise.allSettled(
     recipients.map(to =>
-      base44.integrations.Core.SendEmail({ to, subject, body, from_name: 'BacklineGo' })
+      db.integrations.Core.SendEmail({ to, subject, body, from_name: 'BacklineGo' })
     )
   );
 }

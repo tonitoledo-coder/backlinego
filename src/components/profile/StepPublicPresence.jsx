@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,7 +25,7 @@ export default function StepPublicPresence({ formData, updateField }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingAvatar(true);
-    const res = await base44.integrations.Core.UploadFile({ file, context: 'avatar' });
+    const res = await db.integrations.Core.UploadFile({ file, context: 'avatar' });
     updateField('avatar_url', res.file_url);
     setUploadingAvatar(false);
   };
@@ -35,7 +35,7 @@ export default function StepPublicPresence({ formData, updateField }) {
     updateField('username', clean);
     if (!clean || clean.length < 3) { setUsernameStatus(null); return; }
     setUsernameStatus('checking');
-    const existing = await base44.entities.User.filter({ username: clean });
+    const existing = await db.entities.User.filter({ username: clean });
     setUsernameStatus(existing.length === 0 ? 'ok' : 'taken');
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,12 +54,12 @@ function EquipmentEditModal({ equipment, open, onClose, onSaved }) {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
   const mutation = useMutation({
-    mutationFn: (data) => base44.entities.Equipment.update(equipment.id, data),
+    mutationFn: (data) => db.entities.Equipment.update(equipment.id, data),
     onSuccess: () => { onSaved(); onClose(); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: () => base44.entities.Equipment.delete(equipment.id),
+    mutationFn: () => db.entities.Equipment.delete(equipment.id),
     onSuccess: () => { onSaved(); onClose(); },
   });
 
@@ -123,7 +123,7 @@ function EquipmentEditModal({ equipment, open, onClose, onSaved }) {
           <div className="rounded-lg p-3 text-xs text-zinc-500"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <span className="text-zinc-400">Propietario: </span>
-            <span className="text-white font-mono">{equipment.created_by}</span>
+            <span className="text-white font-mono">{equipment.owner_id}</span>
           </div>
         </div>
 
@@ -167,7 +167,7 @@ function EquipmentRow({ item, onEdit, onToggleStatus }) {
       {/* Title */}
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-white truncate">{item.title}</div>
-        <div className="text-xs text-zinc-500 truncate">{item.created_by}</div>
+        <div className="text-xs text-zinc-500 truncate font-mono">{item.owner_id?.slice(0, 8)}</div>
       </div>
 
       {/* Badges */}
@@ -179,7 +179,7 @@ function EquipmentRow({ item, onEdit, onToggleStatus }) {
 
       {/* Date */}
       <div className="hidden lg:block text-xs text-zinc-600 shrink-0">
-        {item.created_date ? format(new Date(item.created_date), 'dd/MM/yy') : '—'}
+        {item.created_at ? format(new Date(item.created_at), 'dd/MM/yy') : '—'}
       </div>
 
       {/* Quick toggle on hover */}
@@ -202,12 +202,12 @@ export default function AdminEquipmentTab({ enabled }) {
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['admin', 'equipment'],
-    queryFn: () => base44.entities.Equipment.list('-created_date', 500),
+    queryFn: () => db.entities.Equipment.list('-created_at', 500),
     enabled,
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.Equipment.update(id, { status }),
+    mutationFn: ({ id, status }) => db.entities.Equipment.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'equipment'] }),
     onError: (err) => console.error('Toggle status failed', err),
   });

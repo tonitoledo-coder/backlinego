@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2, CheckCircle, Globe, Users, Lock, Trash2, AlertTriangle } from 'lucide-react';
 
@@ -17,7 +17,7 @@ export default function SettingsPrivacy({ user, onSaved }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.auth.updateMe({ profile_visibility: visibility });
+    await db.auth.updateMe({ profile_visibility: visibility });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);

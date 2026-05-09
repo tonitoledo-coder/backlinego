@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Zap, Loader2, MapPin, Clock } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 
 const CATEGORIES = [
@@ -42,16 +42,16 @@ export default function SosRequestModal({ open, onClose, initialCategory = '' })
 
   const handleSubmit = async () => {
     if (!form.category || !form.city || !form.description) return;
-    const isAuth = await base44.auth.isAuthenticated();
+    const isAuth = await db.auth.isAuthenticated();
     if (!isAuth) {
-      base44.auth.redirectToLogin(window.location.href);
+      db.auth.redirectToLogin(window.location.href);
       return;
     }
     setSubmitting(true);
     try {
-      const user = await base44.auth.me();
+      const user = await db.auth.me();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-      const sosRequest = await base44.entities.SosRequest.create({
+      const sosRequest = await db.entities.SosRequest.create({
         requester_email: user.email,
         category: form.category,
         city: form.city,
@@ -63,7 +63,7 @@ export default function SosRequestModal({ open, onClose, initialCategory = '' })
         created_at: new Date().toISOString(),
       });
       // Notify SOS owners via backend function
-      base44.functions.invoke('notifySosOwners', {
+      db.functions.invoke('notifySosOwners', {
         sos_request_id: sosRequest.id,
         category: form.category,
         city: form.city,

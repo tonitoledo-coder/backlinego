@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Save, Loader2, CheckCircle } from 'lucide-react';
@@ -38,7 +38,7 @@ export default function SettingsNotifications({ user, onSaved }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await base44.auth.updateMe({ notifications_prefs: prefs });
+    await db.auth.updateMe({ notifications_prefs: prefs });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);

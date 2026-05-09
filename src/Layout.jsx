@@ -242,7 +242,7 @@ export default function Layout({ children, currentPageName }) {
             </Button>
             {loading ? null : user ? (
               <div className="flex items-center gap-3">
-                <NotificationBell userEmail={user.email} />
+                <NotificationBell userId={user.id} />
                 <Link to={createPageUrl('Profile')}>
                   <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
                     {user.avatar_url ? (
@@ -281,7 +281,7 @@ export default function Layout({ children, currentPageName }) {
             </Link>
           )}
           <div className="flex items-center gap-2">
-            {user && <NotificationBell userEmail={user.email} />}
+            {user && <NotificationBell userId={user.id} />}
             {!isSubPage && (
               <Button size="sm" onClick={handleAddEquipmentClick} className="font-semibold" style={{ background: '#1DDF7A', color: '#060E18' }}>
                 <Plus className="w-4 h-4" />

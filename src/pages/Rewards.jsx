@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,24 +41,29 @@ export default function Rewards() {
   useEffect(() => {
     (async () => {
       try {
-        const isAuth = await base44.auth.isAuthenticated();
-        if (!isAuth) { base44.auth.redirectToLogin(); return; }
-        setUser(await base44.auth.me());
+        const isAuth = await db.auth.isAuthenticated();
+        if (!isAuth) { db.auth.redirectToLogin(); return; }
+        setUser(await db.auth.me());
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
+  // user_points is an event log (one row per points-earning action).
+  // Aggregate to compute total_points client-side; level is derived from total.
   const { data: pointsData } = useQuery({
-    queryKey: ['userpoints', user?.email],
+    queryKey: ['userpoints', user?.id],
     queryFn: async () => {
-      const records = await base44.entities.UserPoints.filter({ user_email: user.email }, '-created_date', 1);
-      if (records.length > 0) return records[0];
-      // Auto-create record on first visit
-      return base44.entities.UserPoints.create({ user_email: user.email, total_points: 0, level: 'bronze' });
+      const records = await db.entities.UserPoints.filter({ user_id: user.id }, '-created_at', 500);
+      const total = records.reduce((sum, r) => sum + (r.points || 0), 0);
+      const levelKey = total >= 3500 ? 'platinum'
+        : total >= 1500 ? 'gold'
+        : total >= 500  ? 'silver'
+        : 'bronze';
+      return { total_points: total, level: levelKey, records };
     },
-    enabled: !!user?.email,
+    enabled: !!user?.id,
   });
 
   if (loading || !pointsData) {
@@ -77,7 +82,7 @@ export default function Rewards() {
   const progressPct = nextLevel
     ? Math.min(100, ((pointsData.total_points - level.min) / (nextLevel.min - level.min)) * 100)
     : 100;
-  const badge = PARTNER_BADGES[pointsData.partner_badge] || PARTNER_BADGES.none;
+  const badge = PARTNER_BADGES.none;
 
   return (
     <div className="max-w-3xl mx-auto px-4 lg:px-6 py-8 space-y-6">
@@ -140,8 +145,8 @@ export default function Rewards() {
             </div>
             <div className="flex items-center justify-between py-2">
               <span className="text-zinc-300 text-sm">Insignia de partner destacado</span>
-              <Badge className={pointsData.is_partner ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-zinc-700 text-zinc-400'}>
-                {pointsData.is_partner ? <><Crown className="w-3 h-3 mr-1 inline" />Partner</> : 'Nivel Oro+'}
+              <Badge className={pointsData.level === 'gold' || pointsData.level === 'platinum' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-zinc-700 text-zinc-400'}>
+                {pointsData.level === 'gold' || pointsData.level === 'platinum' ? <><Crown className="w-3 h-3 mr-1 inline" />Partner</> : 'Nivel Oro+'}
               </Badge>
             </div>
           </div>

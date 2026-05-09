@@ -6,11 +6,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Zap, ShieldCheck, Pencil, Trash2, Star } from 'lucide-react';
 import { useTranslation } from '../i18n/translations';
 import CategoryIcon from '../ui/CategoryIcon';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { format } from 'date-fns';
 import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
 
-export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, searchStart, searchEnd }) {
+export default function EquipmentCard({ equipment, currentUserId, onDeleted, searchStart, searchEnd }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -18,7 +18,7 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
   const cardRef = useRef(null);
   const fetchedRef = useRef(false);
 
-  const isOwner = currentUserEmail && equipment?.created_by === currentUserEmail;
+  const isOwner = currentUserId && equipment?.owner_id === currentUserId;
 
   const handleEdit = (e) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
   const handleDelete = async (e) => {
     e.preventDefault();
     if (!window.confirm('¿Eliminar este equipo?')) return;
-    await base44.entities.Equipment.delete(equipment.id);
+    await db.entities.Equipment.delete(equipment.id);
     onDeleted?.();
   };
 
@@ -37,7 +37,7 @@ export default function EquipmentCard({ equipment, currentUserEmail, onDeleted, 
       if (entry.isIntersecting && !fetchedRef.current) {
         fetchedRef.current = true;
         const today = format(new Date(), 'yyyy-MM-dd');
-        base44.entities.Booking.filter({ equipment_id: equipment.id }, '-created_date', 20)
+        db.entities.Booking.filter({ equipment_id: equipment.id }, '-created_at', 20)
           .then(bookings => {
             const occupied = bookings.some(b =>
               ['confirmed', 'active'].includes(b.status) &&

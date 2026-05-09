@@ -1,5 +1,5 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 
 const UserNotRegisteredError = () => {
   return (
@@ -24,7 +24,7 @@ const UserNotRegisteredError = () => {
             </ul>
           </div>
           <button
-            onClick={() => base44.auth.logout()}
+            onClick={() => db.auth.logout()}
             className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-sm font-medium transition-colors"
           >
             Cerrar sesión

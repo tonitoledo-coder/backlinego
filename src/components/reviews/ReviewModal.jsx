@@ -3,8 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, Loader2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { format } from 'date-fns';
+import { db } from '@/lib/db';
 
 const RENTER_QUICK_TAGS = [
   { key: 'good_condition', label: '✅ Equipo en buen estado' },
@@ -18,7 +17,7 @@ const OWNER_QUICK_TAGS = [
   { key: 'recommended', label: '👍 Lo recomendaría' },
 ];
 
-export default function ReviewModal({ open, onClose, booking, reviewerRole, reviewerEmail, reviewedEmail, onSubmitted }) {
+export default function ReviewModal({ open, onClose, booking, reviewerRole, reviewerId, reviewedId, onSubmitted }) {
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState('');
@@ -35,16 +34,15 @@ export default function ReviewModal({ open, onClose, booking, reviewerRole, revi
     if (rating === 0) return;
     setSubmitting(true);
     try {
-      await base44.entities.Review.create({
+      await db.entities.Review.create({
         booking_id: booking.id,
-        reviewer_email: reviewerEmail,
-        reviewed_email: reviewedEmail,
+        reviewer_id: reviewerId,
+        reviewed_id: reviewedId,
         reviewer_role: reviewerRole,
         rating,
         comment: comment.slice(0, 500),
         quick_tags: selectedTags,
         is_public: true,
-        created_at: format(new Date(), 'yyyy-MM-dd'),
       });
       onSubmitted?.();
       onClose();

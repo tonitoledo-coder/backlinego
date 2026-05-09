@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -43,24 +43,24 @@ export default function PublicProfile() {
   useEffect(() => {
     (async () => {
       const params = new URLSearchParams(window.location.search);
-      const email = params.get('email');
-      if (!email) { setNotFound(true); setLoading(false); return; }
+      const id = params.get('id') || params.get('email'); // legacy: ?email= used to carry id
+      if (!id) { setNotFound(true); setLoading(false); return; }
 
       try {
-        const [allUsers, authStatus] = await Promise.all([
-          base44.entities.User.filter({ email }),
-          base44.auth.isAuthenticated(),
+        const [profile, authStatus] = await Promise.all([
+          db.entities.UserProfile.get(id),
+          db.auth.isAuthenticated(),
         ]);
 
         if (authStatus) {
-          const me = await base44.auth.me();
+          const me = await db.auth.me();
           setCurrentUser(me);
         }
 
-        if (!allUsers || allUsers.length === 0) {
+        if (!profile) {
           setNotFound(true);
         } else {
-          setProfileUser(allUsers[0]);
+          setProfileUser(profile);
         }
       } catch (e) {
         setNotFound(true);
@@ -90,7 +90,7 @@ export default function PublicProfile() {
     );
   }
 
-  const isOwner = currentUser?.email === profileUser?.email;
+  const isOwner = currentUser?.id === profileUser?.id;
   const visibility = profileUser?.profile_visibility || 'public';
   const canView = visibility === 'public' || isOwner || currentUser?.role === 'admin';
 
@@ -279,7 +279,7 @@ export default function PublicProfile() {
         {/* Reviews */}
         <div>
           <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Valoraciones</h2>
-          <UserReviews userEmail={profileUser?.email} isOwner={isOwner} />
+          <UserReviews userId={profileUser?.id} isOwner={isOwner} />
         </div>
 
         {/* Owner actions */}

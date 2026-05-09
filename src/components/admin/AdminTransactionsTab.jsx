@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
@@ -39,7 +39,7 @@ function TransactionDetailModal({ tx, open, onClose, onSaved }) {
   const queryClient = useQueryClient();
 
   const refundMutation = useMutation({
-    mutationFn: () => base44.entities.PaymentLog.update(tx.id, { status: 'refunded' }),
+    mutationFn: () => db.entities.PaymentLog.update(tx.id, { status: 'refunded' }),
     onSuccess: () => { onSaved(); onClose(); },
     onError: (err) => console.error('Refund failed', err),
   });
@@ -75,8 +75,8 @@ function TransactionDetailModal({ tx, open, onClose, onSaved }) {
           {tx.stripe_payment_id && (
             <Row label="Stripe ID" value={<span className="font-mono text-xs text-zinc-400 break-all">{tx.stripe_payment_id}</span>} />
           )}
-          {tx.created_date && (
-            <Row label="Fecha" value={format(new Date(tx.created_date), 'dd/MM/yyyy HH:mm')} />
+          {tx.created_at && (
+            <Row label="Fecha" value={format(new Date(tx.created_at), 'dd/MM/yyyy HH:mm')} />
           )}
         </div>
 
@@ -124,7 +124,7 @@ function TxRow({ tx, onClick }) {
         <span className="text-zinc-600 font-mono hidden sm:block">{tx.stripe_payment_id?.slice(-12)}</span>
       )}
       <span className="text-zinc-600 ml-auto hidden md:block">
-        {tx.created_date ? format(new Date(tx.created_date), 'dd/MM/yy') : '—'}
+        {tx.created_at ? format(new Date(tx.created_at), 'dd/MM/yy') : '—'}
       </span>
     </div>
   );
@@ -136,7 +136,7 @@ export default function AdminTransactionsTab({ enabled }) {
 
   const { data: transactions, isLoading, isError } = useQuery({
     queryKey: ['admin', 'transactions'],
-    queryFn: () => base44.entities.PaymentLog.list('-created_date', 500),
+    queryFn: () => db.entities.PaymentLog.list('-created_at', 500),
     enabled,
     retry: 1,
   });

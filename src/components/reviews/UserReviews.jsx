@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { format, parseISO } from 'date-fns';
 
 function StarRating({ rating, size = 'sm' }) {
@@ -32,11 +32,25 @@ function ReviewCard({ review, isOwner, onResponseSaved }) {
   const [showResponseForm, setShowResponseForm] = useState(false);
   const [responseText, setResponseText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [reviewerProfile, setReviewerProfile] = useState(null);
+
+  useEffect(() => {
+    if (!review.reviewer_id) return;
+    db.entities.UserProfile.get(review.reviewer_id)
+      .then(setReviewerProfile)
+      .catch(() => {});
+  }, [review.reviewer_id]);
+
+  const reviewerName = reviewerProfile?.display_name
+    || reviewerProfile?.username
+    || reviewerProfile?.email?.split('@')[0]
+    || 'Usuario';
+  const reviewerInitial = reviewerName.charAt(0).toUpperCase();
 
   const handleSaveResponse = async () => {
     if (!responseText.trim()) return;
     setSaving(true);
-    await base44.entities.Review.update(review.id, { response: responseText.trim().slice(0, 300) });
+    await db.entities.Review.update(review.id, { response: responseText.trim().slice(0, 300) });
     onResponseSaved?.({ ...review, response: responseText.trim() });
     setShowResponseForm(false);
     setSaving(false);
@@ -47,10 +61,10 @@ function ReviewCard({ review, isOwner, onResponseSaved }) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-300">
-            {review.reviewer_email?.charAt(0)?.toUpperCase()}
+            {reviewerInitial}
           </div>
           <div>
-            <p className="text-sm font-medium text-white">{review.reviewer_email?.split('@')[0]}</p>
+            <p className="text-sm font-medium text-white">{reviewerName}</p>
             <p className="text-xs text-zinc-500">
               {review.reviewer_role === 'renter' ? 'Inquilino' : 'Propietario'}
               {review.created_at && ` · ${format(parseISO(review.created_at), 'MMM yyyy')}`}
@@ -121,17 +135,17 @@ function ReviewCard({ review, isOwner, onResponseSaved }) {
   );
 }
 
-export default function UserReviews({ userEmail, isOwner = false }) {
+export default function UserReviews({ userId, isOwner = false }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userEmail) return;
-    base44.entities.Review.filter({ reviewed_email: userEmail, is_public: true }, '-created_at', 20)
+    if (!userId) return;
+    db.entities.Review.filter({ reviewed_id: userId, is_public: true }, '-created_at', 20)
       .then(data => setReviews(data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [userEmail]);
+  }, [userId]);
 
   const handleResponseSaved = (updatedReview) => {
     setReviews(prev => prev.map(r => r.id === updatedReview.id ? updatedReview : r));

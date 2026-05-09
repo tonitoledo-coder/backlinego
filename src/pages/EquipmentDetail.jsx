@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -52,10 +52,10 @@ function BookingAccessModal({ type, onClose }) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
+          <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => db.auth.redirectToLogin(window.location.href)}>
             Iniciar sesión
           </Button>
-          <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
+          <Button variant="outline" className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800" onClick={() => db.auth.redirectToLogin(window.location.href)}>
             Registrarse
           </Button>
           <p className="text-xs text-zinc-500 text-center mt-1">Solo necesitarás completar tu perfil la primera vez.</p>
@@ -124,17 +124,28 @@ export default function EquipmentDetail() {
   const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(setIsAuthed).catch(() => setIsAuthed(false));
+    db.auth.isAuthenticated().then(setIsAuthed).catch(() => setIsAuthed(false));
   }, []);
   const [deliverySlot, setDeliverySlot] = useState(null); // hora entrega en startDate
   const [returnSlot,   setReturnSlot]   = useState(null); // hora devolución en endDate
 
   const queryClient = useQueryClient();
 
+  // Lookup owner profile to get identity_status (not stored on equipment row)
+  const { data: ownerProfile } = useQuery({
+    queryKey: ['user_profile', 'owner'],
+    queryFn: async () => {
+      const eq = await db.entities.Equipment.get(equipmentId);
+      if (!eq?.owner_id) return null;
+      return db.entities.UserProfile.get(eq.owner_id);
+    },
+    enabled: !!equipmentId,
+  });
+
   // Load existing bookings to block occupied dates
   const { data: existingBookings = [] } = useQuery({
     queryKey: ['bookings', 'equipment', equipmentId],
-    queryFn: () => base44.entities.Booking.filter({ equipment_id: equipmentId }, '-created_date', 100),
+    queryFn: () => db.entities.Booking.filter({ equipment_id: equipmentId }, '-created_at', 100),
     enabled: !!equipmentId,
   });
 
@@ -158,7 +169,7 @@ export default function EquipmentDetail() {
   const { data: equipment, isLoading } = useQuery({
     queryKey: ['equipment', equipmentId],
     queryFn: async () => {
-      const items = await base44.entities.Equipment.filter({ id: equipmentId });
+      const items = await db.entities.Equipment.filter({ id: equipmentId });
       return items[0];
     },
     enabled: !!equipmentId,
@@ -166,7 +177,7 @@ export default function EquipmentDetail() {
 
   const bookingMutation = useMutation({
     mutationFn: async (bookingData) => {
-      return base44.entities.Booking.create(bookingData);
+      return db.entities.Booking.create(bookingData);
     },
     onSuccess: () => {
       alert(lang === 'es' ? '¡Reserva creada! Te contactaremos pronto.' : 'Booking created! We will contact you soon.');
@@ -277,13 +288,12 @@ export default function EquipmentDetail() {
     (!needsSlots || (deliverySlot !== null && returnSlot !== null));
 
   const checkBookingAccess = async () => {
-    const isAuth = await base44.auth.isAuthenticated();
+    const isAuth = await db.auth.isAuthenticated();
     if (!isAuth) { setAccessModal('login'); return false; }
 
     try {
-      const user = await base44.auth.me();
-      const profiles = await base44.entities.UserProfile.filter({ email: user.email });
-      const profile = profiles?.[0];
+      const user = await db.auth.me();
+      const profile = await db.entities.UserProfile.get(user.id);
       if (profile?.account_status === 'pending') { setAccessModal('pending'); return false; }
       if (!profile?.profile_complete) { setAccessModal('complete_profile'); return false; }
     } catch (_) {}
@@ -302,51 +312,56 @@ export default function EquipmentDetail() {
     setShowPayment(false);
     setIsBooking(true);
     try {
-      const user = await base44.auth.me();
-      if (equipment.created_by) {
+      const user = await db.auth.me();
+      if (equipment.owner_id) {
         await createNotification({
-          user_email: equipment.created_by,
+          user_id: equipment.owner_id,
           type: 'booking_confirmed',
           title: `Nueva reserva: ${equipment.title}`,
-          body: `${format(startDate, 'dd MMM')} ${deliverySlot !== null ? String(deliverySlot).padStart(2,'0')+'h' : ''} → ${format(endDate, 'dd MMM')} ${returnSlot !== null ? String(returnSlot).padStart(2,'0')+'h' : ''} · €${pricing?.totalPrice?.toFixed(0) || totalPrice.toFixed(0)}`,
-          link_page: 'Profile',
+          message: `${format(startDate, 'dd MMM')} → ${format(endDate, 'dd MMM')} · €${pricing?.totalPrice?.toFixed(0) || totalPrice.toFixed(0)}`,
+          link: createPageUrl('Profile'),
         });
       }
+      const basePriceCents     = Math.round(basePrice * 100);
+      const protectionFeeCents = Math.round(insuranceFee * 100);
+      const totalChargedCents  = Math.round(totalPrice * 100);
+      const depositCents       = Math.round((equipment.deposit || 0) * 100);
+      const platformFeeCents   = Math.round(basePriceCents * 0.12);
+      const ownerPayoutCents   = totalChargedCents - platformFeeCents - protectionFeeCents;
       const newBooking = await bookingMutation.mutateAsync({
         equipment_id: equipmentId,
+        equipment_title: equipment.title,
         renter_id: user.id,
-        owner_id: equipment.created_by,
+        owner_id: equipment.owner_id,
         start_date: format(startDate, 'yyyy-MM-dd'),
         end_date: format(endDate, 'yyyy-MM-dd'),
         days,
-        base_price: basePrice,
-        insurance_fee: insuranceFee,
-        deposit: equipment.deposit || 0,
-        total_price: totalPrice,
+        base_price_cents: basePriceCents,
+        protection_fee_cents: protectionFeeCents,
+        platform_fee_cents: platformFeeCents,
+        deposit_cents: depositCents,
+        total_charged_cents: totalChargedCents,
+        owner_payout_cents: ownerPayoutCents,
         status: 'confirmed',
-        escrow_status: 'held',
-        delivery_qr: `BLG-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        deposit_status: 'held',
         is_sos: equipment.sos_available,
-        delivery_slot: deliverySlot,
-        return_slot: returnSlot,
       });
-      // Email al owner: nueva reserva
-      sendBookingEmail('booking_created', newBooking || {
+      // Resolve owner email for sendBookingEmail
+      const ownerProfile = await db.entities.UserProfile.get(equipment.owner_id).catch(() => null);
+      const ownerEmail = ownerProfile?.email;
+      const emailBookingShape = newBooking || {
         id: 'new', start_date: format(startDate, 'yyyy-MM-dd'),
-        end_date: format(endDate, 'yyyy-MM-dd'), total_price: totalPrice,
-      }, {
+        end_date: format(endDate, 'yyyy-MM-dd'), total_charged_cents: totalChargedCents,
+      };
+      sendBookingEmail('booking_created', emailBookingShape, {
         equipmentTitle: equipment.title,
-        ownerEmail:     equipment.created_by,
+        ownerEmail,
         renterEmail:    user.email,
       });
-      // Email al renter: confirmación (el booking ya se crea confirmed)
-      sendBookingEmail('booking_confirmed', newBooking || {
-        id: 'new', start_date: format(startDate, 'yyyy-MM-dd'),
-        end_date: format(endDate, 'yyyy-MM-dd'), total_price: totalPrice,
-      }, {
+      sendBookingEmail('booking_confirmed', emailBookingShape, {
         equipmentTitle: equipment.title,
         renterEmail:    user.email,
-        ownerEmail:     equipment.created_by,
+        ownerEmail,
       });
     } finally {
       setIsBooking(false);
@@ -511,12 +526,12 @@ export default function EquipmentDetail() {
             )}
 
             {/* Owner rating + verified badge */}
-            {equipment.created_by && (
+            {equipment.owner_id && (
               <div className="mt-3">
-                <Link to={createPageUrl('PublicProfile') + '?email=' + encodeURIComponent(equipment.created_by)}>
+                <Link to={createPageUrl('PublicProfile') + '?id=' + encodeURIComponent(equipment.owner_id)}>
                 <OwnerRatingBadge
-                  ownerEmail={equipment.created_by}
-                  identityStatus={equipment.owner_identity_status}
+                  ownerId={equipment.owner_id}
+                  identityStatus={ownerProfile?.identity_status}
                 />
                 </Link>
               </div>
@@ -767,7 +782,7 @@ export default function EquipmentDetail() {
                         ¿Primera vez?{' '}
                         <button
                           className="text-blue-400 hover:text-blue-300 underline underline-offset-2"
-                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                          onClick={() => db.auth.redirectToLogin(window.location.href)}
                         >
                           Regístrate gratis
                         </button>
@@ -805,7 +820,7 @@ export default function EquipmentDetail() {
                         ¿Primera vez?{' '}
                         <button
                           className="text-blue-400 hover:text-blue-300 underline underline-offset-2"
-                          onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                          onClick={() => db.auth.redirectToLogin(window.location.href)}
                         >
                           Regístrate gratis
                         </button>{' '}

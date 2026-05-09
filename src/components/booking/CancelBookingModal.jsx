@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, XCircle, Loader2, Ban } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { calcCancellationPolicy } from './calcCancellationPolicy';
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
@@ -20,24 +20,23 @@ export default function CancelBookingModal({ booking, cancelledBy, open, onClose
   const queryClient = useQueryClient();
   const [done, setDone] = useState(false);
 
-  const totalPaid = booking?.total_price ?? 0;
+  const totalPaid = booking?.total_charged_cents != null ? booking.total_charged_cents / 100 : 0;
   const policy    = calcCancellationPolicy(cancelledBy, booking?.start_date, totalPaid);
 
   const cancelMutation = useMutation({
     mutationFn: () =>
-      base44.entities.Booking.update(booking?.id, {
-        status:                  'cancelled',
-        cancelled_by:            cancelledBy,
-        cancellation_refund_pct: policy.refundPct,
-        cancellation_fee:        policy.cancellationFee,
-        cancelled_at:            new Date().toISOString(),
+      db.entities.Booking.update(booking?.id, {
+        status:                'cancelled',
+        cancellation_reason:   `${cancelledBy} cancelled (${policy.refundPct}% refund)`,
+        cancelled_at:          new Date().toISOString(),
+        refund_amount_cents:   Math.round((policy.refundAmount || 0) * 100),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries(['bookings']);
       sendBookingEmail('booking_cancelled', booking, {
         equipmentTitle: booking.equipment_title || `Reserva #${booking.id?.slice(-8)}`,
-        renterEmail:    booking.renter_email || booking.renter_id,
-        ownerEmail:     booking.owner_email  || booking.owner_id,
+        renterId:       booking.renter_id,
+        ownerId:        booking.owner_id,
         cancelledBy,
         refundPct:      policy.refundPct,
         refundAmount:   policy.refundAmount?.toFixed(2),

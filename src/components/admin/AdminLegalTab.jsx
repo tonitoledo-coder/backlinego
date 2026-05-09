@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,7 +28,6 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
     type: defaultType || 'terms',
     version: '',
     title: '',
-    effective_date: '',
     content: '',
     activate: false,
   });
@@ -102,20 +101,20 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
   // ── Mutation ────────────────────────────────────────────────────────────────
   const mutation = useMutation({
     mutationFn: async (data) => {
-      return base44.entities.LegalDocument.create({
-        type: data.type,
+      return db.entities.LegalDocument.create({
+        doc_type: data.type,
         version: data.version,
         title: data.title,
-        effective_date: data.effective_date,
-        content: data.content,
-        is_active: data.activate,
+        content_md: data.content,
+        is_published: data.activate,
+        published_at: data.activate ? new Date().toISOString() : null,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'legal'] });
       onSaved?.();
       onClose();
-      setForm({ type: defaultType || 'terms', version: '', title: '', effective_date: '', content: '', activate: false });
+      setForm({ type: defaultType || 'terms', version: '', title: '', content: '', activate: false });
     },
   });
 
@@ -138,7 +137,7 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
         <div className="flex flex-col gap-4 overflow-y-auto flex-1 py-2 pr-1">
 
           {/* Meta fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-zinc-400 mb-1 block">Tipo</label>
               <select
@@ -157,15 +156,6 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
                 placeholder="ej. 2.0"
                 value={form.version}
                 onChange={e => set('version', e.target.value)}
-                style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-              />
-            </div>
-            <div>
-              <label className="text-xs text-zinc-400 mb-1 block">Fecha de vigencia</label>
-              <Input
-                type="date"
-                value={form.effective_date}
-                onChange={e => set('effective_date', e.target.value)}
                 style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
               />
             </div>
@@ -299,7 +289,7 @@ function NewLegalDocumentModal({ open, onClose, defaultType, onSaved }) {
           <Button variant="ghost" onClick={onClose} className="text-zinc-400">Cancelar</Button>
           <Button
             onClick={() => mutation.mutate(form)}
-            disabled={mutation.isPending || !form.version || !form.title || !form.content || !form.effective_date}
+            disabled={mutation.isPending || !form.version || !form.title || !form.content}
             style={{ background: '#3b82f6', color: 'white' }}
           >
             {mutation.isPending ? 'Guardando...' : form.activate ? 'Guardar y activar' : 'Guardar borrador'}
@@ -357,22 +347,22 @@ function DocTypeCard({ type, docs, profiles, onNew, onActivate }) {
   const label = type === 'terms' ? 'Términos y Condiciones' : 'Política de Privacidad';
   const versionField = type === 'terms' ? 'terms_version_accepted' : 'privacy_version_accepted';
 
-  const activeDoc = docs.find(d => d.is_active);
-  const inactiveDocs = docs.filter(d => !d.is_active).sort((a, b) => b.version?.localeCompare(a.version));
+  const activeDoc = docs.find(d => d.is_published);
+  const inactiveDocs = docs.filter(d => !d.is_published).sort((a, b) => b.version?.localeCompare(a.version));
 
   const acceptedCount = activeDoc
     ? profiles.filter(p => p[versionField] === activeDoc.version).length
     : 0;
 
   const activateMutation = useMutation({
-    mutationFn: (docId) => base44.entities.LegalDocument.update(docId, { is_active: true }),
+    mutationFn: (docId) => db.entities.LegalDocument.update(docId, { is_published: true, published_at: new Date().toISOString() }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'legal'] }),
   });
 
   const forceReacceptMutation = useMutation({
     mutationFn: async () => {
       const updates = profiles.map(p =>
-        base44.entities.UserProfile.update(p.id, { [versionField]: null })
+        db.entities.UserProfile.update(p.id, { [versionField]: null })
       );
       await Promise.all(updates);
     },
@@ -403,7 +393,7 @@ function DocTypeCard({ type, docs, profiles, onNew, onActivate }) {
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#22c55e20', color: '#22c55e', border: '1px solid #22c55e40' }}>
                   v{activeDoc.version}
                 </span>
-                <span className="text-xs text-zinc-500">vigente desde {activeDoc.effective_date}</span>
+                <span className="text-xs text-zinc-500">vigente desde {activeDoc.published_at?.split('T')[0]}</span>
               </div>
             ) : (
               <span className="text-xs text-zinc-500">Sin versión activa</span>
@@ -474,7 +464,7 @@ function DocTypeCard({ type, docs, profiles, onNew, onActivate }) {
                         v{doc.version}
                       </span>
                       <span className="text-xs text-zinc-500 truncate">{doc.title}</span>
-                      <span className="text-xs text-zinc-600 shrink-0">{doc.effective_date}</span>
+                      <span className="text-xs text-zinc-600 shrink-0">{doc.published_at?.split('T')[0]}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-xs text-zinc-600">{docAccepted} usuarios</span>
@@ -519,13 +509,13 @@ export default function AdminLegalTab({ enabled }) {
 
   const { data: docs = [], isLoading: docsLoading } = useQuery({
     queryKey: ['admin', 'legal'],
-    queryFn: () => base44.entities.LegalDocument.list('-created_date', 100),
+    queryFn: () => db.entities.LegalDocument.list('-created_at', 100),
     enabled,
   });
 
   const { data: profiles = [] } = useQuery({
     queryKey: ['admin', 'userprofiles'],
-    queryFn: () => base44.entities.UserProfile.list('-created_date', 500),
+    queryFn: () => db.entities.UserProfile.list('-created_at', 500),
     enabled,
   });
 

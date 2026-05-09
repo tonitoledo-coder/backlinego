@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import ReactMarkdown from 'react-markdown';
 import { Loader2, FileText, Shield, CheckCircle2, Check } from 'lucide-react';
 
@@ -17,8 +17,8 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
     (async () => {
       try {
         const [terms, privacy] = await Promise.all([
-          base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
-          base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
+          db.entities.LegalDocument.filter({ doc_type: 'terms', is_published: true }),
+          db.entities.LegalDocument.filter({ doc_type: 'privacy', is_published: true }),
         ]);
         if (!mounted) return;
         const termsResult = terms?.[0] || null;
@@ -41,7 +41,7 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
     if (!termsAccepted || !privacyAccepted) return;
     setSaving(true);
     try {
-      await base44.entities.UserProfile.update(userProfile.id, {
+      await db.entities.UserProfile.update(userProfile.id, {
         terms_version_accepted: termsDoc?.version || '1.0',
         privacy_version_accepted: privacyDoc?.version || '1.0',
         legal_accepted_at: new Date().toISOString(),
@@ -129,9 +129,9 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
                   {termsDoc.title}{' '}
                   <span style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 400 }}>v{termsDoc.version}</span>
                 </h3>
-                {termsDoc.effective_date && (
+                {termsDoc.published_at && (
                   <p style={{ color: '#71717a', fontSize: '0.75rem', marginBottom: '16px' }}>
-                    En vigor desde: {termsDoc.effective_date}
+                    En vigor desde: {termsDoc.published_at.split('T')[0]}
                   </p>
                 )}
                 <ReactMarkdown
@@ -142,7 +142,7 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
                       </a>
                     ),
                   }}
-                >{termsDoc.content}</ReactMarkdown>
+                >{termsDoc.content_md}</ReactMarkdown>
               </>
             ) : (
               <p style={{ color: '#a1a1aa', fontSize: '0.875rem' }}>No hay términos activos disponibles.</p>
@@ -154,9 +154,9 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
                   {privacyDoc.title}{' '}
                   <span style={{ color: '#71717a', fontSize: '0.75rem', fontWeight: 400 }}>v{privacyDoc.version}</span>
                 </h3>
-                {privacyDoc.effective_date && (
+                {privacyDoc.published_at && (
                   <p style={{ color: '#71717a', fontSize: '0.75rem', marginBottom: '16px' }}>
-                    En vigor desde: {privacyDoc.effective_date}
+                    En vigor desde: {privacyDoc.published_at.split('T')[0]}
                   </p>
                 )}
                 <ReactMarkdown
@@ -167,7 +167,7 @@ export default function LegalAcceptanceModal({ userProfile, onAccepted }) {
                       </a>
                     ),
                   }}
-                >{privacyDoc.content}</ReactMarkdown>
+                >{privacyDoc.content_md}</ReactMarkdown>
               </>
             ) : (
               <p style={{ color: '#a1a1aa', fontSize: '0.875rem' }}>No hay política de privacidad activa disponible.</p>

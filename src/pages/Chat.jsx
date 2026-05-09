@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import { createPageUrl } from '@/utils';
 import { Link } from 'react-router-dom';
 import { createNotification } from '@/components/notifications/createNotification';
 
-function MessageBubble({ msg, isMine }) {
+function MessageBubble({ msg, isMine, senderLabel }) {
   return (
     <div className={cn("flex gap-2 mb-4", isMine ? "justify-end" : "justify-start")}>
       {!isMine && (
@@ -55,7 +55,7 @@ function MessageBubble({ msg, isMine }) {
         ) : null}
 
         <p className={cn("text-[10px] text-zinc-600", isMine ? "text-right" : "text-left")}>
-          {msg.sender_name} · {new Date(msg.created_date).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+          {senderLabel} · {new Date(msg.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
     </div>
@@ -77,35 +77,36 @@ export default function Chat() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => base44.auth.redirectToLogin());
+    db.auth.me().then(setUser).catch(() => db.auth.redirectToLogin());
   }, []);
 
   // Fetch quote request
   const { data: quoteRequests = [] } = useQuery({
     queryKey: ['quote', quoteId],
-    queryFn: () => base44.entities.QuoteRequest.filter({ id: quoteId }),
+    queryFn: () => db.entities.QuoteRequest.filter({ id: quoteId }),
     enabled: !!quoteId,
   });
   const quote = quoteRequests[0];
 
-  // Fetch messages with polling
-  const { data: messages = [] } = useQuery({
-    queryKey: ['chat', quoteId],
-    queryFn: () => base44.entities.ChatMessage.filter({ quote_request_id: quoteId }, 'created_date', 200),
-    enabled: !!quoteId,
-    refetchInterval: 3000,
-  });
+  // chat_message has no quote_request_id column — this page currently shows
+  // no messages until quote chat is migrated to its own table or linked via booking.
+  const messages = [];
 
-  // Real-time subscription
+  // Lookup map for sender display names (user_profile cache)
+  const [senderProfiles, setSenderProfiles] = useState({});
   useEffect(() => {
-    if (!quoteId) return;
-    const unsub = base44.entities.ChatMessage.subscribe((event) => {
-      if (event.data?.quote_request_id === quoteId) {
-        queryClient.invalidateQueries({ queryKey: ['chat', quoteId] });
-      }
-    });
-    return unsub;
-  }, [quoteId, queryClient]);
+    const ids = [...new Set(messages.map(m => m.sender_id).filter(Boolean))];
+    const missing = ids.filter(id => !(id in senderProfiles));
+    if (!missing.length) return;
+    Promise.all(missing.map(id => db.entities.UserProfile.get(id).catch(() => null)))
+      .then(profs => {
+        setSenderProfiles(prev => {
+          const next = { ...prev };
+          missing.forEach((id, i) => { next[id] = profs[i]; });
+          return next;
+        });
+      });
+  }, [messages]);
 
   // Scroll to bottom
   useEffect(() => {
@@ -113,40 +114,33 @@ export default function Chat() {
   }, [messages]);
 
   const sendMutation = useMutation({
-    mutationFn: (msgData) => base44.entities.ChatMessage.create(msgData),
+    mutationFn: (msgData) => db.entities.ChatMessage.create(msgData),
     onSuccess: async (_, msgData) => {
       queryClient.invalidateQueries({ queryKey: ['chat', quoteId] });
-      // Notify the other party
-      if (quote) {
-        const recipientEmail = msgData.sender_email === quote.specialist_email
-          ? quote.requester_email
-          : quote.specialist_email;
-        if (recipientEmail) {
-          await createNotification({
-            user_email: recipientEmail,
-            type: 'chat_message',
-            title: `Nuevo mensaje de ${msgData.sender_name}`,
-            body: msgData.type === 'quote_offer'
-              ? `Presupuesto: €${msgData.quote_amount}`
-              : msgData.content || 'Foto adjunta',
-            link_page: 'Chat',
-            link_params: `?id=${quoteId}`,
-          });
-        }
+      // Notify the recipient
+      if (msgData.receiver_id) {
+        await createNotification({
+          user_id: msgData.receiver_id,
+          type: 'chat_message',
+          title: 'Nuevo mensaje',
+          message: msgData.body?.slice(0, 140) || 'Adjuntos',
+          link: `${createPageUrl('Chat')}?id=${quoteId}`,
+        });
       }
     },
   });
 
+  const recipientId = quote && user
+    ? (user.id === quote.specialist_id ? quote.requester_id : quote.specialist_id)
+    : null;
+
   const handleSend = async () => {
     if (!text.trim() && pendingPhotos.length === 0) return;
     await sendMutation.mutateAsync({
-      quote_request_id: quoteId,
-      sender_email: user.email,
-      sender_name: user.full_name || user.email,
-      sender_role: user.email === quote?.specialist_email ? 'specialist' : 'user',
-      content: text.trim(),
-      photos: pendingPhotos,
-      type: pendingPhotos.length > 0 && !text.trim() ? 'photo' : 'text',
+      sender_id: user.id,
+      receiver_id: recipientId,
+      body: text.trim(),
+      attachments: pendingPhotos,
     });
     setText('');
     setPendingPhotos([]);
@@ -155,17 +149,17 @@ export default function Chat() {
   const handleSendQuoteOffer = async () => {
     if (!quoteAmount) return;
     await sendMutation.mutateAsync({
-      quote_request_id: quoteId,
-      sender_email: user.email,
-      sender_name: user.full_name || user.email,
-      sender_role: 'specialist',
-      content: text.trim() || `Presupuesto para reparación de ${quote?.equipment_type}`,
-      photos: [],
-      type: 'quote_offer',
-      quote_amount: parseFloat(quoteAmount),
+      sender_id: user.id,
+      receiver_id: recipientId,
+      body: text.trim() || `Presupuesto: €${quoteAmount}`,
+      attachments: [],
     });
-    // Update quote status
-    await base44.entities.QuoteRequest.update(quoteId, { status: 'quoted', quote_amount: parseFloat(quoteAmount) });
+    // Update quote with the offered amount (in cents)
+    await db.entities.QuoteRequest.update(quoteId, {
+      status: 'quoted',
+      quote_amount_cents: Math.round(parseFloat(quoteAmount) * 100),
+      quoted_at: new Date().toISOString(),
+    });
     queryClient.invalidateQueries({ queryKey: ['quote', quoteId] });
     setShowQuoteOffer(false);
     setQuoteAmount('');
@@ -176,7 +170,7 @@ export default function Chat() {
     const files = Array.from(e.target.files);
     if (!files.length) return;
     setUploading(true);
-    const urls = await Promise.all(files.map(f => base44.integrations.Core.UploadFile({ file: f }).then(r => r.file_url)));
+    const urls = await Promise.all(files.map(f => db.integrations.Core.UploadFile({ file: f }).then(r => r.file_url)));
     setPendingPhotos(prev => [...prev, ...urls].slice(0, 5));
     setUploading(false);
   };
@@ -188,7 +182,7 @@ export default function Chat() {
     }
   };
 
-  const isSpecialist = user && quote && user.email === quote.specialist_email;
+  const isSpecialist = user && quote && user.id === quote.specialist_id;
 
   if (!quoteId) {
     return (
@@ -263,13 +257,18 @@ export default function Chat() {
           </div>
         )}
 
-        {messages.map((msg) => (
-          <MessageBubble
-            key={msg.id}
-            msg={msg}
-            isMine={user && msg.sender_email === user.email}
-          />
-        ))}
+        {messages.map((msg) => {
+          const profile = senderProfiles[msg.sender_id];
+          const senderLabel = profile?.display_name || profile?.username || profile?.email?.split('@')[0] || '—';
+          return (
+            <MessageBubble
+              key={msg.id}
+              msg={msg}
+              isMine={user && msg.sender_id === user.id}
+              senderLabel={senderLabel}
+            />
+          );
+        })}
 
         {messages.length === 0 && (
           <div className="text-center py-8">

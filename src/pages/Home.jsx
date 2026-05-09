@@ -144,7 +144,7 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto">
             {/* Logo + Tagline Hero Block */}
             <div className="flex flex-col items-center mb-8 lg:mb-10">
-              <img src="https://media.base44.com/images/public/69a08f2a394db4f3cafbc46f/17efb5b4e_Logo_BacklineGo.png"
+              <img src="https://media.db.com/images/public/69a08f2a394db4f3cafbc46f/17efb5b4e_Logo_BacklineGo.png"
 
               alt="BacklineGo" className="h-24 lg:h-36 w-auto object-contain drop-shadow-[0_0_50px_rgba(59,130,246,0.35)]" />
 

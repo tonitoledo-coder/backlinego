@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, X, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 
 const TYPE_ICONS = {
   quote_request:      '🔧',
@@ -12,13 +11,13 @@ const TYPE_ICONS = {
   equipment_available:'🎸',
 };
 
-export default function NotificationBell({ userEmail }) {
+export default function NotificationBell({ userId }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
   const queryClient = useQueryClient();
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', userEmail],
+    queryKey: ['notifications', userId],
     queryFn: async () => {
       try {
         // TODO(bloque-6): migrar a Supabase cuando exista la tabla `notification`.
@@ -28,15 +27,15 @@ export default function NotificationBell({ userEmail }) {
         return [];
       }
     },
-    enabled: !!userEmail,
+    enabled: !!userId,
     refetchInterval: 15000,
   });
 
   // Real-time (pendiente de migrar a Supabase Realtime en bloque-6)
   useEffect(() => {
-    if (!userEmail) return;
+    if (!userId) return;
     return undefined;
-  }, [userEmail, queryClient]);
+  }, [userId, queryClient]);
 
   // Close on outside click
   useEffect(() => {
@@ -51,14 +50,14 @@ export default function NotificationBell({ userEmail }) {
     mutationFn: async () => {
       // TODO(bloque-6): migrar a Supabase
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications', userEmail] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications', userId] }),
   });
 
   const markOneRead = async (_notif) => {
     // TODO(bloque-6): migrar a Supabase
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.read_at).length;
 
   return (
     <div className="relative" ref={panelRef}>
@@ -108,12 +107,12 @@ export default function NotificationBell({ userEmail }) {
                   key={notif.id}
                   className={cn(
                     "flex gap-3 px-4 py-3 border-b border-zinc-800/60 cursor-pointer transition-colors hover:bg-zinc-800/60",
-                    !notif.read && "bg-blue-500/5"
+                    !notif.read_at && "bg-blue-500/5"
                   )}
                 >
-                  {notif.link_page ? (
+                  {notif.link ? (
                     <Link
-                      to={`${createPageUrl(notif.link_page)}${notif.link_params ? '?' + notif.link_params : ''}`}
+                      to={notif.link}
                       className="flex gap-3 w-full"
                       onClick={() => { markOneRead(notif); setOpen(false); }}
                     >
@@ -143,12 +142,12 @@ function NotifContent({ notif }) {
       <span className="text-2xl flex-shrink-0 mt-0.5">{TYPE_ICONS[notif.type] || '🔔'}</span>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-white leading-tight truncate">{notif.title}</p>
-        {notif.body && <p className="text-xs text-zinc-400 mt-0.5 line-clamp-2">{notif.body}</p>}
+        {notif.message && <p className="text-xs text-zinc-400 mt-0.5 line-clamp-2">{notif.message}</p>}
         <p className="text-[10px] text-zinc-600 mt-1">
-          {new Date(notif.created_date).toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          {new Date(notif.created_at).toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
-      {!notif.read && <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-2" />}
+      {!notif.read_at && <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-2" />}
     </>
   );
 }

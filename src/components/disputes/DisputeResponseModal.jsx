@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { useState, useEffect } from 'react';
+import { db } from '@/lib/db';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,14 @@ export default function DisputeResponseModal({ dispute, open, onClose, onRespond
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [opener, setOpener] = useState(null);
+
+  useEffect(() => {
+    if (!dispute?.opened_by) return;
+    db.entities.UserProfile.get(dispute.opened_by).then(setOpener).catch(() => {});
+  }, [dispute?.opened_by]);
+
+  const openerLabel = opener?.display_name || opener?.username || opener?.email || (dispute?.opened_by ? dispute.opened_by.slice(0, 8) : '—');
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -26,7 +34,7 @@ export default function DisputeResponseModal({ dispute, open, onClose, onRespond
     setUploading(true);
     const uploaded = [];
     for (const file of files) {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file, context: 'dispute' });
+      const { file_url } = await db.integrations.Core.UploadFile({ file, context: 'dispute' });
       uploaded.push(file_url);
     }
     setPhotos(prev => [...prev, ...uploaded]);
@@ -37,7 +45,7 @@ export default function DisputeResponseModal({ dispute, open, onClose, onRespond
     if (!response.trim()) return;
     setSubmitting(true);
     try {
-      await base44.entities.Dispute.update(dispute.id, {
+      await db.entities.Dispute.update(dispute.id, {
         respondent_response: response,
         respondent_photos: photos,
         status: 'under_review',
@@ -82,7 +90,7 @@ export default function DisputeResponseModal({ dispute, open, onClose, onRespond
           {/* Dispute info */}
           <div className="p-4 rounded-xl bg-zinc-800/60 border border-zinc-700 space-y-2">
             <p className="text-xs text-zinc-400 uppercase tracking-wide">Disputa abierta por</p>
-            <p className="text-sm text-white font-medium">{dispute.opened_by}</p>
+            <p className="text-sm text-white font-medium">{openerLabel}</p>
             <p className="text-xs text-zinc-400 uppercase tracking-wide mt-2">Motivo</p>
             <p className="text-sm text-amber-300">{TYPE_LABELS[dispute.type] || dispute.type}</p>
             <p className="text-xs text-zinc-400 uppercase tracking-wide mt-2">Descripción</p>

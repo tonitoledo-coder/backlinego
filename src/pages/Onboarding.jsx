@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useMutation } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,7 +81,7 @@ export default function Onboarding() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data) => base44.entities.Equipment.create(data),
+    mutationFn: async (data) => db.entities.Equipment.create(data),
     onSuccess: () => setCurrentStep(5),
   });
 
@@ -91,7 +91,7 @@ export default function Onboarding() {
     setUploading(true);
     const urls = await Promise.all(
       files.map(async (file) => {
-        const res = await base44.integrations.Core.UploadFile({ file });
+        const res = await db.integrations.Core.UploadFile({ file });
         return res.file_url;
       })
     );
@@ -100,8 +100,8 @@ export default function Onboarding() {
   };
 
   const handleSubmit = async () => {
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) { base44.auth.redirectToLogin(window.location.href); return; }
+    const isAuth = await db.auth.isAuthenticated();
+    if (!isAuth) { db.auth.redirectToLogin(window.location.href); return; }
 
     let location = formData.location;
     if (!location.lat && navigator.geolocation) {
@@ -113,15 +113,15 @@ export default function Onboarding() {
       } catch (_) {}
     }
 
-    await base44.auth.updateMe({ user_type: userType, onboarding_completed: true });
+    await db.auth.updateMe({ user_type: userType, onboarding_completed: true });
 
     // Sync UserProfile for admin management
     try {
-      const u = await base44.auth.me();
-      const existing = await base44.entities.UserProfile.filter({ email: u.email });
-      if (existing.length === 0) {
-        await base44.entities.UserProfile.create({
-          user_id: u.id,
+      const u = await db.auth.me();
+      const existing = await db.entities.UserProfile.get(u.id);
+      if (!existing) {
+        await db.entities.UserProfile.create({
+          id: u.id,
           email: u.email,
           display_name: u.full_name || u.email,
           role: 'user',

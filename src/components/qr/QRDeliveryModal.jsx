@@ -8,7 +8,7 @@ import {
   Camera, X, ImageIcon, AlertTriangle, Loader2
 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
 // ── QRDisplay ─────────────────────────────────────────────────────────────────
@@ -138,22 +138,20 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
 
   const isRenter = booking?.renter_id === currentUserId;
   const isOwner  = booking?.owner_id  === currentUserId;
-  const qrValue  = booking?.delivery_qr || `BACKLINE-${booking?.id?.slice(-12)}`;
-
-  const fmtSlot = (h) => h != null ? String(h).padStart(2, '0') + ':00h' : null;
+  const qrValue  = `BACKLINE-${booking?.id?.slice(-12)}`;
 
   const updateMutation = useMutation({
-    mutationFn: (data) => ({ data, result: base44.entities.Booking.update(booking.id, data) }),
+    mutationFn: (data) => ({ data, result: db.entities.Booking.update(booking.id, data) }),
     onSuccess: ({ data: mutData }) => {
       queryClient.invalidateQueries(['bookings']);
       const emailExtra = {
         equipmentTitle: booking.equipment_title || `Reserva #${booking.id?.slice(-8)}`,
-        renterEmail:    booking.renter_email || booking.renter_id,
-        ownerEmail:     booking.owner_email  || booking.owner_id,
+        renterId:       booking.renter_id,
+        ownerId:        booking.owner_id,
       };
       if (mutData.status === 'active') {
         sendBookingEmail('delivery_confirmed', booking, emailExtra);
-      } else if (mutData.status === 'completed' || mutData.status === 'returning') {
+      } else if (mutData.status === 'completed') {
         sendBookingEmail('return_confirmed', booking, emailExtra);
       }
       setDone(true);
@@ -167,7 +165,7 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
     try {
       const urls = await Promise.all(
         files.slice(0, 3).map(async (file) => {
-          const res = await base44.integrations.Core.UploadFile({ file, context: 'handover' });
+          const res = await db.integrations.Core.UploadFile({ file, context: 'handover' });
           return res.file_url;
         })
       );
@@ -183,27 +181,29 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
   const handleRenterConfirmDelivery = () => {
     updateMutation.mutate({
       status: 'active',
-      escrow_status: 'held',
-      ...(deliveryPhotos.length > 0 && { delivery_photos: deliveryPhotos }),
+      pickup_confirmed_at: new Date().toISOString(),
+      deposit_status: 'held',
+      ...(deliveryPhotos.length > 0 && { pickup_photos: deliveryPhotos }),
     });
   };
 
   const handleRenterConfirmReturn = () => {
     updateMutation.mutate({
-      status: 'returning',
+      status: 'completed',
+      return_confirmed_at: new Date().toISOString(),
       ...(returnPhotos.length > 0 && { return_photos: returnPhotos }),
     });
   };
 
   const handleOwnerReleaseEscrow = () => {
-    updateMutation.mutate({ status: 'completed', escrow_status: 'released' });
+    updateMutation.mutate({ status: 'completed', deposit_status: 'released' });
   };
 
   const handleOwnerDispute = () => {
     updateMutation.mutate({
-      status: 'completed',
-      escrow_status: 'disputed',
-      dispute_note: disputeNote,
+      status: 'disputed',
+      deposit_status: 'held',
+      notes: disputeNote,
     });
   };
 
@@ -252,31 +252,17 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
             </Badge>
           </div>
 
-          {/* Resumen fechas + slots */}
+          {/* Resumen fechas */}
           {booking && (
             <div className="bg-zinc-800/60 rounded-xl px-4 py-3 text-sm space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-zinc-500 text-xs uppercase tracking-wider">Entrega</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-medium">{booking.start_date}</span>
-                  {fmtSlot(booking.delivery_slot) && (
-                    <span className="font-mono text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/25">
-                      {fmtSlot(booking.delivery_slot)}
-                    </span>
-                  )}
-                </div>
+                <span className="text-white font-medium">{booking.start_date}</span>
               </div>
               <div className="h-px bg-zinc-700" />
               <div className="flex items-center justify-between">
                 <span className="text-zinc-500 text-xs uppercase tracking-wider">Devolución</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-medium">{booking.end_date}</span>
-                  {fmtSlot(booking.return_slot) && (
-                    <span className="font-mono text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/25">
-                      {fmtSlot(booking.return_slot)}
-                    </span>
-                  )}
-                </div>
+                <span className="text-white font-medium">{booking.end_date}</span>
               </div>
             </div>
           )}
@@ -329,7 +315,7 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
                 </>
               )}
 
-              {(booking?.status === 'active' || booking?.status === 'returning') && (
+              {booking?.status === 'active' && (
                 <>
                   <PhotoCapture
                     label="Documenta el estado al devolver"
@@ -342,22 +328,20 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
 
                   <PhotoGallery
                     title="Estado al recoger (referencia)"
-                    photos={booking?.delivery_photos}
+                    photos={booking?.pickup_photos}
                     emptyText="No se tomaron fotos en la entrega"
                   />
 
                   <Button
                     onClick={handleRenterConfirmReturn}
-                    disabled={updateMutation.isPending || booking?.status === 'returning'}
+                    disabled={updateMutation.isPending}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 h-11"
                   >
                     {updateMutation.isPending
                       ? <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       : <PackageCheck className="w-4 h-4 mr-2" />
                     }
-                    {booking?.status === 'returning'
-                      ? 'Devolución registrada — esperando al arrendador'
-                      : 'Confirmar devolución del equipo'}
+                    Confirmar devolución del equipo
                   </Button>
                 </>
               )}
@@ -378,12 +362,12 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
 
                   <PhotoGallery
                     title="Fotos del estado — tomadas por el arrendatario"
-                    photos={booking?.delivery_photos}
+                    photos={booking?.pickup_photos}
                     emptyText="El arrendatario aún no ha tomado fotos"
                   />
 
                   <Button
-                    onClick={() => updateMutation.mutate({ status: 'active', escrow_status: 'held' })}
+                    onClick={() => updateMutation.mutate({ status: 'active', deposit_status: 'held', pickup_confirmed_at: new Date().toISOString() })}
                     disabled={updateMutation.isPending}
                     className="w-full bg-blue-600 hover:bg-blue-700 h-11"
                   >
@@ -391,19 +375,17 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
                       ? <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       : <PackageCheck className="w-4 h-4 mr-2" />
                     }
-                    {fmtSlot(booking?.delivery_slot)
-                      ? `Confirmar entrega · ${fmtSlot(booking.delivery_slot)}`
-                      : 'Confirmar entrega al arrendatario'}
+                    Confirmar entrega al arrendatario
                   </Button>
                 </>
               )}
 
-              {(booking?.status === 'active' || booking?.status === 'returning') && (
+              {booking?.status === 'active' && (
                 <>
                   <div className="space-y-2">
                     <PhotoGallery
                       title="Estado al entregar"
-                      photos={booking?.delivery_photos}
+                      photos={booking?.pickup_photos}
                       emptyText="Sin fotos de entrega"
                     />
                     <PhotoGallery

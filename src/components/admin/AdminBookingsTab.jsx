@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -15,21 +15,20 @@ import { format } from 'date-fns';
 import CancelBookingModal from '@/components/booking/CancelBookingModal';
 
 const BOOKING_STATUS = {
-  pending:   { bg: '#fbbf2420', color: '#fbbf24', border: '#fbbf2440', label: 'Pendiente' },
+  pending_payment: { bg: '#fbbf2420', color: '#fbbf24', border: '#fbbf2440', label: 'Pago pendiente' },
   confirmed: { bg: '#3b82f620', color: '#60a5fa', border: '#3b82f640', label: 'Confirmada' },
   active:    { bg: '#1DDF7A20', color: '#1DDF7A', border: '#1DDF7A40', label: 'Activa' },
-  returning: { bg: '#a78bfa20', color: '#a78bfa', border: '#a78bfa40', label: 'En devolución' },
   completed: { bg: 'rgba(255,255,255,0.06)', color: '#94a3b8', border: 'rgba(255,255,255,0.1)', label: 'Completada' },
   cancelled: { bg: '#ef444420', color: '#ef4444', border: '#ef444440', label: 'Cancelada' },
   disputed:  { bg: '#f9731620', color: '#f97316', border: '#f9731640', label: 'Disputada' },
+  refunded:  { bg: '#a78bfa20', color: '#a78bfa', border: '#a78bfa40', label: 'Reembolsada' },
 };
 
-const ESCROW_STATUS = {
-  pending:  { bg: '#fbbf2420', color: '#fbbf24', border: '#fbbf2440', label: 'Pendiente' },
+const DEPOSIT_STATUS = {
+  none:     { bg: 'rgba(255,255,255,0.06)', color: '#94a3b8', border: 'rgba(255,255,255,0.1)', label: 'Sin depósito' },
   held:     { bg: '#3b82f620', color: '#60a5fa', border: '#3b82f640', label: 'Retenido' },
+  captured: { bg: '#f9731620', color: '#f97316', border: '#f9731640', label: 'Capturado' },
   released: { bg: '#1DDF7A20', color: '#1DDF7A', border: '#1DDF7A40', label: 'Liberado' },
-  refunded: { bg: '#ef444420', color: '#ef4444', border: '#ef444440', label: 'Reembolsado' },
-  disputed: { bg: '#f9731620', color: '#f97316', border: '#f9731640', label: 'Disputado' },
 };
 
 function StatusBadge({ status, map }) {
@@ -58,13 +57,13 @@ function BookingEditModal({ booking, open, onClose, onSaved }) {
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
-    if (booking) setForm({ status: booking.status, escrow_status: booking.escrow_status, notes: booking.notes || '' });
+    if (booking) setForm({ status: booking.status, deposit_status: booking.deposit_status || 'none', notes: booking.notes || '' });
   }, [booking]);
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
   const mutation = useMutation({
-    mutationFn: (data) => base44.entities.Booking.update(booking.id, data),
+    mutationFn: (data) => db.entities.Booking.update(booking.id, data),
     onSuccess: () => { onSaved(); onClose(); },
     onError: (err) => console.error('Booking update failed', err),
   });
@@ -91,7 +90,7 @@ function BookingEditModal({ booking, open, onClose, onSaved }) {
               <div><span className="text-zinc-500">Inicio: </span><span className="text-white">{booking.start_date}</span></div>
               <div><span className="text-zinc-500">Fin: </span><span className="text-white">{booking.end_date}</span></div>
               <div><span className="text-zinc-500">Días: </span><span className="text-white">{booking.days}</span></div>
-              <div><span className="text-zinc-500">Total: </span><span className="text-white font-medium">€{booking.total_price?.toFixed(2) ?? '—'}</span></div>
+              <div><span className="text-zinc-500">Total: </span><span className="text-white font-medium">€{booking.total_charged_cents != null ? (booking.total_charged_cents / 100).toFixed(2) : '—'}</span></div>
             </div>
 
             {/* Status */}
@@ -110,13 +109,13 @@ function BookingEditModal({ booking, open, onClose, onSaved }) {
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-zinc-400 mb-1 block">Estado escrow</label>
-                <Select value={form.escrow_status} onValueChange={v => set('escrow_status', v)}>
+                <label className="text-xs text-zinc-400 mb-1 block">Depósito</label>
+                <Select value={form.deposit_status} onValueChange={v => set('deposit_status', v)}>
                   <SelectTrigger style={{ background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    {Object.entries(ESCROW_STATUS).map(([k, v]) => (
+                    {Object.entries(DEPOSIT_STATUS).map(([k, v]) => (
                       <SelectItem key={k} value={k}>{v.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -188,30 +187,30 @@ function BookingRow({ booking, onClick }) {
       <span className="text-zinc-500">Renter: <span className="text-zinc-300 font-mono">{booking.renter_id?.slice(-6)}</span></span>
       <span className="text-zinc-400">{booking.start_date} → {booking.end_date}</span>
       <span className="text-zinc-400">{booking.days}d</span>
-      <span className="text-white font-medium">€{booking.total_price?.toFixed(0) ?? '—'}</span>
+      <span className="text-white font-medium">€{booking.total_charged_cents != null ? (booking.total_charged_cents / 100).toFixed(0) : '—'}</span>
       <StatusBadge status={booking.status} map={BOOKING_STATUS} />
-      <StatusBadge status={booking.escrow_status} map={ESCROW_STATUS} />
+      <StatusBadge status={booking.deposit_status} map={DEPOSIT_STATUS} />
     </div>
   );
 }
 
 export default function AdminBookingsTab({ enabled }) {
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterEscrow, setFilterEscrow] = useState('all');
+  const [filterDeposit, setFilterDeposit] = useState('all');
   const [editBooking, setEditBooking] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['admin', 'allbookings'],
-    queryFn: () => base44.entities.Booking.list('-created_date', 500),
+    queryFn: () => db.entities.Booking.list('-created_at', 500),
     enabled,
   });
 
   const filtered = useMemo(() => bookings.filter(b => {
     if (filterStatus !== 'all' && b.status !== filterStatus) return false;
-    if (filterEscrow !== 'all' && b.escrow_status !== filterEscrow) return false;
+    if (filterDeposit !== 'all' && (b.deposit_status || 'none') !== filterDeposit) return false;
     return true;
-  }), [bookings, filterStatus, filterEscrow]);
+  }), [bookings, filterStatus, filterDeposit]);
 
   const selectStyle = { background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)', color: 'white' };
 
@@ -231,13 +230,13 @@ export default function AdminBookingsTab({ enabled }) {
             ))}
           </SelectContent>
         </Select>
-        <Select value={filterEscrow} onValueChange={setFilterEscrow}>
+        <Select value={filterDeposit} onValueChange={setFilterDeposit}>
           <SelectTrigger className="w-44" style={selectStyle}>
-            <SelectValue placeholder="Estado escrow" />
+            <SelectValue placeholder="Depósito" />
           </SelectTrigger>
           <SelectContent style={{ background: '#161625', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <SelectItem value="all">Todo el escrow</SelectItem>
-            {Object.entries(ESCROW_STATUS).map(([k, v]) => (
+            <SelectItem value="all">Todo el depósito</SelectItem>
+            {Object.entries(DEPOSIT_STATUS).map(([k, v]) => (
               <SelectItem key={k} value={k}>{v.label}</SelectItem>
             ))}
           </SelectContent>

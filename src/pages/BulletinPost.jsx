@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -102,10 +102,10 @@ function ReplyItem({ reply, children, isPostAuthor, onDelete, onReply, canReply 
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0">
-            {initials(reply.created_by)}
+            {initials(reply.author_id)}
           </div>
-          <span className="text-xs text-zinc-400 font-medium">{obfuscateEmail(reply.created_by)}</span>
-          <span className="text-xs text-zinc-600">{timeAgo(reply.created_date)}</span>
+          <span className="text-xs text-zinc-400 font-medium">{obfuscateEmail(reply.author_id)}</span>
+          <span className="text-xs text-zinc-600">{timeAgo(reply.created_at)}</span>
         </div>
         {isPostAuthor && (
           <button
@@ -189,23 +189,23 @@ export default function BulletinPost() {
   const menuRef = useRef(null);
 
   const loadData = async () => {
-    const auth = await base44.auth.isAuthenticated();
+    const auth = await db.auth.isAuthenticated();
     setIsAuth(auth);
     let user = null;
     if (auth) {
-      user = await base44.auth.me();
+      user = await db.auth.me();
       setCurrentUser(user);
     }
 
     const [posts, allReplies] = await Promise.all([
-      base44.entities.BulletinPost.filter({ id }),
-      base44.entities.BulletinReply.filter({ post_id: id }),
+      db.entities.BulletinPost.filter({ id }),
+      db.entities.BulletinReply.filter({ post_id: id }),
     ]);
 
     if (!posts.length) { setNotFound(true); setLoading(false); return; }
     const p = posts[0];
     setPost(p);
-    const isAuthorNow = user?.email === p.created_by;
+    const isAuthorNow = user?.id === p.author_id;
     setReplies(allReplies.filter(r => !r.is_deleted || isAuthorNow));
     setLoading(false);
   };
@@ -222,32 +222,32 @@ export default function BulletinPost() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const isAuthor = currentUser?.email === post?.created_by;
+  const isAuthor = currentUser?.id === post?.author_id;
 
   const reloadReplies = async () => {
-    const allReplies = await base44.entities.BulletinReply.filter({ post_id: id });
+    const allReplies = await db.entities.BulletinReply.filter({ post_id: id });
     setReplies(allReplies.filter(r => !r.is_deleted || isAuthor));
   };
 
   const handleToggleStatus = async () => {
     const newStatus = post.status === 'active' ? 'closed' : 'active';
-    const updated = await base44.entities.BulletinPost.update(post.id, { status: newStatus });
+    const updated = await db.entities.BulletinPost.update(post.id, { status: newStatus });
     setPost(prev => ({ ...prev, status: newStatus }));
     setShowMenu(false);
   };
 
   const handleDeletePost = async () => {
-    await base44.entities.BulletinPost.update(post.id, { status: 'deleted' });
+    await db.entities.BulletinPost.update(post.id, { status: 'deleted' });
     navigate(createPageUrl('BulletinBoard'));
   };
 
   const handleDeleteReply = async (replyId) => {
-    await base44.entities.BulletinReply.update(replyId, { is_deleted: true });
+    await db.entities.BulletinReply.update(replyId, { is_deleted: true });
     setReplies(prev => prev.map(r => r.id === replyId ? { ...r, is_deleted: true } : r));
   };
 
   const handleTopReply = async (body) => {
-    await base44.entities.BulletinReply.create({
+    await db.entities.BulletinReply.create({
       post_id: post.id,
       parent_reply_id: null,
       body,
@@ -255,13 +255,13 @@ export default function BulletinPost() {
       is_deleted: false,
       report_count: 0,
     });
-    await base44.entities.BulletinPost.update(post.id, { reply_count: (post.reply_count || 0) + 1 });
+    await db.entities.BulletinPost.update(post.id, { reply_count: (post.reply_count || 0) + 1 });
     setPost(prev => ({ ...prev, reply_count: (prev.reply_count || 0) + 1 }));
     await reloadReplies();
   };
 
   const handleNestedReply = async (body, parentReply) => {
-    await base44.entities.BulletinReply.create({
+    await db.entities.BulletinReply.create({
       post_id: post.id,
       parent_reply_id: parentReply.id,
       body,
@@ -269,7 +269,7 @@ export default function BulletinPost() {
       is_deleted: false,
       report_count: 0,
     });
-    await base44.entities.BulletinPost.update(post.id, { reply_count: (post.reply_count || 0) + 1 });
+    await db.entities.BulletinPost.update(post.id, { reply_count: (post.reply_count || 0) + 1 });
     setPost(prev => ({ ...prev, reply_count: (prev.reply_count || 0) + 1 }));
     await reloadReplies();
   };
@@ -383,16 +383,16 @@ export default function BulletinPost() {
         <div className="flex items-center gap-3 flex-wrap mb-5">
           <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-[11px] font-bold text-zinc-300 shrink-0">
-              {initials(post.created_by)}
+              {initials(post.author_id)}
             </div>
-            <span className="text-sm text-zinc-400">{obfuscateEmail(post.created_by)}</span>
+            <span className="text-sm text-zinc-400">{obfuscateEmail(post.author_id)}</span>
           </div>
           {post.city && (
             <span className="flex items-center gap-1 text-sm text-zinc-500">
               <MapPin className="w-3.5 h-3.5" />{post.city}
             </span>
           )}
-          <span className="text-sm text-zinc-600">{timeAgo(post.created_date)}</span>
+          <span className="text-sm text-zinc-600">{timeAgo(post.created_at)}</span>
         </div>
 
         {/* Body */}
@@ -475,7 +475,7 @@ export default function BulletinPost() {
           <div className="border-t border-zinc-800 pt-5 text-center py-8">
             <p className="text-zinc-500 mb-4">Inicia sesión para responder</p>
             <Button
-              onClick={() => base44.auth.redirectToLogin(window.location.href)}
+              onClick={() => db.auth.redirectToLogin(window.location.href)}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
             >
               Iniciar sesión

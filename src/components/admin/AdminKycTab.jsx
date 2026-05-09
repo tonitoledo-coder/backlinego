@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,7 +27,7 @@ function ReviewModal({ profile, open, onClose, onDone }) {
   const queryClient = useQueryClient();
 
   const approveMutation = useMutation({
-    mutationFn: () => base44.entities.UserProfile.update(profile.id, {
+    mutationFn: () => db.entities.UserProfile.update(profile.id, {
       identity_status: 'verified',
       identity_reviewed_at: new Date().toISOString().split('T')[0],
       id_verified: true,
@@ -36,7 +36,7 @@ function ReviewModal({ profile, open, onClose, onDone }) {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: () => base44.entities.UserProfile.update(profile.id, {
+    mutationFn: () => db.entities.UserProfile.update(profile.id, {
       identity_status: 'rejected',
       identity_reviewed_at: new Date().toISOString().split('T')[0],
       identity_rejection_reason: rejectReason,
@@ -148,7 +148,7 @@ export default function AdminKycTab({ enabled }) {
 
   const { data: pending = [], isLoading } = useQuery({
     queryKey: ['admin', 'kyc'],
-    queryFn: () => base44.entities.UserProfile.filter({ identity_status: 'pending_review' }, '-identity_submitted_at', 200),
+    queryFn: () => db.entities.UserProfile.filter({ identity_status: 'pending_review' }, '-identity_submitted_at', 200),
     enabled,
   });
 

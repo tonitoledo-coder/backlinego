@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,13 +33,13 @@ function SosRequestCard({ request, myEquipment, onAccept }) {
     if (!selectedEquipId) { setShowEquipPicker(true); return; }
     setAccepting(true);
     try {
-      await base44.entities.SosRequest.update(request.id, {
+      await db.entities.SosRequest.update(request.id, {
         status: 'accepted',
-        accepted_by: (await base44.auth.me()).email,
+        accepted_by: (await db.auth.me()).email,
         accepted_equipment_id: selectedEquipId,
       });
       // Notify requester
-      await base44.integrations.Core.SendEmail({
+      await db.integrations.Core.SendEmail({
         to: request.requester_email,
         subject: '✅ Tu solicitud SOS ha sido aceptada',
         body: `¡Buenas noticias! Un propietario ha respondido a tu solicitud de ${CATEGORY_LABELS[request.category] || request.category} en ${request.city}.\n\nContacta con el propietario en BacklineGo para coordinar la entrega.`,
@@ -155,7 +155,7 @@ export default function SosDashboard({ userEmail, myEquipment = [] }) {
 
   useEffect(() => {
     if (!userEmail) return;
-    base44.entities.SosRequest.filter({ status: 'active' }, '-created_at', 50)
+    db.entities.SosRequest.filter({ status: 'active' }, '-created_at', 50)
       .then(requests => {
         // Show requests matching owner's city + categories
         const relevant = requests.filter(r => {

@@ -3,7 +3,7 @@ import SosRequestModal from '@/components/sos/SosRequestModal';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -356,7 +356,7 @@ export default function Explore() {
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', 'all'],
-    queryFn: () => base44.entities.Equipment.filter({ status: 'available' }, '-created_date', 200),
+    queryFn: () => db.entities.Equipment.filter({ status: 'available' }, '-created_at', 200),
     staleTime: 60_000,
   });
 

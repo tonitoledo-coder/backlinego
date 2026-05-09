@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -43,7 +43,7 @@ export default function MapView() {
 
   const { data: equipment = [], isLoading } = useQuery({
     queryKey: ['equipment', 'map'],
-    queryFn: () => base44.entities.Equipment.filter({ status: 'available' }, '-created_date', 200),
+    queryFn: () => db.entities.Equipment.filter({ status: 'available' }, '-created_at', 200),
   });
 
   const filteredEquipment = equipment.filter(e => {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -9,72 +9,82 @@ import { AlertTriangle, ChevronDown, ChevronUp, CheckCircle, Loader2, Scale } fr
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
 const STATUS_LABELS = {
-  open:              { label: 'Abierta',           color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  awaiting_response: { label: 'Esperando resp.',   color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  under_review:      { label: 'En revisión',       color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  resolved_owner:    { label: 'Resuelta (owner)',  color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  resolved_renter:   { label: 'Resuelta (renter)', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  resolved_partial:  { label: 'Resolución parcial', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  closed:            { label: 'Cerrada',           color: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30' },
+  open:         { label: 'Abierta',     color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+  under_review: { label: 'En revisión', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  resolved:     { label: 'Resuelta',    color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  dismissed:    { label: 'Desestimada', color: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30' },
 };
 
 const TYPE_LABELS = {
-  damage:        'Daños',
-  missing_items: 'Elementos faltantes',
-  not_returned:  'No devuelto',
-  other:         'Otro',
+  damage:             'Daños',
+  late_return:        'Devolución tardía',
+  no_show:            'No se presentó',
+  condition_mismatch: 'Estado distinto al declarado',
+  other:              'Otro',
 };
 
 const DEPOSIT_ACTION_LABELS = {
-  return_to_renter:  'Devolver fianza al arrendatario',
-  transfer_to_owner: 'Transferir fianza al propietario',
+  release_to_renter: 'Devolver fianza al arrendatario',
+  capture_to_owner:  'Transferir fianza al propietario',
   split:             'Dividir fianza a partes iguales',
-  none:              'Sin acción en fianza',
+  pending:           'Sin acción en fianza',
 };
 
 const RESOLUTION_LABELS = {
-  resolved_owner:   'Razón dada al propietario',
-  resolved_renter:  'Razón dada al arrendatario',
-  resolved_partial: 'Resolución parcial acordada',
-  closed:           'Disputa cerrada',
+  release_to_renter: 'Razón dada al arrendatario',
+  capture_to_owner:  'Razón dada al propietario',
+  split:             'Resolución parcial acordada',
+  pending:           'Disputa cerrada sin acción',
 };
 
-function DisputeRow({ dispute, adminEmail, onResolved }) {
+function DisputeRow({ dispute, adminId, onResolved }) {
   const [expanded, setExpanded] = useState(false);
   const [notes, setNotes] = useState('');
-  const [depositAction, setDepositAction] = useState('none');
-  const [resolving, setResolving] = useState(false);
+  const [depositAction, setDepositAction] = useState('pending');
+  const [opener, setOpener] = useState(null);
   const queryClient = useQueryClient();
 
+  React.useEffect(() => {
+    if (!dispute.opened_by) return;
+    db.entities.UserProfile.get(dispute.opened_by).then(setOpener).catch(() => {});
+  }, [dispute.opened_by]);
+
+  const openerLabel = opener?.display_name || opener?.username || opener?.email || dispute.opened_by?.slice(0, 8);
+
   const resolveMutation = useMutation({
-    mutationFn: ({ status }) => base44.entities.Dispute.update(dispute.id, {
-      status,
+    mutationFn: ({ action }) => db.entities.Dispute.update(dispute.id, {
+      status:           action === null ? 'dismissed' : 'resolved',
       resolution_notes: notes,
-      resolved_by: adminEmail,
-      resolved_at: new Date().toISOString().split('T')[0],
-      deposit_action: depositAction,
+      resolved_by:      adminId,
+      resolved_at:      new Date().toISOString(),
+      deposit_action:   action ?? 'pending',
     }),
-    onSuccess: (_data, { status }) => {
+    onSuccess: (_data, { action }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'disputes'] });
-      // Fetch the booking to get renter/owner emails for the notification
-      base44.entities.Booking.filter({ id: dispute.booking_id }).then(bookings => {
+      // Fetch the booking + party profiles for the notification email
+      (async () => {
+        const bookings = await db.entities.Booking.filter({ id: dispute.booking_id });
         const booking = bookings?.[0];
-        if (booking) {
-          sendBookingEmail('dispute_resolved', booking, {
-            equipmentTitle:     booking.equipment_title || `Reserva #${dispute.booking_id?.slice(-8)}`,
-            renterEmail:        booking.renter_email || booking.renter_id,
-            ownerEmail:         booking.owner_email  || booking.owner_id,
-            resolutionLabel:    RESOLUTION_LABELS[status] || status,
-            resolutionNotes:    notes,
-            depositActionLabel: DEPOSIT_ACTION_LABELS[depositAction] || depositAction,
-          });
-        }
-      });
+        if (!booking) return;
+        const [renter, owner] = await Promise.all([
+          db.entities.UserProfile.get(booking.renter_id).catch(() => null),
+          db.entities.UserProfile.get(booking.owner_id).catch(() => null),
+        ]);
+        const key = action ?? 'pending';
+        sendBookingEmail('dispute_resolved', booking, {
+          equipmentTitle:     booking.equipment_title || `Reserva #${dispute.booking_id?.slice(-8)}`,
+          renterEmail:        renter?.email,
+          ownerEmail:         owner?.email,
+          resolutionLabel:    RESOLUTION_LABELS[key] || key,
+          resolutionNotes:    notes,
+          depositActionLabel: DEPOSIT_ACTION_LABELS[key] || key,
+        });
+      })();
       onResolved?.();
     },
   });
 
-  const isResolved = ['resolved_owner', 'resolved_renter', 'resolved_partial', 'closed'].includes(dispute.status);
+  const isResolved = ['resolved', 'dismissed'].includes(dispute.status);
   const st = STATUS_LABELS[dispute.status] || STATUS_LABELS.open;
 
   return (
@@ -91,7 +101,7 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
             <Badge className={`text-[10px] border ${st.color}`}>{st.label}</Badge>
             <span className="text-xs text-zinc-500">{TYPE_LABELS[dispute.type] || dispute.type}</span>
           </div>
-          <p className="text-xs text-zinc-500 mt-0.5">Por {dispute.opened_by} · {dispute.created_at || dispute.created_date?.split('T')[0]}</p>
+          <p className="text-xs text-zinc-500 mt-0.5">Por {openerLabel} · {dispute.created_at?.split('T')[0]}</p>
         </div>
         {expanded ? <ChevronUp className="w-4 h-4 text-zinc-500 shrink-0" /> : <ChevronDown className="w-4 h-4 text-zinc-500 shrink-0" />}
       </button>
@@ -102,7 +112,7 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             <div>
               <p className="text-xs text-zinc-400 uppercase tracking-wide mb-1">Abierta por</p>
-              <p className="text-sm text-white">{dispute.opened_by}</p>
+              <p className="text-sm text-white">{openerLabel}</p>
               <p className="text-xs text-zinc-500 mt-2 uppercase tracking-wide">Descripción</p>
               <p className="text-sm text-zinc-300 mt-1 leading-relaxed">{dispute.description}</p>
               {dispute.evidence_photos?.length > 0 && (
@@ -148,7 +158,7 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
           {/* Resolution area */}
           {isResolved ? (
             <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-              <p className="text-xs text-green-400 font-medium uppercase tracking-wide">Resuelta por {dispute.resolved_by}</p>
+              <p className="text-xs text-green-400 font-medium uppercase tracking-wide">Resuelta por admin {dispute.resolved_by?.slice(0, 8)}</p>
               <p className="text-sm text-zinc-300 mt-1">{dispute.resolution_notes}</p>
               <p className="text-xs text-zinc-500 mt-1">Acción fianza: {DEPOSIT_ACTION_LABELS[dispute.deposit_action] || dispute.deposit_action}</p>
             </div>
@@ -186,7 +196,7 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
                 <Button
                   size="sm"
                   disabled={!notes.trim() || resolveMutation.isPending}
-                  onClick={() => resolveMutation.mutate({ status: 'resolved_owner' })}
+                  onClick={() => resolveMutation.mutate({ action: 'capture_to_owner' })}
                   className="bg-green-700 hover:bg-green-600 text-white text-xs"
                 >
                   {resolveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <CheckCircle className="w-3 h-3 mr-1" />}
@@ -195,7 +205,7 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
                 <Button
                   size="sm"
                   disabled={!notes.trim() || resolveMutation.isPending}
-                  onClick={() => resolveMutation.mutate({ status: 'resolved_renter' })}
+                  onClick={() => resolveMutation.mutate({ action: 'release_to_renter' })}
                   className="bg-blue-700 hover:bg-blue-600 text-white text-xs"
                 >
                   {resolveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <CheckCircle className="w-3 h-3 mr-1" />}
@@ -204,7 +214,7 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
                 <Button
                   size="sm"
                   disabled={!notes.trim() || resolveMutation.isPending}
-                  onClick={() => resolveMutation.mutate({ status: 'resolved_partial' })}
+                  onClick={() => resolveMutation.mutate({ action: 'split' })}
                   className="bg-purple-700 hover:bg-purple-600 text-white text-xs"
                 >
                   {resolveMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Scale className="w-3 h-3 mr-1" />}
@@ -214,10 +224,10 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
                   size="sm"
                   variant="outline"
                   disabled={!notes.trim() || resolveMutation.isPending}
-                  onClick={() => resolveMutation.mutate({ status: 'closed' })}
+                  onClick={() => resolveMutation.mutate({ action: null })}
                   className="border-zinc-600 text-zinc-400 text-xs"
                 >
-                  Cerrar disputa
+                  Desestimar disputa
                 </Button>
               </div>
             </div>
@@ -228,16 +238,16 @@ function DisputeRow({ dispute, adminEmail, onResolved }) {
   );
 }
 
-export default function AdminDisputesTab({ enabled, adminEmail }) {
+export default function AdminDisputesTab({ enabled, adminId }) {
   const queryClient = useQueryClient();
 
   const { data: disputes = [], isLoading } = useQuery({
     queryKey: ['admin', 'disputes'],
-    queryFn: () => base44.entities.Dispute.list('-created_date', 200),
+    queryFn: () => db.entities.Dispute.list('-created_at', 200),
     enabled,
   });
 
-  const openCount = useMemo(() => disputes.filter(d => !['resolved_owner', 'resolved_renter', 'resolved_partial', 'closed'].includes(d.status)).length, [disputes]);
+  const openCount = useMemo(() => disputes.filter(d => !['resolved', 'dismissed'].includes(d.status)).length, [disputes]);
 
   if (isLoading) {
     return (
@@ -267,7 +277,7 @@ export default function AdminDisputesTab({ enabled, adminEmail }) {
             <DisputeRow
               key={d.id}
               dispute={d}
-              adminEmail={adminEmail}
+              adminId={adminId}
               onResolved={() => queryClient.invalidateQueries({ queryKey: ['admin', 'disputes'] })}
             />
           ))}

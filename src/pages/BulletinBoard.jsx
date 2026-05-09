@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,7 +57,7 @@ function PostCard({ post, onClick }) {
   const cat = CAT_STYLES[post.category] || {};
   const catLabel = CAT_LABELS[post.category] || post.category;
   const firstImage = post.images?.[0];
-  const authorName = post.display_name || post.created_by || 'Anónimo';
+  const authorName = post.display_name || post.author_id || 'Anónimo';
   const initials = authorName.slice(0, 2).toUpperCase();
 
   return (
@@ -103,7 +103,7 @@ function PostCard({ post, onClick }) {
             </span>
           )}
 
-          <span className="text-xs text-zinc-600">{timeAgo(post.created_date)}</span>
+          <span className="text-xs text-zinc-600">{timeAgo(post.created_at)}</span>
 
           <span className="flex items-center gap-1 text-xs text-zinc-500 ml-auto">
             <MessageSquare className="w-3 h-3" />
@@ -149,7 +149,7 @@ export default function BulletinBoard() {
   const [isAuth, setIsAuth] = useState(null);
 
   useEffect(() => {
-    base44.auth.isAuthenticated().then(setIsAuth);
+    db.auth.isAuthenticated().then(setIsAuth);
   }, []);
 
   const [category, setCategory] = useState('all');
@@ -160,13 +160,13 @@ export default function BulletinBoard() {
     queryKey: ['bulletin', 'posts'],
     queryFn: async () => {
       try {
-        return await base44.entities.BulletinPost.filter({ status: 'active' });
+        return await db.entities.BulletinPost.filter({ status: 'active' });
       } catch (e) {
         if (e?.status === 405 || e?.message?.includes('Method')) {
           // filter() blocked for unauthenticated users — fallback
-          const isAuth = await base44.auth.isAuthenticated();
+          const isAuth = await db.auth.isAuthenticated();
           if (!isAuth) return [];
-          return await base44.entities.BulletinPost.filter({ status: 'active' });
+          return await db.entities.BulletinPost.filter({ status: 'active' });
         }
         throw e;
       }
@@ -180,9 +180,9 @@ export default function BulletinBoard() {
   }, [queryClient]);
 
   const handleNewPost = async () => {
-    const isAuth = await base44.auth.isAuthenticated();
+    const isAuth = await db.auth.isAuthenticated();
     if (!isAuth) {
-      base44.auth.redirectToLogin(window.location.href);
+      db.auth.redirectToLogin(window.location.href);
       return;
     }
     navigate(createPageUrl('BulletinNewPost'));
@@ -207,7 +207,7 @@ export default function BulletinBoard() {
     if (sort === 'replies') {
       list = [...list].sort((a, b) => (b.reply_count ?? 0) - (a.reply_count ?? 0));
     } else {
-      // newest: pinned first, then by created_date (already sorted from API)
+      // newest: pinned first, then by created_at (already sorted from API)
       list = [...list].sort((a, b) => {
         if (a.is_pinned && !b.is_pinned) return -1;
         if (!a.is_pinned && b.is_pinned) return 1;
@@ -234,7 +234,7 @@ export default function BulletinBoard() {
           <h3 className="text-xl font-semibold text-white mb-2">Únete a la comunidad</h3>
           <p className="text-zinc-500 mb-6 max-w-sm mx-auto">Inicia sesión para ver y publicar anuncios de la comunidad BacklineGo</p>
           <Button
-            onClick={() => base44.auth.redirectToLogin(window.location.href)}
+            onClick={() => db.auth.redirectToLogin(window.location.href)}
             className="font-semibold bg-blue-600 hover:bg-blue-700"
           >
             Iniciar sesión

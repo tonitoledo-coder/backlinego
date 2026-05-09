@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
@@ -35,21 +35,20 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
   const mutation = useMutation({
     mutationFn: async (data) => {
       // Save the request
-      const created = await base44.entities.QuoteRequest.create(data);
-      // In-app notification for specialist
-      if (specialist.email) {
+      const created = await db.entities.QuoteRequest.create(data);
+      // In-app notification for specialist (requires linked user_profile)
+      if (specialist.user_id) {
         await createNotification({
-          user_email: specialist.email,
+          user_id: specialist.user_id,
           type: 'quote_request',
           title: `Nueva solicitud de presupuesto de ${data.requester_name}`,
-          body: `${data.equipment_type} · ${data.urgency === 'urgente' ? '⚡ Urgente' : 'Normal'}`,
-          link_page: 'Chat',
-          link_params: `?id=${created.id}`,
+          message: `${data.equipment_type} · ${data.urgency === 'urgente' ? '⚡ Urgente' : 'Normal'}`,
+          link: `${createPageUrl('Chat')}?id=${created.id}`,
         });
       }
       // Send email notification to specialist
       if (specialist.email) {
-        await base44.integrations.Core.SendEmail({
+        await db.integrations.Core.SendEmail({
           to: specialist.email,
           subject: `Nueva solicitud de presupuesto - BacklineGo`,
           body: `Hola ${specialist.name},\n\nHas recibido una nueva solicitud de presupuesto en BacklineGo:\n\n` +
@@ -78,7 +77,7 @@ export default function QuoteRequestModal({ specialist, open, onClose }) {
     if (!files.length) return;
     setUploading(true);
     const urls = await Promise.all(
-      files.map(f => base44.integrations.Core.UploadFile({ file: f, context: 'equipment' }).then(r => r.file_url))
+      files.map(f => db.integrations.Core.UploadFile({ file: f, context: 'equipment' }).then(r => r.file_url))
     );
     setPhotos(prev => [...prev, ...urls].slice(0, 5));
     setUploading(false);

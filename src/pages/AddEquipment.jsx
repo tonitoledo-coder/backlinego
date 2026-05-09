@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useMutation } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
@@ -99,12 +99,12 @@ export default function AddEquipment() {
 
   // Load user profile and then draft
   useEffect(() => {
-    base44.auth.isAuthenticated().then(async (isAuth) => {
+    db.auth.isAuthenticated().then(async (isAuth) => {
       if (!isAuth) return;
-      const u = await base44.auth.me();
+      const u = await db.auth.me();
       setUserEmail(u.email);
-      const profiles = await base44.entities.UserProfile.filter({ email: u.email });
-      if (profiles?.[0]) setUserProfile(profiles[0]);
+      const profile = await db.entities.UserProfile.get(u.id);
+      if (profile) setUserProfile(profile);
 
       // Load draft only after knowing the user (only when not editing)
       if (!editId) {
@@ -122,7 +122,7 @@ export default function AddEquipment() {
   // Load existing equipment for editing
   useEffect(() => {
     if (!editId) return;
-    base44.entities.Equipment.get(editId).then(existing => {
+    db.entities.Equipment.get(editId).then(existing => {
       const { images: imgs, pricing_config: pc, ...rest } = existing;
       setFormData(prev => ({
         ...prev,
@@ -169,8 +169,8 @@ export default function AddEquipment() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      if (editId) return base44.entities.Equipment.update(editId, data);
-      return base44.entities.Equipment.create(data);
+      if (editId) return db.entities.Equipment.update(editId, data);
+      return db.entities.Equipment.create(data);
     },
     onSuccess: () => {
       localStorage.removeItem(getDraftKey(userEmail));
@@ -186,8 +186,8 @@ export default function AddEquipment() {
       return;
     }
 
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) { base44.auth.redirectToLogin(window.location.href); return; }
+    const isAuth = await db.auth.isAuthenticated();
+    if (!isAuth) { db.auth.redirectToLogin(window.location.href); return; }
 
     // Get location if missing
     let location = formData.location;
