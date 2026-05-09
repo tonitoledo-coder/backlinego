@@ -145,7 +145,7 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto">
             {/* Logo + Tagline Hero Block */}
             <div className="flex flex-col items-center mb-8 lg:mb-10">
-              <img src={logoHorizontal} alt="BacklineGo" className="h-20 mx-auto" />
+              <img src={logoHorizontal} alt="BacklineGo" className="h-28 mx-auto" />
 
               <div className="mt-3 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <span className="w-1.5 h-1.5 rounded-full pulse-sos flex-shrink-0" style={{ background: '#1DDF7A' }} />
