@@ -6,7 +6,6 @@ import { createPageUrl } from '@/utils';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
-// Eagerly keep the 5 mobile tab pages mounted to preserve scroll & state
 const TabHome        = lazy(() => import('./pages/Home'));
 const TabExplore     = lazy(() => import('./pages/Explore'));
 const TabMapView     = lazy(() => import('./pages/MapView'));
@@ -73,7 +72,7 @@ import { cn } from '@/lib/utils';
 const PROTECTED_PAGES = ['Profile', 'Settings', 'AddEquipment', 'Chat', 'Rewards'];
 const ROOT_PAGES = new Set(['Home', 'Explore', 'MapView', 'Specialists', 'Profile', 'Rewards', 'Onboarding', 'PendingApproval', 'BulletinBoard']);
 
-function RejectedScreen() {
+function BannedScreen() {
   const { logout } = useAuth();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4" style={{ background: '#0d0d1a' }}>
@@ -91,98 +90,53 @@ export default function Layout({ children, currentPageName }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user: authUser, isAuthenticated, isLoadingAuth, navigateToLogin } = useAuth();
+  const { user, isAuthenticated, isLoadingAuth, navigateToLogin } = useAuth();
   const routePageName = location.pathname.replace('/', '') || 'Home';
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isBanned, setIsBanned] = useState(false);
-  const [profileComplete, setProfileComplete] = useState(false);
+
+  // Derive state directly from AuthContext user (which already includes profile)
+  const isAdmin = user?.role === 'admin';
+  const isBanned = user?.is_banned === true || user?.account_status === 'suspended';
+  const profileComplete = user?.profile_complete || false;
+
   const [showLegalModal, setShowLegalModal] = useState(false);
-  const [currentUserProfile, setCurrentUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (isLoadingAuth) return;
-    loadUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoadingAuth, isAuthenticated, authUser?.id]);
 
-  const loadUser = async () => {
+    // Redirect unauthenticated users away from protected pages
+    if (!isAuthenticated && PROTECTED_PAGES.includes(currentPageName)) {
+      navigateToLogin();
+      return;
+    }
+
+    // Check legal acceptance for authenticated users with completed onboarding
+    if (isAuthenticated && user?.onboarding_completed) {
+      checkLegalAcceptance();
+    }
+
+    setLoading(false);
+  }, [isLoadingAuth, isAuthenticated, user?.id]);
+
+  const checkLegalAcceptance = async () => {
+    if (!user || user.role === 'admin') return;
     try {
-      if (!isAuthenticated) {
-        if (PROTECTED_PAGES.includes(currentPageName)) {
-          navigateToLogin();
-          return;
-        }
-        setLoading(false);
-        return;
+      const [termsRes, privacyRes] = await Promise.all([
+        supabase.from('legal_document').select('version').eq('doc_type', 'terms').eq('is_published', true).limit(1),
+        supabase.from('legal_document').select('version').eq('doc_type', 'privacy').eq('is_published', true).limit(1),
+      ]);
+      const activeTerms = termsRes.data?.[0] ?? null;
+      const activePrivacy = privacyRes.data?.[0] ?? null;
+      if (activeTerms && activePrivacy) {
+        const needsAcceptance =
+          !user.terms_version_accepted ||
+          !user.privacy_version_accepted ||
+          user.terms_version_accepted !== activeTerms.version ||
+          user.privacy_version_accepted !== activePrivacy.version;
+        if (needsAcceptance) setShowLegalModal(true);
       }
-      const userData = authUser;
-      setUser(userData);
-      try {
-        let profile = null;
-        const { data: foundProfile, error: profileErr } = await supabase
-          .from('user_profile')
-          .select('*')
-          .eq('email', userData.email)
-          .maybeSingle();
-        if (profileErr) {
-          console.warn('user_profile lookup failed:', profileErr.message);
-        }
-        profile = foundProfile;
-
-        if (!profile) {
-          const { data: inserted, error: insertErr } = await supabase
-            .from('user_profile')
-            .insert({
-              id: userData.id,
-              email: userData.email,
-              display_name: userData.display_name || userData.email,
-            })
-            .select('*')
-            .maybeSingle();
-          if (insertErr) {
-            console.warn('user_profile insert failed:', insertErr.message);
-          } else {
-            profile = inserted;
-          }
-        }
-
-        if (profile) {
-          setIsBanned(profile.is_banned || false);
-          setProfileComplete(profile.profile_complete || false);
-          if (profile.role === 'admin') setIsAdmin(true);
-          setCurrentUserProfile(profile);
-
-          if (profile.onboarding_completed) {
-            let activeTerms = null;
-            let activePrivacy = null;
-            try {
-              const [termsRes, privacyRes] = await Promise.all([
-                supabase.from('legal_document').select('*').eq('type', 'terms').eq('is_active', true),
-                supabase.from('legal_document').select('*').eq('type', 'privacy').eq('is_active', true),
-              ]);
-              if (!termsRes.error) activeTerms = termsRes.data?.[0] ?? null;
-              if (!privacyRes.error) activePrivacy = privacyRes.data?.[0] ?? null;
-            } catch (legalErr) {
-              console.warn('legal_document query failed, skipping:', legalErr?.message);
-            }
-            const needsLegalAcceptance =
-              profile.role !== 'admin' &&
-              activeTerms && activePrivacy && (
-                !profile.terms_version_accepted ||
-                !profile.privacy_version_accepted ||
-                profile.terms_version_accepted !== activeTerms.version ||
-                profile.privacy_version_accepted !== activePrivacy.version
-              );
-            if (needsLegalAcceptance) setShowLegalModal(true);
-          }
-        }
-      } catch (_) {}
-    } catch (e) {
-      console.log('Not authenticated');
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.warn('Legal doc check failed, skipping:', err?.message);
     }
   };
 
@@ -226,17 +180,16 @@ export default function Layout({ children, currentPageName }) {
   }
 
   if (!loading && user && isBanned) {
-    return <RejectedScreen />;
+    return <BannedScreen />;
   }
 
   return (
     <Sentry.ErrorBoundary fallback={<p>Ha ocurrido un error inesperado.</p>} showDialog>
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950">
-      {showLegalModal && currentUserProfile && (
+      {showLegalModal && user && (
         <LegalAcceptanceModal
-          userProfile={currentUserProfile}
+          userProfile={user}
           onAccepted={(accepted) => {
-            setCurrentUserProfile(p => p ? { ...p, ...accepted } : p);
             setShowLegalModal(false);
           }}
         />
@@ -339,28 +292,21 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content */}
-      {/* Desktop: normal render */}
       <main className="hidden lg:block pt-16 pb-8">
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
       </main>
 
-      {/* Mobile: keep all 5 tab pages mounted; show/hide via CSS to preserve scroll & state */}
       <div className="lg:hidden pb-20" style={{ paddingTop: 'calc(3.5rem + env(safe-area-inset-top))', overscrollBehavior: 'none' }}>
         {MOBILE_TABS.map((tabName) => {
           const TabPage = TAB_COMPONENTS[tabName];
           const isTabActive = routePageName === tabName;
-          // Don't pre-mount protected tabs for unauthenticated users — prevents
-          // Profile's useEffect from triggering redirectToLogin while browsing public pages.
           if (!user && PROTECTED_PAGES.includes(tabName) && !isTabActive) {
             return <div key={tabName} style={{ display: 'none' }} />;
           }
           return (
-            <div
-              key={tabName}
-              style={{ display: isTabActive ? 'block' : 'none' }}
-            >
+            <div key={tabName} style={{ display: isTabActive ? 'block' : 'none' }}>
               <ErrorBoundary>
                 <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
                   <TabPage />
@@ -369,11 +315,8 @@ export default function Layout({ children, currentPageName }) {
             </div>
           );
         })}
-        {/* Sub-pages (non-tab) render normally */}
         {!MOBILE_TABS.includes(routePageName) && (
-          <>
-            {children}
-          </>
+          <>{children}</>
         )}
       </div>
 

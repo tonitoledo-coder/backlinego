@@ -1,22 +1,34 @@
 // ============================================================================
 // src/lib/db.js
 //
-// Capa de datos sobre Supabase. Reutiliza el cliente de supabase.js.
-// API compatible con base44 SDK para migración progresiva.
+// Drop-in replacement for @base44/sdk that talks to Supabase under the hood.
+// Same API surface (Equipment.list/filter/get/create/update/delete, etc.)
+// so páginas y componentes no necesitan reescribirse.
 //
-// Uso directo (destino final):
+// Uso:
 //   import { db } from '@/lib/db'
-//   const items = await db.entities.Equipment.list('-created_at', 50)
-//
-// Alias temporal en src/api/base44Client.js mientras queden imports legacy.
+//   const items = await db.entities.Equipment.list('-created_date', 50)
 // ============================================================================
 
-import { supabase } from './supabase'
+import { createClient } from '@supabase/supabase-js'
 
-// ── Mapeo entidad → tabla real en Postgres ──────────────────────────────────
-// Entidades explícitas. Si una entidad NO está aquí, el Proxy la convierte
-// automáticamente a snake_case (e.g. SomeThing → some_thing) para no romper
-// páginas que aún no se han migrado.
+// ── Cliente Supabase ────────────────────────────────────────────────────────
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('[db] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY')
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+})
+
+// ── Mapeo de nombres entidad → tabla REAL en Supabase ───────────────────────
+// Tablas reales verificadas contra Supabase: user_profile, equipment, booking,
+// review, dispute, sos_request, bulletin_post, bulletin_reply, legal_document,
+// legal_acceptance, notification, chat_message, partner, specialist,
+// quote_request, payment_log, user_points
 const TABLE_MAP = {
   UserProfile:    'user_profile',
   User:           'user_profile',
@@ -28,6 +40,7 @@ const TABLE_MAP = {
   BulletinPost:   'bulletin_post',
   BulletinReply:  'bulletin_reply',
   LegalDocument:  'legal_document',
+  LegalAcceptance:'legal_acceptance',
   Notification:   'notification',
   ChatMessage:    'chat_message',
   Partner:        'partner',
@@ -35,34 +48,29 @@ const TABLE_MAP = {
   QuoteRequest:   'quote_request',
   PaymentLog:     'payment_log',
   UserPoints:     'user_points',
-  Reward:         'user_points',
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-const COLUMN_MAP = {
-  created_date: 'created_at',
-  updated_date: 'updated_at',
-}
-const mapCol = (col) => COLUMN_MAP[col] || col
-
-const camelToSnake = (s) =>
-  s.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase()
-
-const tableFor = (entityName) =>
-  TABLE_MAP[entityName] ?? camelToSnake(entityName)
-
+// ── Parser de orden estilo Base44 ───────────────────────────────────────────
 function parseOrder(sortStr) {
   if (!sortStr) return null
   const desc = sortStr.startsWith('-')
-  const col = mapCol(desc ? sortStr.slice(1) : sortStr)
+  let col = desc ? sortStr.slice(1) : sortStr
+  if (col === 'created_date') col = 'created_at'
+  if (col === 'updated_date') col = 'updated_at'
   return { column: col, ascending: !desc }
+}
+
+// ── Constructor de query desde objeto filtro ────────────────────────────────
+// Base44 field name compatibility: map legacy names to Supabase column names
+const FIELD_MAP = {
+  type: 'doc_type',         // LegalDocument: type → doc_type
+  is_active: 'is_published', // LegalDocument: is_active → is_published
 }
 
 function applyFilters(query, filters) {
   if (!filters || typeof filters !== 'object') return query
   for (const [key, value] of Object.entries(filters)) {
-    const col = mapCol(key)
+    const col = FIELD_MAP[key] || key
     if (value === null) {
       query = query.is(col, null)
     } else if (Array.isArray(value)) {
@@ -74,8 +82,11 @@ function applyFilters(query, filters) {
   return query
 }
 
-// ── Factory de entidad ──────────────────────────────────────────────────────
-function makeEntity(table) {
+// ── Factory: crea wrapper con API base44 para una tabla dada ────────────────
+function makeEntity(entityName) {
+  const table = TABLE_MAP[entityName]
+  if (!table) throw new Error(`[db] Unknown entity: ${entityName}`)
+
   return {
     async list(sort, limit) {
       let q = supabase.from(table).select('*')
@@ -83,10 +94,7 @@ function makeEntity(table) {
       if (order) q = q.order(order.column, { ascending: order.ascending })
       if (limit) q = q.limit(limit)
       const { data, error } = await q
-      if (error) {
-        console.warn(`[db] list ${table} failed:`, error.message)
-        return []
-      }
+      if (error) throw error
       return data || []
     },
 
@@ -97,30 +105,19 @@ function makeEntity(table) {
       if (order) q = q.order(order.column, { ascending: order.ascending })
       if (limit) q = q.limit(limit)
       const { data, error } = await q
-      if (error) {
-        console.warn(`[db] filter ${table} failed:`, error.message)
-        return []
-      }
+      if (error) throw error
       return data || []
     },
 
     async get(id) {
-      const { data, error } = await supabase
-        .from(table).select('*').eq('id', id).maybeSingle()
-      if (error) {
-        console.warn(`[db] get ${table}/${id} failed:`, error.message)
-        return null
-      }
+      const { data, error } = await supabase.from(table).select('*').eq('id', id).maybeSingle()
+      if (error) throw error
       return data
     },
 
     async create(payload) {
-      const { data, error } = await supabase
-        .from(table).insert(payload).select().single()
-      if (error) {
-        console.warn(`[db] create ${table} failed:`, error.message)
-        return null
-      }
+      const { data, error } = await supabase.from(table).insert(payload).select().single()
+      if (error) throw error
       return data
     },
 
@@ -131,44 +128,34 @@ function makeEntity(table) {
         .eq('id', id)
         .select()
         .single()
-      if (error) {
-        console.warn(`[db] update ${table}/${id} failed:`, error.message)
-        return null
-      }
+      if (error) throw error
       return data
     },
 
     async delete(id) {
       const { error } = await supabase.from(table).delete().eq('id', id)
-      if (error) {
-        console.warn(`[db] delete ${table}/${id} failed:`, error.message)
-      }
-      return !error
+      if (error) throw error
+      return true
     },
 
     subscribe(onChange) {
       const channel = supabase
         .channel(`${table}-changes`)
-        .on('postgres_changes', { event: '*', schema: 'public', table }, onChange)
+        .on('postgres_changes', { event: '*', schema: 'public', table }, payload => {
+          onChange(payload)
+        })
         .subscribe()
       return () => supabase.removeChannel(channel)
     },
   }
 }
 
-// ── Entities (Proxy con fallback a snake_case) ──────────────────────────────
-const entityCache = {}
-const entities = new Proxy(entityCache, {
-  get(target, prop) {
-    if (typeof prop !== 'string') return undefined
-    if (!target[prop]) {
-      target[prop] = makeEntity(tableFor(prop))
-    }
-    return target[prop]
-  },
-})
+// ── Construir el objeto entities con todas las entidades ────────────────────
+const entities = Object.fromEntries(
+  Object.keys(TABLE_MAP).map(name => [name, makeEntity(name)])
+)
 
-// ── Auth ────────────────────────────────────────────────────────────────────
+// ── Auth (compatible con base44.auth.*) ─────────────────────────────────────
 const auth = {
   async me() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -212,109 +199,76 @@ const auth = {
     if (error) throw error
     return data
   },
-
   async signUp(email, password) {
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
     return data
   },
-
   async signInWithMagicLink(email) {
     const { error } = await supabase.auth.signInWithOtp({ email })
     if (error) throw error
   },
 }
 
-// ── Edge Functions ──────────────────────────────────────────────────────────
+// ── Functions (edge functions Supabase) ─────────────────────────────────────
 const functions = {
   async invoke(name, body = {}) {
-    console.warn(`[db] functions.invoke('${name}') — edge function pendiente de migración`)
-    try {
-      const { data, error } = await supabase.functions.invoke(name, { body })
-      if (error) throw error
-      return data
-    } catch (e) {
-      console.warn(`[db] functions.invoke('${name}') failed:`, e?.message)
-      return null
-    }
+    const { data, error } = await supabase.functions.invoke(name, { body })
+    if (error) throw error
+    return data
   },
 }
 
 // ── Storage ─────────────────────────────────────────────────────────────────
+const UPLOAD_BUCKET_MAP = {
+  equipment: 'equipment-photos',
+  avatar: 'equipment-photos',
+  identity: 'identity-docs',
+  dispute: 'handover-photos',
+  handover: 'handover-photos',
+  bulletin: 'bulletin-images',
+  chat: 'handover-photos',
+}
+
 const storage = {
   async upload(bucket, path, file, { publicUrl = false } = {}) {
-    const { data, error } = await supabase.storage
-      .from(bucket).upload(path, file, { upsert: true })
+    const { data, error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true })
     if (error) throw error
     if (publicUrl) {
       const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path)
       return { path: data.path, url: urlData.publicUrl }
     }
-    const { data: signed } = await supabase.storage
-      .from(bucket).createSignedUrl(data.path, 60 * 60 * 24)
+    const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(data.path, 60 * 60 * 24)
     return { path: data.path, url: signed?.signedUrl }
   },
-
   async remove(bucket, paths) {
-    const { error } = await supabase.storage
-      .from(bucket).remove(Array.isArray(paths) ? paths : [paths])
+    const { error } = await supabase.storage.from(bucket).remove(Array.isArray(paths) ? paths : [paths])
     if (error) throw error
   },
 }
 
-// ── Integrations (compatibilidad con API Base44) ────────────────────────────
-// Mapeo de contexto → bucket. Los componentes no necesitan saber el bucket.
-const UPLOAD_BUCKET_MAP = {
-  equipment:  'equipment-photos',
-  avatar:     'equipment-photos',   // avatares van al bucket público por ahora
-  identity:   'identity-docs',
-  dispute:    'handover-photos',
-  handover:   'handover-photos',
-  bulletin:   'bulletin-images',
-  chat:       'chat-attachments',
-}
-
+// ── Integrations (compatibilidad con código Base44 no migrado) ──────────────
 const integrations = {
   Core: {
-    /**
-     * UploadFile({ file, context? })
-     * Compatible con base44.integrations.Core.UploadFile({ file })
-     * Devuelve { file_url } con URL pública o signed según bucket.
-     *
-     * context: 'equipment'|'avatar'|'identity'|'dispute'|'handover'|'bulletin'|'chat'
-     *          Si no se pasa, se infiere del MIME type o se usa 'equipment-photos'.
-     */
     async UploadFile({ file, context } = {}) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
-
-      // Determinar bucket
       const bucket = UPLOAD_BUCKET_MAP[context] || 'equipment-photos'
       const isPublic = ['equipment-photos', 'bulletin-images'].includes(bucket)
-
-      // Path: {uid}/{timestamp}_{filename}
       const safeName = (file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_')
       const path = `${user.id}/${Date.now()}_${safeName}`
-
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, { upsert: false })
+      const { data, error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false })
       if (error) throw error
-
       let file_url
       if (isPublic) {
         const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path)
         file_url = urlData.publicUrl
       } else {
-        const { data: signed } = await supabase.storage
-          .from(bucket)
-          .createSignedUrl(data.path, 60 * 60 * 24 * 7) // 7 días
+        const { data: signed } = await supabase.storage.from(bucket).createSignedUrl(data.path, 60 * 60 * 24 * 7)
         file_url = signed?.signedUrl
       }
-
       return { file_url, path: data.path, bucket }
     },
-
     async SendEmail() {
       console.warn('[db] integrations.Core.SendEmail — pendiente migración a edge function')
       return null
@@ -322,6 +276,6 @@ const integrations = {
   },
 }
 
-// ── Export ───────────────────────────────────────────────────────────────────
+// ── Export con la misma forma que base44 ────────────────────────────────────
 export const db = { entities, auth, functions, storage, integrations }
 export default db

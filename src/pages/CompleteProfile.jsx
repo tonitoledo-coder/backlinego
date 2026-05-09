@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { base44 } from '@/api/base44Client';
+import { db } from '@/lib/db';
+import { useAuth } from '@/lib/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Zap } from 'lucide-react';
@@ -27,25 +28,32 @@ const slideVariants = {
 
 export default function CompleteProfile() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user: authUser, isAuthenticated, isLoadingAuth, navigateToLogin, checkUserAuth } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState({});
-  const [userProfile, setUserProfile] = useState(null);
   const [showLegalModal, setShowLegalModal] = useState(false);
   const [activeLegalDocs, setActiveLegalDocs] = useState({ terms: null, privacy: null });
 
   const nextPage = new URLSearchParams(window.location.search).get('next');
 
   useEffect(() => {
-    (async () => {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) { base44.auth.redirectToLogin(window.location.href); return; }
-      const u = await base44.auth.me();
-      setUser(u);
-      // Resume from saved step
+    if (isLoadingAuth) return;
+    if (!isAuthenticated) {
+      navigateToLogin();
+      return;
+    }
+    initProfile();
+  }, [isLoadingAuth, isAuthenticated]);
+
+  const initProfile = async () => {
+    try {
+      // authUser already has profile merged from AuthContext
+      const u = authUser;
+      if (!u) return;
+
       const savedStep = u.onboarding_step || 1;
       setStep(Math.min(savedStep, 5));
       setFormData({
@@ -76,26 +84,33 @@ export default function CompleteProfile() {
         billing_address: u.billing_address || {},
         stripe_onboarding_completed: u.stripe_onboarding_completed || false,
       });
-      // Load active legal docs for version check
-      const [termsDocs, privacyDocs] = await Promise.all([
-        base44.entities.LegalDocument.filter({ type: 'terms', is_active: true }),
-        base44.entities.LegalDocument.filter({ type: 'privacy', is_active: true }),
-      ]);
-      setActiveLegalDocs({ terms: termsDocs?.[0] || null, privacy: privacyDocs?.[0] || null });
 
-      // Load existing UserProfile
-      const profiles = await base44.entities.UserProfile.filter({ email: u.email });
-      if (profiles?.length) setUserProfile(profiles[0]);
-
+      // Load active legal docs
+      try {
+        const [termsDocs, privacyDocs] = await Promise.all([
+          db.entities.LegalDocument.filter({ doc_type: 'terms', is_published: true }),
+          db.entities.LegalDocument.filter({ doc_type: 'privacy', is_published: true }),
+        ]);
+        setActiveLegalDocs({ terms: termsDocs?.[0] || null, privacy: privacyDocs?.[0] || null });
+      } catch (e) {
+        console.warn('Legal docs load failed:', e);
+      }
+    } catch (e) {
+      console.error('CompleteProfile init failed:', e);
+    } finally {
       setLoading(false);
-    })();
-  }, []);
+    }
+  };
 
   const updateField = (key, value) => setFormData(p => ({ ...p, [key]: value }));
 
   const saveAndAdvance = async (nextStep) => {
     setSaving(true);
-    await base44.auth.updateMe({ ...formData, onboarding_step: nextStep });
+    try {
+      await db.auth.updateMe({ ...formData, onboarding_step: nextStep });
+    } catch (e) {
+      console.error('Save failed:', e);
+    }
     setSaving(false);
     setDirection(1);
     setStep(nextStep);
@@ -107,8 +122,8 @@ export default function CompleteProfile() {
   };
 
   const needsLegalAcceptance = () => {
-    if (!userProfile) return false;
-    const { terms_version_accepted, privacy_version_accepted } = userProfile;
+    if (!authUser) return false;
+    const { terms_version_accepted, privacy_version_accepted } = authUser;
     const termsOk = activeLegalDocs.terms
       ? terms_version_accepted === activeLegalDocs.terms.version
       : !!terms_version_accepted;
@@ -127,48 +142,31 @@ export default function CompleteProfile() {
   };
 
   const handleLegalAccepted = (accepted) => {
-    setUserProfile(p => p ? { ...p, ...accepted } : p);
     setShowLegalModal(false);
     finish();
   };
 
   const finish = async () => {
     setSaving(true);
-    await base44.auth.updateMe({ ...formData, onboarding_completed: true, onboarding_step: 5 });
-
-    // Sync UserProfile for admin management
     try {
-      const existing = await base44.entities.UserProfile.filter({ email: user.email });
-      if (existing.length === 0) {
-        await base44.entities.UserProfile.create({
-          user_id: user.id,
-          email: user.email,
-          display_name: formData.username || user.full_name || user.email,
-          role: 'user',
-          is_verified: false,
-          is_banned: false,
-          profile_complete: true,
-          onboarding_completed: true,
-          subscription_plan: 'free',
-        });
-      } else {
-        await base44.entities.UserProfile.update(existing[0].id, {
-          display_name: formData.username || user.full_name || user.email,
-          profile_complete: true,
-          onboarding_completed: true,
-        });
-      }
+      await db.auth.updateMe({
+        ...formData,
+        onboarding_completed: true,
+        onboarding_step: 5,
+        profile_complete: true,
+      });
+      // Refresh auth state so Layout picks up profile_complete
+      await checkUserAuth();
     } catch (e) {
-      console.warn('UserProfile sync failed:', e);
+      console.error('Finish profile failed:', e);
     }
-
     setSaving(false);
     navigate(createPageUrl(nextPage || 'Profile'));
   };
 
   const progress = Math.round(((step - 1) / (STEPS.length - 1)) * 100);
 
-  if (loading) {
+  if (loading || isLoadingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#0d0d1a' }}>
         <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#a78bfa' }} />
@@ -176,9 +174,9 @@ export default function CompleteProfile() {
     );
   }
 
-  if (!user) return null;
+  if (!authUser) return null;
 
-  const stepProps = { formData, updateField, user };
+  const stepProps = { formData, updateField, user: authUser };
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#0d0d1a' }}>
@@ -299,9 +297,9 @@ export default function CompleteProfile() {
           )}
         </div>
       </div>
-      {showLegalModal && userProfile && (
+      {showLegalModal && authUser && (
         <LegalAcceptanceModal
-          userProfile={userProfile}
+          userProfile={authUser}
           onAccepted={handleLegalAccepted}
         />
       )}
