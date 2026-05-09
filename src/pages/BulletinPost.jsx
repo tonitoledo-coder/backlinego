@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, MapPin, ExternalLink, MoreHorizontal, MessageSquare } from 'lucide-react';
+import { ArrowLeft, MapPin, ExternalLink, MoreHorizontal, MessageSquare, Music, Youtube, Link2, Flag, Briefcase } from 'lucide-react';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -16,6 +16,8 @@ const CAT_STYLES = {
   alquila_local:  { bg: 'bg-blue-500/15',   text: 'text-blue-300',   border: 'border-blue-500/30' },
   colaboracion:   { bg: 'bg-green-500/15',  text: 'text-green-300',  border: 'border-green-500/30' },
   vendo_material: { bg: 'bg-amber-500/15',  text: 'text-amber-300',  border: 'border-amber-500/30' },
+  oferta_empleo:  { bg: 'bg-emerald-500/15',text: 'text-emerald-300',border: 'border-emerald-500/30' },
+  busco_empleo:   { bg: 'bg-cyan-500/15',   text: 'text-cyan-300',   border: 'border-cyan-500/30' },
 };
 
 const CAT_LABELS = {
@@ -24,6 +26,8 @@ const CAT_LABELS = {
   alquila_local:  'Local de ensayo',
   colaboracion:   'Colaboración',
   vendo_material: 'Vendo material',
+  oferta_empleo:  'Oferta empleo',
+  busco_empleo:   'Busco empleo',
 };
 
 function timeAgo(dateStr) {
@@ -32,18 +36,111 @@ function timeAgo(dateStr) {
   catch { return ''; }
 }
 
-function obfuscateEmail(email) {
-  if (!email) return 'Usuario';
-  const [user] = email.split('@');
-  return `${user}@***`;
+function authorLabel(profile, fallbackId) {
+  if (profile?.display_name) return profile.display_name;
+  if (profile?.username) return profile.username;
+  if (profile?.email) return profile.email.split('@')[0];
+  if (fallbackId) return fallbackId.slice(0, 8);
+  return 'Usuario';
 }
 
-function initials(email) {
-  if (!email) return '?';
-  return email.slice(0, 2).toUpperCase();
+function authorInitials(label) {
+  if (!label) return '?';
+  return label.slice(0, 2).toUpperCase();
 }
 
-// ── Reply form (inline & footer) ──────────────────────────────────────────────
+// ── Link helpers ──────────────────────────────────────────────────────────────
+function linkProvider(url) {
+  if (!url) return 'link';
+  const u = url.toLowerCase();
+  if (u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+  if (u.includes('spotify.com') || u.includes('open.spotify')) return 'spotify';
+  if (u.includes('soundcloud.com')) return 'soundcloud';
+  return 'link';
+}
+
+function youtubeId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+    if (u.searchParams.get('v')) return u.searchParams.get('v');
+    const parts = u.pathname.split('/');
+    const i = parts.indexOf('embed');
+    if (i >= 0 && parts[i + 1]) return parts[i + 1];
+    return null;
+  } catch { return null; }
+}
+
+function spotifyEmbedUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('spotify.com')) {
+      const parts = u.pathname.split('/').filter(Boolean);
+      // /track/ID, /album/ID, /playlist/ID, /artist/ID
+      if (parts.length >= 2) return `https://open.spotify.com/embed/${parts[0]}/${parts[1]}`;
+    }
+    return null;
+  } catch { return null; }
+}
+
+function LinkBadge({ url }) {
+  const provider = linkProvider(url);
+  const Icon = provider === 'youtube' ? Youtube
+    : provider === 'spotify' || provider === 'soundcloud' ? Music
+    : Link2;
+  const label = provider === 'youtube' ? 'YouTube'
+    : provider === 'spotify' ? 'Spotify'
+    : provider === 'soundcloud' ? 'SoundCloud'
+    : 'Enlace';
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 hover:text-white hover:border-zinc-500 transition-colors"
+    >
+      <Icon className="w-3.5 h-3.5" />
+      <span>{label}</span>
+      <ExternalLink className="w-3 h-3 opacity-60" />
+    </a>
+  );
+}
+
+function LinkEmbed({ url }) {
+  const provider = linkProvider(url);
+  if (provider === 'youtube') {
+    const id = youtubeId(url);
+    if (id) {
+      return (
+        <div className="relative pt-[56.25%] rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800">
+          <iframe
+            src={`https://www.youtube.com/embed/${id}`}
+            title="YouTube"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 w-full h-full"
+          />
+        </div>
+      );
+    }
+  }
+  if (provider === 'spotify') {
+    const embed = spotifyEmbedUrl(url);
+    if (embed) {
+      return (
+        <iframe
+          src={embed}
+          title="Spotify"
+          allow="encrypted-media"
+          className="w-full h-[152px] rounded-xl border border-zinc-800"
+        />
+      );
+    }
+  }
+  return null;
+}
+
+// ── Reply form ────────────────────────────────────────────────────────────────
 function ReplyForm({ onSubmit, onCancel, placeholder = 'Escribe una respuesta...', buttonText = 'Publicar respuesta', buttonClass = 'bg-blue-600 hover:bg-blue-700 text-white' }) {
   const [body, setBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -51,9 +148,12 @@ function ReplyForm({ onSubmit, onCancel, placeholder = 'Escribe una respuesta...
   const handleSubmit = async () => {
     if (!body.trim()) return;
     setSubmitting(true);
-    await onSubmit(body.trim());
-    setBody('');
-    setSubmitting(false);
+    try {
+      await onSubmit(body.trim());
+      setBody('');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -84,27 +184,29 @@ function ReplyForm({ onSubmit, onCancel, placeholder = 'Escribe una respuesta...
 }
 
 // ── Reply item ────────────────────────────────────────────────────────────────
-function ReplyItem({ reply, children, isPostAuthor, onDelete, onReply, canReply }) {
+function ReplyItem({ reply, children, isPostAuthor, onDelete, onReply, canReply, authorMap }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
 
   if (reply.is_deleted) {
     return (
       <div className="py-2">
-        <p className="text-zinc-600 italic text-sm">[Respuesta eliminada por el autor]</p>
+        <p className="text-zinc-600 italic text-sm">[Respuesta eliminada]</p>
         {children}
       </div>
     );
   }
 
+  const profile = authorMap[reply.author_id];
+  const label = authorLabel(profile, reply.author_id);
+
   return (
     <div className="py-3">
-      {/* Header */}
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-300 shrink-0">
-            {initials(reply.author_id)}
+            {authorInitials(label)}
           </div>
-          <span className="text-xs text-zinc-400 font-medium">{obfuscateEmail(reply.author_id)}</span>
+          <span className="text-xs text-zinc-400 font-medium">{label}</span>
           <span className="text-xs text-zinc-600">{timeAgo(reply.created_at)}</span>
         </div>
         {isPostAuthor && (
@@ -117,12 +219,10 @@ function ReplyItem({ reply, children, isPostAuthor, onDelete, onReply, canReply 
         )}
       </div>
 
-      {/* Body */}
       <p className="text-zinc-300 text-sm whitespace-pre-wrap leading-relaxed mb-2 ml-8">
         {reply.body}
       </p>
 
-      {/* Reply button (only depth 0) */}
       {canReply && reply.depth === 0 && (
         <div className="ml-8">
           {showReplyForm ? (
@@ -145,7 +245,6 @@ function ReplyItem({ reply, children, isPostAuthor, onDelete, onReply, canReply 
         </div>
       )}
 
-      {/* Nested replies */}
       {children && (
         <div className="ml-8 border-l-2 border-zinc-800 pl-4 mt-3 space-y-0">
           {children}
@@ -155,7 +254,6 @@ function ReplyItem({ reply, children, isPostAuthor, onDelete, onReply, canReply 
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
 function Skeleton() {
   return (
     <div className="max-w-3xl mx-auto px-4 lg:px-6 py-6 space-y-4 animate-pulse">
@@ -179,14 +277,28 @@ export default function BulletinPost() {
   const id = params.get('id');
 
   const [post, setPost] = useState(null);
+  const [postAuthor, setPostAuthor] = useState(null);
   const [replies, setReplies] = useState([]);
+  const [authorMap, setAuthorMap] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
   const menuRef = useRef(null);
+
+  const loadAuthorsForReplies = async (replyList) => {
+    const ids = [...new Set(replyList.map(r => r.author_id).filter(Boolean))];
+    if (!ids.length) return;
+    const profs = await Promise.all(ids.map(uid => db.entities.UserProfile.get(uid).catch(() => null)));
+    setAuthorMap(prev => {
+      const next = { ...prev };
+      ids.forEach((uid, i) => { next[uid] = profs[i]; });
+      return next;
+    });
+  };
 
   const loadData = async () => {
     const auth = await db.auth.isAuthenticated();
@@ -199,7 +311,7 @@ export default function BulletinPost() {
 
     const [posts, allReplies] = await Promise.all([
       db.entities.BulletinPost.filter({ id }),
-      db.entities.BulletinReply.filter({ post_id: id }),
+      db.entities.BulletinReply.filter({ post_id: id }, 'created_at', 200),
     ]);
 
     if (!posts.length) { setNotFound(true); setLoading(false); return; }
@@ -207,15 +319,22 @@ export default function BulletinPost() {
     setPost(p);
     const isAuthorNow = user?.id === p.author_id;
     setReplies(allReplies.filter(r => !r.is_deleted || isAuthorNow));
+
+    // Resolve author profile + reply author profiles in parallel
+    if (p.author_id) {
+      db.entities.UserProfile.get(p.author_id).then(setPostAuthor).catch(() => {});
+    }
+    loadAuthorsForReplies(allReplies);
+
     setLoading(false);
   };
 
   useEffect(() => {
     if (id) loadData();
     else { setNotFound(true); setLoading(false); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Close menu on outside click
   useEffect(() => {
     const handler = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setShowMenu(false); };
     document.addEventListener('mousedown', handler);
@@ -225,13 +344,14 @@ export default function BulletinPost() {
   const isAuthor = currentUser?.id === post?.author_id;
 
   const reloadReplies = async () => {
-    const allReplies = await db.entities.BulletinReply.filter({ post_id: id });
+    const allReplies = await db.entities.BulletinReply.filter({ post_id: id }, 'created_at', 200);
     setReplies(allReplies.filter(r => !r.is_deleted || isAuthor));
+    loadAuthorsForReplies(allReplies);
   };
 
   const handleToggleStatus = async () => {
     const newStatus = post.status === 'active' ? 'closed' : 'active';
-    const updated = await db.entities.BulletinPost.update(post.id, { status: newStatus });
+    await db.entities.BulletinPost.update(post.id, { status: newStatus });
     setPost(prev => ({ ...prev, status: newStatus }));
     setShowMenu(false);
   };
@@ -247,8 +367,10 @@ export default function BulletinPost() {
   };
 
   const handleTopReply = async (body) => {
+    if (!currentUser) return;
     await db.entities.BulletinReply.create({
       post_id: post.id,
+      author_id: currentUser.id,
       parent_reply_id: null,
       body,
       depth: 0,
@@ -261,8 +383,10 @@ export default function BulletinPost() {
   };
 
   const handleNestedReply = async (body, parentReply) => {
+    if (!currentUser) return;
     await db.entities.BulletinReply.create({
       post_id: post.id,
+      author_id: currentUser.id,
       parent_reply_id: parentReply.id,
       body,
       depth: 1,
@@ -272,6 +396,20 @@ export default function BulletinPost() {
     await db.entities.BulletinPost.update(post.id, { reply_count: (post.reply_count || 0) + 1 });
     setPost(prev => ({ ...prev, reply_count: (prev.reply_count || 0) + 1 }));
     await reloadReplies();
+  };
+
+  const handleReport = async () => {
+    if (!isAuth) {
+      db.auth.redirectToLogin(window.location.href);
+      return;
+    }
+    if (reportSent) return;
+    try {
+      await db.entities.BulletinPost.update(post.id, { report_count: (post.report_count || 0) + 1 });
+      setReportSent(true);
+    } catch (e) {
+      console.error('[BulletinPost] report failed:', e);
+    }
   };
 
   // ── Render states ────────────────────────────────────────────────────────────
@@ -304,11 +442,12 @@ export default function BulletinPost() {
   const catLabel = CAT_LABELS[post.category] || post.category;
   const topReplies = replies.filter(r => !r.parent_reply_id);
   const childReplies = (parentId) => replies.filter(r => r.parent_reply_id === parentId);
+  const authorName = authorLabel(postAuthor, post.author_id);
 
   return (
     <div className="max-w-3xl mx-auto px-4 lg:px-6 py-6 pb-32">
 
-      {/* ── Header ───────────────────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => navigate(createPageUrl('BulletinBoard'))}
@@ -318,35 +457,54 @@ export default function BulletinPost() {
           <span className="text-sm font-medium">Volver al Tablón</span>
         </button>
 
-        {isAuthor && (
-          <div className="relative" ref={menuRef}>
+        <div className="flex items-center gap-2">
+          {!isAuthor && (
             <button
-              onClick={() => setShowMenu(v => !v)}
-              className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+              onClick={handleReport}
+              disabled={reportSent}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors',
+                reportSent
+                  ? 'border-zinc-700 text-zinc-500 cursor-default'
+                  : 'border-zinc-700 text-zinc-400 hover:text-red-400 hover:border-red-500'
+              )}
+              title={reportSent ? 'Reporte enviado' : 'Reportar anuncio'}
             >
-              <MoreHorizontal className="w-4 h-4" />
+              <Flag className="w-3.5 h-3.5" />
+              {reportSent ? 'Reportado' : 'Reportar'}
             </button>
-            {showMenu && (
-              <div className="absolute right-0 top-10 z-50 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl py-1 w-48">
-                <button
-                  onClick={handleToggleStatus}
-                  className="w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
-                >
-                  {post.status === 'active' ? 'Cerrar anuncio' : 'Reabrir anuncio'}
-                </button>
-                <button
-                  onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
-                  className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 transition-colors"
-                >
-                  Eliminar anuncio
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+
+          {isAuthor && (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu(v => !v)}
+                className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 top-10 z-50 bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl py-1 w-48">
+                  <button
+                    onClick={handleToggleStatus}
+                    className="w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+                  >
+                    {post.status === 'active' ? 'Cerrar anuncio' : 'Reabrir anuncio'}
+                  </button>
+                  <button
+                    onClick={() => { setShowDeleteConfirm(true); setShowMenu(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-zinc-800 transition-colors"
+                  >
+                    Eliminar anuncio
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ── Delete confirm ────────────────────────────────────────────────────── */}
+      {/* Delete confirm */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm w-full">
@@ -360,9 +518,10 @@ export default function BulletinPost() {
         </div>
       )}
 
-      {/* ── Post body ─────────────────────────────────────────────────────────── */}
-      <div className="mb-8">
-        {/* Category + closed banner */}
+      {/* Post body */}
+      <div className="rounded-2xl p-5 lg:p-6 border mb-6"
+        style={{ background: '#161625', borderColor: 'rgba(255,255,255,0.07)' }}>
+
         <div className="flex items-center gap-3 mb-3 flex-wrap">
           <span className={cn('text-xs font-medium px-2.5 py-0.5 rounded-full border', cat.bg, cat.text, cat.border)}>
             {catLabel}
@@ -376,31 +535,56 @@ export default function BulletinPost() {
           </div>
         )}
 
-        {/* Title */}
         <h1 className="text-2xl font-bold text-white mb-3 leading-tight">{post.title}</h1>
 
         {/* Metadata */}
-        <div className="flex items-center gap-3 flex-wrap mb-5">
+        <div className="flex items-center gap-3 flex-wrap mb-4">
           <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-[11px] font-bold text-zinc-300 shrink-0">
-              {initials(post.author_id)}
+              {authorInitials(authorName)}
             </div>
-            <span className="text-sm text-zinc-400">{obfuscateEmail(post.author_id)}</span>
+            <span className="text-sm text-zinc-400">{authorName}</span>
           </div>
           {post.city && (
             <span className="flex items-center gap-1 text-sm text-zinc-500">
               <MapPin className="w-3.5 h-3.5" />{post.city}
             </span>
           )}
+          {post.availability && (
+            <span className="flex items-center gap-1 text-sm text-zinc-500">
+              <Briefcase className="w-3.5 h-3.5" />{post.availability}
+            </span>
+          )}
           <span className="text-sm text-zinc-600">{timeAgo(post.created_at)}</span>
         </div>
 
+        {/* Tags / genres / instrument */}
+        {(post.instrument || post.tags?.length > 0 || post.genres?.length > 0) && (
+          <div className="flex items-center gap-1.5 flex-wrap mb-5">
+            {post.instrument && (
+              <span className="text-xs uppercase tracking-wide font-semibold px-2.5 py-1 rounded bg-blue-500/15 text-blue-300 border border-blue-500/25">
+                {post.instrument}
+              </span>
+            )}
+            {post.genres?.map(g => (
+              <span key={g} className="text-xs px-2.5 py-1 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                {g}
+              </span>
+            ))}
+            {post.tags?.map(t => (
+              <span key={t} className="text-xs px-2.5 py-1 rounded text-zinc-500">
+                #{t}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Body */}
-        <p className="text-zinc-300 whitespace-pre-wrap leading-relaxed mb-6">{post.body}</p>
+        <p className="text-zinc-300 whitespace-pre-wrap leading-relaxed mb-5">{post.body}</p>
 
         {/* Images */}
         {post.images?.length > 0 && (
-          <div className={cn('grid gap-2 mb-6', post.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
+          <div className={cn('grid gap-2 mb-5', post.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
             {post.images.map((url, i) => (
               <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-colors">
                 <img src={url} alt="" className="w-full object-cover max-h-72" />
@@ -409,27 +593,27 @@ export default function BulletinPost() {
           </div>
         )}
 
-        {/* Links */}
+        {/* Links: badge row + embeds */}
         {post.links?.length > 0 && (
-          <div className="space-y-2">
-            {post.links.map((link, i) => (
-              <a
-                key={i}
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">{link.length > 40 ? link.slice(0, 40) + '…' : link}</span>
-              </a>
-            ))}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              {post.links.map((link, i) => <LinkBadge key={i} url={link} />)}
+            </div>
+            <div className="space-y-3">
+              {post.links.map((link, i) => {
+                const embed = <LinkEmbed url={link} />;
+                return embed && (linkProvider(link) === 'youtube' || linkProvider(link) === 'spotify')
+                  ? <div key={i}>{embed}</div>
+                  : null;
+              })}
+            </div>
           </div>
         )}
       </div>
 
-      {/* ── Replies ───────────────────────────────────────────────────────────── */}
-      <div className="border-t border-zinc-800 pt-6">
+      {/* Replies */}
+      <div className="rounded-2xl p-5 lg:p-6 border"
+        style={{ background: '#161625', borderColor: 'rgba(255,255,255,0.07)' }}>
         <h2 className="text-sm font-semibold text-zinc-400 mb-4">
           {replies.length} {replies.length === 1 ? 'respuesta' : 'respuestas'}
         </h2>
@@ -444,6 +628,7 @@ export default function BulletinPost() {
                 onDelete={handleDeleteReply}
                 onReply={handleNestedReply}
                 canReply={isAuth && post.status === 'active'}
+                authorMap={authorMap}
               >
                 {childReplies(reply.id).map(child => (
                   <ReplyItem
@@ -453,6 +638,7 @@ export default function BulletinPost() {
                     onDelete={handleDeleteReply}
                     onReply={null}
                     canReply={false}
+                    authorMap={authorMap}
                   />
                 ))}
               </ReplyItem>
@@ -468,7 +654,7 @@ export default function BulletinPost() {
               onSubmit={handleTopReply}
               placeholder="Escribe una respuesta..."
               buttonText="Publicar respuesta"
-              buttonClass="bg-blue-600 hover:bg-blue-700 text-white"
+              buttonClass="bg-emerald-500 hover:bg-emerald-600 text-black"
             />
           </div>
         ) : !isAuth && post.status === 'active' ? (
