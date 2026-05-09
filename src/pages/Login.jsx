@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import logoHorizontal from '@/assets/logo-horizontal.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -48,9 +49,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#0d0d1a' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Backline<span style={{ color: '#1DDF7A' }}>Go</span>
-          </h1>
+          <img src={logoHorizontal} alt="BacklineGo" className="h-12 mx-auto" />
           <p className="text-zinc-400 text-sm mt-2">Accede con tu correo</p>
         </div>
 

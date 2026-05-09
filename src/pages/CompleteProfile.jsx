@@ -5,13 +5,14 @@ import { db } from '@/lib/db';
 import { useAuth } from '@/lib/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import StepPublicPresence from '@/components/profile/StepPublicPresence';
 import StepLocation from '@/components/profile/StepLocation';
 import StepProfessional from '@/components/profile/StepProfessional';
 import StepPreferences from '@/components/profile/StepPreferences';
 import StepBilling from '@/components/profile/StepBilling';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
+import logoHeader from '@/assets/logo-header.png';
 
 const STEPS = [
   { id: 1, label: 'Presencia pública' },
@@ -182,12 +183,7 @@ export default function CompleteProfile() {
     <div className="min-h-screen flex flex-col" style={{ background: '#0d0d1a' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-5 pb-2 max-w-2xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#a78bfa,#34d399)' }}>
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-white text-sm">BacklineGo</span>
-        </div>
+        <img src={logoHeader} alt="BacklineGo" className="h-6" />
         <span className="text-xs text-zinc-500">Completar perfil</span>
       </div>
 
