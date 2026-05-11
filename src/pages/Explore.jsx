@@ -3,7 +3,7 @@ import SosRequestModal from '@/components/sos/SosRequestModal';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { db } from '@/lib/db';
+import { supabase } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -355,19 +355,52 @@ export default function Explore() {
   }, []);
 
   const { data: equipment = [], isLoading } = useQuery({
-    queryKey: ['equipment', 'all'],
-    queryFn: () => db.entities.Equipment.filter({ status: 'available' }, '-created_at', 200),
+    queryKey: ['equipment', 'explore', {
+      cats: filters.cats.join(','),
+      listingType: filters.listingType,
+      city: filters.city,
+      priceMin: filters.priceMin,
+      priceMax: filters.priceMax,
+      sos: filters.sos,
+      pickup: filters.pickup,
+      sort: filters.sort,
+    }],
+    queryFn: async () => {
+      let q = supabase.from('equipment').select('*').eq('status', 'available');
+
+      if (filters.cats.length > 0)   q = q.in('category', filters.cats);
+      if (filters.listingType)       q = q.eq('listing_type', filters.listingType);
+      if (filters.city)              q = q.ilike('location->>city', `%${filters.city}%`);
+      if (filters.priceMin > 0)      q = q.gte('price_per_day', filters.priceMin);
+      if (filters.priceMax < 500)    q = q.lte('price_per_day', filters.priceMax);
+      if (filters.sos)               q = q.eq('sos_available', true);
+      if (filters.pickup)            q = q.in('pickup_type', [filters.pickup, 'both']);
+
+      switch (filters.sort) {
+        case 'price_asc':  q = q.order('price_per_day', { ascending: true });  break;
+        case 'price_desc': q = q.order('price_per_day', { ascending: false }); break;
+        case 'condition':  q = q.order('condition',     { ascending: false }); break;
+        default:           q = q.order('created_at',    { ascending: false }); // 'newest' & 'rating'
+      }
+
+      const { data, error } = await q.limit(200);
+      if (error) throw error;
+      return data || [];
+    },
     staleTime: 60_000,
   });
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['equipment', 'all'] });
+    await queryClient.invalidateQueries({ queryKey: ['equipment', 'explore'] });
   }, [queryClient]);
 
   const filtered = useMemo(() => {
-    let list = [...equipment];
+    // Backend already handles status/category/listingType/city/price/sos/pickup/sort.
+    // Client-side only what SQL can't easily express:
+    //   - filters.q: free text across multiple text columns
+    //   - filters.from/to: blocked_dates intersection check
+    let list = equipment;
 
-    // Text search
     if (filters.q) {
       const q = filters.q.toLowerCase();
       list = list.filter(e =>
@@ -379,48 +412,6 @@ export default function Explore() {
       );
     }
 
-    // City
-    if (filters.city) {
-      const c = filters.city.toLowerCase();
-      list = list.filter(e => e.location?.city?.toLowerCase().includes(c));
-    }
-
-    // Listing type
-    if (filters.listingType) {
-      list = list.filter(e => (e.listing_type || 'equipment') === filters.listingType);
-    }
-
-    // Categories (multi)
-    if (filters.cats.length > 0) {
-      list = list.filter(e => filters.cats.includes(e.category));
-    }
-
-    // Price
-    list = list.filter(e => {
-      const p = e.price_per_day || 0;
-      return p >= filters.priceMin && p <= filters.priceMax;
-    });
-
-    // Rating
-    if (filters.rating) {
-      const minRating = parseFloat(filters.rating);
-      // Equipment doesn't have rating directly — filter by owner profile rating
-      // Since we don't have joined data, we skip this silently unless rating stored on equip
-    }
-
-    // SOS
-    if (filters.sos) list = list.filter(e => e.sos_available);
-
-    // Pickup type
-    if (filters.pickup) {
-      list = list.filter(e => {
-        if (!e.pickup_type) return filters.pickup === 'in_person';
-        if (e.pickup_type === 'both') return true;
-        return e.pickup_type === filters.pickup;
-      });
-    }
-
-    // Availability dates — exclude if blocked
     if (filters.from && filters.to) {
       list = list.filter(e => {
         if (!e.blocked_dates?.length) return true;
@@ -430,17 +421,8 @@ export default function Explore() {
       });
     }
 
-    // Sort
-    switch (filters.sort) {
-      case 'price_asc':  list.sort((a, b) => (a.price_per_day||0) - (b.price_per_day||0)); break;
-      case 'price_desc': list.sort((a, b) => (b.price_per_day||0) - (a.price_per_day||0)); break;
-      case 'condition':  list.sort((a, b) => (b.condition||0) - (a.condition||0)); break;
-      case 'rating':     list.sort((a, b) => (b.condition||0) - (a.condition||0)); break; // proxy
-      default: break;
-    }
-
     return list;
-  }, [equipment, filters]);
+  }, [equipment, filters.q, filters.from, filters.to]);
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
