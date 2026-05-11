@@ -363,10 +363,12 @@ export default function Explore() {
       priceMax: filters.priceMax,
       sos: filters.sos,
       pickup: filters.pickup,
+      rating: filters.rating,
+      verified: filters.verified,
       sort: filters.sort,
     }],
     queryFn: async () => {
-      let q = supabase.from('equipment').select('*').eq('status', 'available');
+      let q = supabase.from('equipment_with_owner').select('*').eq('status', 'available');
 
       if (filters.cats.length > 0)   q = q.in('category', filters.cats);
       if (filters.listingType)       q = q.eq('listing_type', filters.listingType);
@@ -374,6 +376,8 @@ export default function Explore() {
       if (filters.priceMin > 0)      q = q.gte('price_per_day', filters.priceMin);
       if (filters.priceMax < 500)    q = q.lte('price_per_day', filters.priceMax);
       if (filters.sos)               q = q.eq('sos_available', true);
+      if (filters.verified)          q = q.eq('owner_is_verified', true);
+      if (filters.rating)            q = q.gte('owner_rating_avg', parseFloat(filters.rating));
       if (filters.pickup)            q = q.in('pickup_type', [filters.pickup, 'both']);
 
       switch (filters.sort) {
