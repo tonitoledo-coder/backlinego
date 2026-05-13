@@ -527,7 +527,7 @@ export default function Explore() {
               )}
             </div>
 
-            <div className="flex gap-2 ml-auto">
+            <div className="flex flex-wrap gap-2 lg:ml-auto">
               {/* Sort — desktop */}
               <div className="hidden lg:block">
                 <Select value={filters.sort} onValueChange={v => setFilter('sort', v)}>
