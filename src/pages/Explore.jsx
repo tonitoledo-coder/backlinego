@@ -350,6 +350,11 @@ export default function Explore() {
     }
   }, [filters]);
 
+  // Sync URL → filters (cuando la URL cambia, ej. navegación desde Home con ?category=X)
+  useEffect(() => {
+    setFiltersState(readParams(location.search));
+  }, [location.search]);
+
   const setFilter = useCallback((key, value) => {
     setFiltersState(prev => ({ ...prev, [key]: value }));
   }, []);
