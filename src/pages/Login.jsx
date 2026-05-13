@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Loader2, CheckCircle2, Lock, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/db';
 import logoHorizontal from '@/assets/logo-horizontal.png';
 
 const TABS = [

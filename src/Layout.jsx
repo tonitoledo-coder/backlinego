@@ -3,7 +3,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import LegalAcceptanceModal from '@/components/legal/LegalAcceptanceModal';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/db';
 import { useAuth } from '@/lib/AuthContext';
 
 const TabHome        = lazy(() => import('./pages/Home'));
