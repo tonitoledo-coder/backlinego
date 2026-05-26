@@ -1,5 +1,7 @@
+provider = "node"
+
 [phases.setup]
-nixPkgs = ["nodejs_22", "npm"]
+nixPkgs = ["nodejs", "npm"]
 
 [phases.install]
 cmds = ["npm ci"]
@@ -8,4 +10,4 @@ cmds = ["npm ci"]
 cmds = ["npm run build"]
 
 [start]
-cmd = "echo 'Static site - served by nginx'"
+cmd = "echo static"
