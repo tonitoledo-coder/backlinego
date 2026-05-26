@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ShieldCheck, CreditCard, Lock, ChevronDown, ChevronUp, Loader2, ExternalLink } from 'lucide-react';
-import { db } from '@/lib/db';
+import { supabase } from '@/lib/db';
 import { calcBookingPrice } from './calcBookingPrice';
 
 const PLATFORM_FEE_RATE = 0.12;
@@ -25,92 +25,20 @@ export default function PaymentModal({ open, onClose, equipment, startDate, endD
     setError(null);
 
     try {
-      const token = localStorage.getItem('authToken')
-        || localStorage.getItem('token')
-        || localStorage.getItem('base44_token');
-
-      // 1. Obtener connect account del propietario
-      let ownerConnectId = null;
-      try {
-        const profileRes = await fetch('/api/functions/stripeCheckout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            action: 'create_owner_connect_account',
-            owner_id: equipment.owner_id,
-            origin: window.location.origin,
-          }),
-        });
-        const profileData = await profileRes.json();
-        ownerConnectId = profileData.account_id || null;
-      } catch {
-        // No bloqueante: el pago funciona sin connect (manual payout)
-      }
-
-      // 2. Crear Booking en estado pending_payment
-      let currentBookingId = bookingId;
-      if (!currentBookingId) {
-        const user = await db.auth.me();
-        const basePriceCents       = Math.round(pricing.finalPrice * 100);
-        const protectionFeeCents   = Math.round(pricing.insuranceFee * 100);
-        const platformFeeCents     = Math.round(platformFee * 100);
-        const totalChargedCents    = Math.round(pricing.totalPrice * 100);
-        const ownerPayoutCents     = Math.round(ownerReceives * 100);
-        const depositCents         = Math.round(deposit * 100);
-        const booking = await db.entities.Booking.create({
+      const { data, error: invokeError } = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          action: 'create_checkout',
           equipment_id: equipment.id,
-          equipment_title: equipment.title,
-          owner_id: equipment.owner_id,
-          renter_id: user.id,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
+          start_date: startDate,
+          end_date: endDate,
           days: pricing.days,
-          base_price_cents: basePriceCents,
-          protection_fee_cents: protectionFeeCents,
-          protection_rate: pricing.insuranceFee / pricing.finalPrice,
-          platform_fee_cents: platformFeeCents,
-          deposit_cents: depositCents,
-          total_charged_cents: totalChargedCents,
-          owner_payout_cents: ownerPayoutCents,
-          status: 'pending_payment',
           protection_plan: 'damage_waiver',
-          is_sos: equipment.sos_available || false,
-        });
-        currentBookingId = booking.id;
-      }
-
-      // 3. Crear Checkout Session en Stripe
-      const res = await fetch('/api/functions/stripeCheckout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          success_url: `${window.location.origin}/bookings?success=true`,
+          cancel_url: `${window.location.origin}/equipment/${equipment.id}?cancelled=true`,
         },
-        body: JSON.stringify({
-          action: 'create_booking_checkout',
-          booking_id: currentBookingId,
-          equipment_id: equipment.id,
-          equipment_title: equipment.title,
-          owner_id: equipment.owner_id,
-          base_price_cents: Math.round(pricing.finalPrice * 100),
-          protection_fee_cents: Math.round(pricing.insuranceFee * 100),
-          deposit_cents: Math.round(deposit * 100),
-          owner_connect_account_id: ownerConnectId,
-          origin: window.location.origin,
-        }),
       });
-
-      const data = await res.json();
-
-      if (data.url) {
-        // Redirigir a Stripe Checkout
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || 'Error al crear la sesión de pago');
-      }
+      if (invokeError) throw invokeError;
+      window.location.href = data.checkout_url;
     } catch (err) {
       setError(err.message);
       setLoading(false);

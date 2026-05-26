@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '@/lib/db';
+import { db, supabase } from '@/lib/db';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,9 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
     const sessionId = urlParams.get('session_id');
     if (paymentResult === 'success' && sessionId) {
       (async () => {
-        const res = await db.functions.invoke('stripeCheckout', { action: 'verify_payment', session_id: sessionId });
+        const res = await supabase.functions.invoke('stripe-checkout', {
+          body: { action: 'verify_payment', session_id: sessionId },
+        });
         if (res.data?.success) {
           setPaymentConfirm({ amount: res.data.amount, currency: res.data.currency });
           onSaved?.();
@@ -58,28 +60,48 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
 
   const handleConnectStripe = async () => {
     setStripeConnecting(true);
-    await db.functions.invoke('stripeCheckout', { action: 'create_customer' });
-    setStripeConnecting(false);
-    onSaved?.();
+    try {
+      if (!user?.stripe_connect_account_id) {
+        const { error } = await supabase.functions.invoke('stripe-connect-onboarding', {
+          body: { action: 'create_account' },
+        });
+        if (error) throw error;
+      }
+      const { data: linkData, error: linkError } = await supabase.functions.invoke('stripe-connect-onboarding', {
+        body: {
+          action: 'onboarding_link',
+          return_url: `${window.location.origin}/settings?stripe=complete`,
+        },
+      });
+      if (linkError) throw linkError;
+      window.location.href = linkData.url;
+    } finally {
+      setStripeConnecting(false);
+    }
   };
 
   const handleSimulatePayment = async () => {
     setStripeLoading(true);
-    const res = await db.functions.invoke('stripeCheckout', {
-      action: 'create_checkout',
-      origin: window.location.origin,
+    const res = await supabase.functions.invoke('stripe-checkout', {
+      body: {
+        action: 'create_checkout',
+        origin: window.location.origin,
+      },
     });
-    if (res.data?.url) {
-      window.location.href = res.data.url;
+    const url = res.data?.checkout_url || res.data?.url;
+    if (url) {
+      window.location.href = url;
     }
     setStripeLoading(false);
   };
 
   const handlePortal = async () => {
     setStripeLoading(true);
-    const res = await db.functions.invoke('stripeCheckout', {
-      action: 'customer_portal',
-      origin: window.location.origin,
+    const res = await supabase.functions.invoke('stripe-checkout', {
+      body: {
+        action: 'customer_portal',
+        origin: window.location.origin,
+      },
     });
     if (res.data?.url) window.open(res.data.url, '_blank');
     setStripeLoading(false);
@@ -123,7 +145,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
               <Button onClick={handlePortal} disabled={stripeLoading} size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-1.5">
                 <ExternalLink className="w-3.5 h-3.5" /> Ver historial en Stripe
               </Button>
-              <Button onClick={handleSimulatePayment} disabled={stripeLoading} size="sm" className="text-white gap-1.5" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
+              <Button onClick={handleSimulatePayment} disabled={stripeLoading} size="sm" className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
                 {stripeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
                 Simular pago de prueba
               </Button>
@@ -133,7 +155,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
           <div className="space-y-3">
             <p className="text-sm text-zinc-400">Conecta tu cuenta de Stripe para recibir pagos y gestionar suscripciones.</p>
             <div className="flex gap-2">
-              <Button onClick={handleConnectStripe} disabled={stripeConnecting} size="sm" className="text-white gap-1.5" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
+              <Button onClick={handleConnectStripe} disabled={stripeConnecting} size="sm" className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
                 {stripeConnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
                 Conectar Stripe (Sandbox)
               </Button>
@@ -202,7 +224,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button onClick={handleSave} disabled={saving} className="font-semibold text-white" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
+          <Button onClick={handleSave} disabled={saving} className="font-semibold bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
             {saved ? '¡Guardado!' : 'Guardar'}
           </Button>

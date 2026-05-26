@@ -28,3 +28,10 @@ dist-ssr
 *.sw?
 
 .env.env.local
+
+# Local agent skill caches (npx skills add ...)
+.agents/
+.goose/
+**/.agents/
+**/.goose/
+**/skills-lock.json
