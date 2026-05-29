@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useMutation } from '@tanstack/react-query';
 import { db } from '@/lib/db';
+import { toast } from 'sonner';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
@@ -177,6 +178,22 @@ export default function AddEquipment() {
       setSuccess(true);
       setTimeout(() => navigate(createPageUrl('Profile')), 2000);
     },
+    onError: (err) => {
+      const message = err?.message || '';
+      const code = err?.code || err?.details?.code;
+      // CHECK constraint de Postgres (23514): traducimos a un mensaje accionable.
+      if (code === '23514' || /violates check constraint/i.test(message)) {
+        if (/price/i.test(message)) {
+          setStep(3);
+          setErrors({ price_per_day: 'Indica al menos un precio (por día o por hora).' });
+          toast.error('El equipo debe tener al menos un precio por día o por hora.');
+          return;
+        }
+        toast.error('Algún dato no cumple las reglas de validación. Revisa el formulario.');
+        return;
+      }
+      toast.error('No se pudo publicar el equipo. Inténtalo de nuevo.');
+    },
   });
 
   const handlePublish = async () => {
@@ -198,11 +215,23 @@ export default function AddEquipment() {
       } catch (_) {}
     }
 
+    const pricePerDay = parseFloat(formData.price_per_day) || 0;
+    const pricePerHour = parseFloat(formData.price_per_hour) || 0;
+
+    // Guarda final: la BD exige al menos un precio (constraint equipment_must_have_price).
+    // Validamos en cliente para no llegar nunca al error 500/23514.
+    if (pricePerDay <= 0 && pricePerHour <= 0) {
+      setStep(3);
+      setErrors({ price_per_day: 'Indica al menos un precio (por día o por hora).' });
+      toast.error('Debes indicar un precio por día o por hora antes de publicar.');
+      return;
+    }
+
     const payload = {
       ...formData,
       location,
-      price_per_day: parseFloat(formData.price_per_day) || 0,
-      price_per_hour: parseFloat(formData.price_per_hour) || 0,
+      price_per_day: pricePerDay,
+      price_per_hour: pricePerHour,
       declared_value: parseFloat(formData.declared_value) || 0,
       deposit: parseFloat(formData.deposit) || 0,
       min_rental_price: parseFloat(formData.min_rental_price) || 0,
@@ -214,7 +243,12 @@ export default function AddEquipment() {
     };
     delete payload.terms_accepted; // not stored on entity
 
-    await createMutation.mutateAsync(payload);
+    try {
+      await createMutation.mutateAsync(payload);
+    } catch (_) {
+      // El feedback al usuario lo gestiona createMutation.onError.
+      // Capturamos aquí para evitar un unhandledrejection (reportado en Sentry).
+    }
   };
 
   const isVerified = userProfile?.identity_status === 'verified';

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { db, supabase } from '@/lib/db';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,12 +39,18 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
     const sessionId = urlParams.get('session_id');
     if (paymentResult === 'success' && sessionId) {
       (async () => {
-        const res = await supabase.functions.invoke('stripe-checkout', {
-          body: { action: 'verify_payment', session_id: sessionId },
-        });
-        if (res.data?.success) {
-          setPaymentConfirm({ amount: res.data.amount, currency: res.data.currency });
-          onSaved?.();
+        try {
+          const res = await supabase.functions.invoke('stripe-checkout', {
+            body: { action: 'verify_payment', session_id: sessionId },
+          });
+          if (res.error) throw res.error;
+          if (res.data?.success) {
+            setPaymentConfirm({ amount: res.data.amount, currency: res.data.currency });
+            onSaved?.();
+          }
+        } catch (err) {
+          console.error('verify_payment failed:', err);
+          toast.error('No pudimos verificar el pago. Si se te ha cobrado, contacta con soporte.');
         }
       })();
     }
@@ -94,7 +101,11 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
         },
       });
       if (linkError) throw linkError;
+      if (!linkData?.url) throw new Error('No onboarding URL returned');
       window.location.href = linkData.url;
+    } catch (err) {
+      console.error('stripe connect onboarding failed:', err);
+      toast.error('No se pudo conectar con Stripe. Inténtalo de nuevo en unos minutos.');
     } finally {
       setStripeConnecting(false);
     }
@@ -102,29 +113,49 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
 
   const handleSimulatePayment = async () => {
     setStripeLoading(true);
-    const res = await supabase.functions.invoke('stripe-checkout', {
-      body: {
-        action: 'create_checkout',
-        origin: window.location.origin,
-      },
-    });
-    const url = res.data?.checkout_url || res.data?.url;
-    if (url) {
-      window.location.href = url;
+    try {
+      const res = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          action: 'create_checkout',
+          origin: window.location.origin,
+        },
+      });
+      if (res.error) throw res.error;
+      const url = res.data?.checkout_url || res.data?.url;
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+      toast.error('No se pudo iniciar el pago. Inténtalo de nuevo en unos minutos.');
+    } catch (err) {
+      console.error('stripe-checkout create_checkout failed:', err);
+      toast.error('No se pudo iniciar el pago. Inténtalo de nuevo en unos minutos.');
+    } finally {
+      setStripeLoading(false);
     }
-    setStripeLoading(false);
   };
 
   const handlePortal = async () => {
     setStripeLoading(true);
-    const res = await supabase.functions.invoke('stripe-checkout', {
-      body: {
-        action: 'customer_portal',
-        origin: window.location.origin,
-      },
-    });
-    if (res.data?.url) window.open(res.data.url, '_blank');
-    setStripeLoading(false);
+    try {
+      const res = await supabase.functions.invoke('stripe-checkout', {
+        body: {
+          action: 'customer_portal',
+          origin: window.location.origin,
+        },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.url) {
+        window.open(res.data.url, '_blank');
+        return;
+      }
+      toast.error('No se pudo abrir el portal de Stripe. Inténtalo de nuevo más tarde.');
+    } catch (err) {
+      console.error('stripe-checkout customer_portal failed:', err);
+      toast.error('No se pudo abrir el portal de Stripe. Inténtalo de nuevo más tarde.');
+    } finally {
+      setStripeLoading(false);
+    }
   };
 
   const showTaxId = form.billing_type === 'empresa' || form.billing_type === 'autonomo';
