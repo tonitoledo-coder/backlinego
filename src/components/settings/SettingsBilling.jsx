@@ -108,7 +108,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
   };
 
   const showTaxId = form.billing_type === 'empresa' || form.billing_type === 'autonomo';
-  const hasStripe = !!user?.stripe_customer_id;
+  const hasStripe = !!user?.stripe_connect_account_id && !!user?.connect_onboarding_completed;
 
   return (
     <div className="space-y-5">
@@ -139,7 +139,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="w-4 h-4" style={{ color: '#34d399' }} />
               <span className="text-zinc-300">Cuenta conectada</span>
-              <span className="text-xs text-zinc-600 font-mono ml-1">{user.stripe_customer_id}</span>
+              <span className="text-xs text-zinc-600 font-mono ml-1">{user.stripe_connect_account_id}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <Button onClick={handlePortal} disabled={stripeLoading} size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-1.5">
@@ -157,7 +157,7 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
             <div className="flex gap-2">
               <Button onClick={handleConnectStripe} disabled={stripeConnecting} size="sm" className="gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-900">
                 {stripeConnecting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
-                Conectar Stripe (Sandbox)
+                Conectar como propietario
               </Button>
               <Link to={createPageUrl('CompleteProfile') + '?step=5'}>
                 <Button size="sm" variant="outline" className="border-zinc-700 text-zinc-400">Completar onboarding</Button>
