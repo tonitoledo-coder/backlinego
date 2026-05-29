@@ -78,16 +78,20 @@ async function handleCreateCheckout(
     throw new Error('Missing or invalid booking parameters')
   }
 
-  // ── 2. Cargar equipo + propietario ──
+  // ── 2. Cargar equipo + propietario (dos queries: sin FK embed) ──
   const { data: equipment, error: eqErr } = await supabase
     .from('equipment')
-    .select('*, owner:profiles!owner_id(id, email, stripe_connect_account_id, connect_onboarding_completed)')
+    .select('*')
     .eq('id', equipment_id)
     .single()
   if (eqErr || !equipment) throw new Error('Equipment not found')
 
-  const owner = equipment.owner
-  if (!owner) throw new Error('Owner profile not found')
+  const { data: owner, error: ownerErr } = await supabase
+    .from('user_profile')
+    .select('id, email, stripe_connect_account_id, connect_onboarding_completed')
+    .eq('id', equipment.owner_id)
+    .single()
+  if (ownerErr || !owner) throw new Error('Owner profile not found')
 
   if (owner.id === user.id) throw new Error('Cannot book your own equipment')
 
@@ -101,7 +105,7 @@ async function handleCreateCheckout(
 
   // ── 3. Cargar perfil del arrendatario ──
   const { data: renter, error: rErr } = await supabase
-    .from('profiles')
+    .from('user_profile')
     .select('email, stripe_customer_id')
     .eq('id', user.id)
     .single()
@@ -132,14 +136,14 @@ async function handleCreateCheckout(
     })
     stripeCustomerId = customer.id
     await supabase
-      .from('profiles')
+      .from('user_profile')
       .update({ stripe_customer_id: customer.id })
       .eq('id', user.id)
   }
 
   // ── 6. Crear booking (status: pending) ──
   const { data: booking, error: bErr } = await supabase
-    .from('bookings')
+    .from('booking')
     .insert({
       equipment_id,
       equipment_title: equipment.title,
@@ -207,12 +211,12 @@ async function handleCreateCheckout(
 
   // ── 8. Guardar session ID en booking ──
   await supabase
-    .from('bookings')
+    .from('booking')
     .update({ stripe_payment_intent_id: session.payment_intent as string })
     .eq('id', booking.id)
 
   // ── 9. Log ──
-  await supabase.from('payment_logs').insert({
+  await supabase.from('payment_log').insert({
     booking_id: booking.id,
     event_type: 'checkout_created',
     stripe_event_id: session.id,
@@ -255,7 +259,7 @@ async function handleVerifyPayment(
   const bookingId = session.metadata?.booking_id
   if (bookingId) {
     const { data: booking } = await supabase
-      .from('bookings')
+      .from('booking')
       .select('renter_id, status')
       .eq('id', bookingId)
       .single()
@@ -281,7 +285,7 @@ async function handleCustomerPortal(
 ) {
   // Obtener stripe_customer_id del usuario
   const { data: profile, error: pErr } = await supabase
-    .from('profiles')
+    .from('user_profile')
     .select('stripe_customer_id')
     .eq('id', user.id)
     .single()
