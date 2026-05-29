@@ -49,6 +49,26 @@ export default function SettingsBilling({ user, onSaved, paymentResult }) {
     }
   }, [paymentResult]);
 
+  // Sync Connect status after returning from Stripe onboarding (?stripe=complete)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (paymentResult === 'complete' || urlParams.get('stripe') === 'complete') {
+      (async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke('stripe-connect-onboarding', {
+            body: { action: 'check_status' },
+          });
+          if (error) console.error('check_status error:', error);
+          if (data?.charges_enabled) {
+            onSaved?.();
+          }
+        } catch (err) {
+          console.error('check_status failed:', err);
+        }
+      })();
+    }
+  }, [paymentResult]);
+
   const handleSave = async () => {
     setSaving(true);
     await db.auth.updateMe(form);
