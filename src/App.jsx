@@ -76,14 +76,19 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
-    <QueryClientProvider client={queryClientInstance}>
-      <Router>
-        <AuthProvider>
-          <AuthenticatedApp />
-        </AuthProvider>
-      </Router>
-      <Toaster />
-    </QueryClientProvider>
+    // translate="no" prevents browser auto-translate (Google/Safari Translate)
+    // from mutating the DOM and crashing React 18 (NotFoundError on removeChild).
+    // App translations are handled exclusively through react-i18next.
+    <div translate="no">
+      <QueryClientProvider client={queryClientInstance}>
+        <Router>
+          <AuthProvider>
+            <AuthenticatedApp />
+          </AuthProvider>
+        </Router>
+        <Toaster />
+      </QueryClientProvider>
+    </div>
   )
 }
 
