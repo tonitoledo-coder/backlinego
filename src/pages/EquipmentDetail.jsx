@@ -131,13 +131,6 @@ export default function EquipmentDetail() {
 
   const queryClient = useQueryClient();
 
-  // Lookup owner profile to get identity_status (not stored on equipment row)
-  const { data: ownerProfile } = useQuery({
-    queryKey: ['user_profile', equipment?.owner_id],
-    queryFn: () => db.entities.UserProfile.get(equipment.owner_id),
-    enabled: !!equipment?.owner_id,
-  });
-
   // Load existing bookings to block occupied dates
   const { data: existingBookings = [] } = useQuery({
     queryKey: ['bookings', 'equipment', equipmentId],
@@ -166,6 +159,13 @@ export default function EquipmentDetail() {
     queryKey: ['equipment', equipmentId],
     queryFn: () => db.entities.Equipment.get(equipmentId),
     enabled: !!equipmentId,
+  });
+
+  // Lookup owner profile to get identity_status (not stored on equipment row)
+  const { data: ownerProfile } = useQuery({
+    queryKey: ['user_profile', equipment?.owner_id],
+    queryFn: () => db.entities.UserProfile.get(equipment.owner_id),
+    enabled: !!equipment?.owner_id,
   });
 
   const bookingMutation = useMutation({
