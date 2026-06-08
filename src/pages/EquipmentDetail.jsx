@@ -133,13 +133,9 @@ export default function EquipmentDetail() {
 
   // Lookup owner profile to get identity_status (not stored on equipment row)
   const { data: ownerProfile } = useQuery({
-    queryKey: ['user_profile', 'owner'],
-    queryFn: async () => {
-      const eq = await db.entities.Equipment.get(equipmentId);
-      if (!eq?.owner_id) return null;
-      return db.entities.UserProfile.get(eq.owner_id);
-    },
-    enabled: !!equipmentId,
+    queryKey: ['user_profile', equipment?.owner_id],
+    queryFn: () => db.entities.UserProfile.get(equipment.owner_id),
+    enabled: !!equipment?.owner_id,
   });
 
   // Load existing bookings to block occupied dates
@@ -168,10 +164,7 @@ export default function EquipmentDetail() {
 
   const { data: equipment, isLoading } = useQuery({
     queryKey: ['equipment', equipmentId],
-    queryFn: async () => {
-      const items = await db.entities.Equipment.filter({ id: equipmentId });
-      return items[0];
-    },
+    queryFn: () => db.entities.Equipment.get(equipmentId),
     enabled: !!equipmentId,
   });
 
