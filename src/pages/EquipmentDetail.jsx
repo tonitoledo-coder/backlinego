@@ -376,6 +376,8 @@ export default function EquipmentDetail() {
     }
   };
 
+  console.log('[EquipmentDetail] render:', { equipmentId, isLoading, hasEquipment: !!equipment, equipmentError, url: window.location.href });
+
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
