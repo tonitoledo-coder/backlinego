@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { db } from '@/lib/db';
 import { useTranslation } from '@/components/i18n/translations';
 import { Button } from '@/components/ui/button';
@@ -23,15 +23,12 @@ import {
   ChevronRight,
   User,
   CheckCircle,
-  AlertCircle,
-  Loader2
+  AlertCircle
 } from 'lucide-react';
 import { format, differenceInDays, addDays, parseISO, isWithinInterval, eachDayOfInterval } from 'date-fns';
 import { calcBookingPrice } from '@/components/booking/calcBookingPrice';
 import { es, enUS } from 'date-fns/locale';
 import CategoryIcon from '@/components/ui/CategoryIcon';
-import { createNotification } from '@/components/notifications/createNotification';
-import { sendBookingEmail } from '@/utils/sendBookingEmail';
 import PaymentModal from '@/components/booking/PaymentModal';
 import OwnerRatingBadge from '@/components/reviews/OwnerRatingBadge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -115,7 +112,6 @@ export default function EquipmentDetail() {
     const v = params.get('to');
     return v ? parseISO(v) : null;
   });
-  const [isBooking, setIsBooking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [rangeWarning, setRangeWarning] = useState('');
   const [accessModal, setAccessModal] = useState(null); // null | 'login' | 'pending' | 'complete_profile'
@@ -128,8 +124,6 @@ export default function EquipmentDetail() {
   }, []);
   const [deliverySlot, setDeliverySlot] = useState(null); // hora entrega en startDate
   const [returnSlot,   setReturnSlot]   = useState(null); // hora devolución en endDate
-
-  const queryClient = useQueryClient();
 
   // Load existing bookings to block occupied dates
   const { data: existingBookings = [] } = useQuery({
@@ -166,16 +160,6 @@ export default function EquipmentDetail() {
     queryKey: ['user_profile', equipment?.owner_id],
     queryFn: () => db.entities.UserProfile.get(equipment.owner_id),
     enabled: !!equipment?.owner_id,
-  });
-
-  const bookingMutation = useMutation({
-    mutationFn: async (bookingData) => {
-      return db.entities.Booking.create(bookingData);
-    },
-    onSuccess: () => {
-      alert(lang === 'es' ? '¡Reserva creada! Te contactaremos pronto.' : 'Booking created! We will contact you soon.');
-      queryClient.invalidateQueries(['equipment']);
-    }
   });
 
   const pricing = startDate && endDate && equipment
@@ -282,84 +266,23 @@ export default function EquipmentDetail() {
 
   const checkBookingAccess = async () => {
     const isAuth = await db.auth.isAuthenticated();
-    if (!isAuth) { console.log('[access] not authenticated'); setAccessModal('login'); return false; }
+    if (!isAuth) { setAccessModal('login'); return false; }
 
     try {
       const user = await db.auth.me();
       const profile = await db.entities.UserProfile.get(user.id);
-      if (profile?.account_status === 'pending') { console.log('[access] account pending'); setAccessModal('pending'); return false; }
-      if (!profile?.profile_complete) { console.log('[access] profile incomplete'); setAccessModal('complete_profile'); return false; }
+      if (profile?.account_status === 'pending') { setAccessModal('pending'); return false; }
+      if (!profile?.profile_complete) { setAccessModal('complete_profile'); return false; }
     } catch (_) {}
 
     return true;
   };
 
   const handleBooking = async () => {
-    console.log('[handleBooking] called', { startDate, endDate, deliverySlot, returnSlot, canBook });
     if (!startDate || !endDate) return;
     const allowed = await checkBookingAccess();
     if (!allowed) return;
     setShowPayment(true);
-  };
-
-  const handlePaymentConfirm = async () => {
-    setShowPayment(false);
-    setIsBooking(true);
-    try {
-      const user = await db.auth.me();
-      if (equipment.owner_id) {
-        await createNotification({
-          user_id: equipment.owner_id,
-          type: 'booking_confirmed',
-          title: `Nueva reserva: ${equipment.title}`,
-          message: `${format(startDate, 'dd MMM')} → ${format(endDate, 'dd MMM')} · €${pricing?.totalPrice?.toFixed(0) || totalPrice.toFixed(0)}`,
-          link: createPageUrl('Profile'),
-        });
-      }
-      const basePriceCents     = Math.round(basePrice * 100);
-      const protectionFeeCents = Math.round(insuranceFee * 100);
-      const totalChargedCents  = Math.round(totalPrice * 100);
-      const depositCents       = Math.round((equipment.deposit || 0) * 100);
-      const platformFeeCents   = Math.round(basePriceCents * 0.12);
-      const ownerPayoutCents   = totalChargedCents - platformFeeCents - protectionFeeCents;
-      const newBooking = await bookingMutation.mutateAsync({
-        equipment_id: equipmentId,
-        equipment_title: equipment.title,
-        renter_id: user.id,
-        owner_id: equipment.owner_id,
-        start_date: format(startDate, 'yyyy-MM-dd'),
-        end_date: format(endDate, 'yyyy-MM-dd'),
-        days,
-        base_price_cents: basePriceCents,
-        protection_fee_cents: protectionFeeCents,
-        platform_fee_cents: platformFeeCents,
-        deposit_cents: depositCents,
-        total_charged_cents: totalChargedCents,
-        owner_payout_cents: ownerPayoutCents,
-        status: 'confirmed',
-        deposit_status: 'held',
-        is_sos: equipment.sos_available,
-      });
-      // Resolve owner email for sendBookingEmail
-      const ownerProfile = await db.entities.UserProfile.get(equipment.owner_id).catch(() => null);
-      const ownerEmail = ownerProfile?.email;
-      const emailBookingShape = newBooking || {
-        id: 'new', start_date: format(startDate, 'yyyy-MM-dd'),
-        end_date: format(endDate, 'yyyy-MM-dd'), total_charged_cents: totalChargedCents,
-      };
-      sendBookingEmail('booking_created', emailBookingShape, {
-        equipmentTitle: equipment.title,
-        ownerEmail,
-        renterEmail:    user.email,
-      });
-      sendBookingEmail('booking_confirmed', emailBookingShape, {
-        equipmentTitle: equipment.title,
-        renterEmail:    user.email,
-        ownerEmail,
-      });
-    } finally {
-      setIsBooking(false);
-    }
   };
 
   if (isLoading) {
@@ -398,7 +321,6 @@ export default function EquipmentDetail() {
       <PaymentModal
         open={showPayment}
         onClose={() => setShowPayment(false)}
-        onConfirm={handlePaymentConfirm}
         equipment={equipment}
         startDate={startDate}
         endDate={endDate}
@@ -803,13 +725,9 @@ export default function EquipmentDetail() {
                   <div className="space-y-2">
                     <Button
                       className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
-                      disabled={isBooking}
                       onClick={handleBooking}
                     >
-                      {isBooking
-                        ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('loading')}</>
-                        : t('bookNow')
-                      }
+                      {t('bookNow')}
                     </Button>
                     {!isAuthed && (
                       <p className="text-center text-xs text-zinc-500">
