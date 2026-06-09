@@ -13,7 +13,7 @@ const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl =
 	const storageKey = `base44_${toSnakeCase(paramName)}`;
 	const urlParams = new URLSearchParams(window.location.search);
 	const searchParam = urlParams.get(paramName);
-	if (removeFromUrl) {
+	if (removeFromUrl && searchParam) {
 		urlParams.delete(paramName);
 		const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""
 			}${window.location.hash}`;

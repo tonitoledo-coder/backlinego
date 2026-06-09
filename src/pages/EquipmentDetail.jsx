@@ -155,26 +155,11 @@ export default function EquipmentDetail() {
     return set;
   }, [existingBookings]);
 
-  const { data: equipment, isLoading, error: equipmentError } = useQuery({
+  const { data: equipment, isLoading } = useQuery({
     queryKey: ['equipment', equipmentId],
-    queryFn: async () => {
-      console.log('[EquipmentDetail] fetching equipment:', equipmentId);
-      try {
-        const result = await db.entities.Equipment.get(equipmentId);
-        console.log('[EquipmentDetail] get() returned:', result);
-        return result;
-      } catch (err) {
-        console.error('[EquipmentDetail] get() threw:', err);
-        throw err;
-      }
-    },
+    queryFn: () => db.entities.Equipment.get(equipmentId),
     enabled: !!equipmentId,
-    retry: false,
   });
-
-  useEffect(() => {
-    if (equipmentError) console.error('[EquipmentDetail] React Query error state:', equipmentError);
-  }, [equipmentError]);
 
   // Lookup owner profile to get identity_status (not stored on equipment row)
   const { data: ownerProfile } = useQuery({
@@ -375,8 +360,6 @@ export default function EquipmentDetail() {
       setIsBooking(false);
     }
   };
-
-  console.log('[EquipmentDetail] render:', { equipmentId, isLoading, hasEquipment: !!equipment, equipmentError, url: window.location.href });
 
   if (isLoading) {
     return (
