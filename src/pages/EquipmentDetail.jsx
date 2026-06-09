@@ -400,6 +400,8 @@ export default function EquipmentDetail() {
         onClose={() => setShowPayment(false)}
         onConfirm={handlePaymentConfirm}
         equipment={equipment}
+        startDate={startDate}
+        endDate={endDate}
         days={days}
         basePrice={basePrice}
         insuranceFee={insuranceFee}
