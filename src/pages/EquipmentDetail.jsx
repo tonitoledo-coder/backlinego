@@ -104,7 +104,7 @@ export default function EquipmentDetail() {
   const { t, lang } = useTranslation();
   const dateLocale = lang === 'es' ? es : enUS;
   const params = new URLSearchParams(window.location.search);
-  const equipmentId = params.get('id');
+  const [equipmentId] = useState(() => new URLSearchParams(window.location.search).get('id'));
   
   const [currentImage, setCurrentImage] = useState(0);
   const [startDate, setStartDate] = useState(() => {
