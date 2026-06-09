@@ -282,13 +282,13 @@ export default function EquipmentDetail() {
 
   const checkBookingAccess = async () => {
     const isAuth = await db.auth.isAuthenticated();
-    if (!isAuth) { setAccessModal('login'); return false; }
+    if (!isAuth) { console.log('[access] not authenticated'); setAccessModal('login'); return false; }
 
     try {
       const user = await db.auth.me();
       const profile = await db.entities.UserProfile.get(user.id);
-      if (profile?.account_status === 'pending') { setAccessModal('pending'); return false; }
-      if (!profile?.profile_complete) { setAccessModal('complete_profile'); return false; }
+      if (profile?.account_status === 'pending') { console.log('[access] account pending'); setAccessModal('pending'); return false; }
+      if (!profile?.profile_complete) { console.log('[access] profile incomplete'); setAccessModal('complete_profile'); return false; }
     } catch (_) {}
 
     return true;
