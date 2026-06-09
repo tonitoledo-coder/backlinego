@@ -1,42 +1,35 @@
 /**
- * calcBookingPrice(equipment, startDate, endDate)
+ * calcBookingPrice(equipment, startDate, endDate, deliverySlot, returnSlot)
  *
- * Calcula el precio final de una reserva aplicando, en orden:
- *   1. precio_base  = price_per_day × días
- *   2. multiplicadores (acumulables, se multiplican entre sí)
- *      - weekend: sábados y domingos dentro del rango
- *      - summer:  días de junio, julio o agosto dentro del rango
- *   3. descuento por volumen: el tramo más alto aplicable
+ * Calcula el precio final de una reserva por horas exactas:
+ *   totalHours = díasNaturales × 24 + (returnSlot - deliverySlot)
+ *   days       = totalHours / 24  (puede ser decimal)
  *
- * Devuelve un objeto con el desglose completo.
+ * Ejemplo: 16jun 10h → 17jun 10h = 24h = 1 día → 180 €
+ *          16jun 10h → 17jun 13h = 27h = 1.125 días → 202.50 €
  *
- * @param {object} equipment  - entidad Equipment de Base44
+ * Aplica en orden:
+ *   1. basePrice  = pricePerDay × days
+ *   2. multiplicadores acumulables (weekend, summer)
+ *   3. descuento por volumen (tramo más alto aplicable, sobre días enteros)
+ *
+ * @param {object} equipment
  * @param {Date}   startDate
  * @param {Date}   endDate
- * @returns {{
- *   days: number,
- *   basePrice: number,
- *   weekendMultiplier: number,
- *   summerMultiplier: number,
- *   combinedMultiplier: number,
- *   priceAfterMultipliers: number,
- *   discountPct: number,
- *   discountAmount: number,
- *   finalPrice: number,
- *   insuranceFee: number,
- *   totalPrice: number,
- *   hasModifiers: boolean
- * }}
+ * @param {number} deliverySlot  hora de entrega (0-23), default 0
+ * @param {number} returnSlot    hora de devolución (0-23), default 0
  */
-
 import { differenceInDays, eachDayOfInterval, getMonth, getDay } from 'date-fns';
 
 const INSURANCE_RATE = 0.08;
 
-export function calcBookingPrice(equipment, startDate, endDate) {
-  const days = differenceInDays(endDate, startDate) + 1;
+export function calcBookingPrice(equipment, startDate, endDate, deliverySlot = 0, returnSlot = 0) {
+  const calendarDays = differenceInDays(endDate, startDate);
+  const totalHours   = calendarDays * 24 + (returnSlot - deliverySlot);
+  const days         = totalHours / 24; // decimal: 27h → 1.125
+
   const pricePerDay = equipment.price_per_day || 0;
-  const basePrice = days * pricePerDay;
+  const basePrice   = days * pricePerDay;
 
   const cfg = equipment.pricing_config || {};
 
@@ -53,7 +46,7 @@ export function calcBookingPrice(equipment, startDate, endDate) {
     }
 
     if (cfg.summer?.on) {
-      const hasSummer = range.some(d => [5, 6, 7].includes(getMonth(d))); // jun=5 jul=6 ago=7
+      const hasSummer = range.some(d => [5, 6, 7].includes(getMonth(d)));
       if (hasSummer) summerMultiplier = parseFloat(cfg.summer.val) || 1;
     }
   }
@@ -61,10 +54,11 @@ export function calcBookingPrice(equipment, startDate, endDate) {
   const combinedMultiplier    = weekendMultiplier * summerMultiplier;
   const priceAfterMultipliers = basePrice * combinedMultiplier;
 
-  // --- Descuento por volumen (tramo más alto aplicable) ---
+  // --- Descuento por volumen (basado en días enteros) ---
+  const wholeDays = Math.floor(days);
   const tiers = cfg.tiers || [];
   const applicableTier = tiers
-    .filter(t => days >= parseInt(t.minDays || 0))
+    .filter(t => wholeDays >= parseInt(t.minDays || 0))
     .sort((a, b) => parseInt(b.minDays) - parseInt(a.minDays))[0];
 
   const discountPct    = applicableTier ? parseFloat(applicableTier.pct) : 0;
@@ -74,11 +68,11 @@ export function calcBookingPrice(equipment, startDate, endDate) {
   const insuranceFee = finalPrice * INSURANCE_RATE;
   const totalPrice   = finalPrice + insuranceFee;
 
-  const hasModifiers =
-    weekendMultiplier > 1 || summerMultiplier > 1 || discountPct > 0;
+  const hasModifiers = weekendMultiplier > 1 || summerMultiplier > 1 || discountPct > 0;
 
   return {
     days,
+    totalHours,
     basePrice,
     weekendMultiplier,
     summerMultiplier,
