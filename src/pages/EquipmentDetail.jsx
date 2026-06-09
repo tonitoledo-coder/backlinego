@@ -295,6 +295,7 @@ export default function EquipmentDetail() {
   };
 
   const handleBooking = async () => {
+    console.log('[handleBooking] called', { startDate, endDate, deliverySlot, returnSlot, canBook });
     if (!startDate || !endDate) return;
     const allowed = await checkBookingAccess();
     if (!allowed) return;
