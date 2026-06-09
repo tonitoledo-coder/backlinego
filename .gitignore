@@ -35,3 +35,4 @@ dist-ssr
 **/.agents/
 **/.goose/
 **/skills-lock.json
+supabase/functions/.claude/
