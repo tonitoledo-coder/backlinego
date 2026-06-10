@@ -205,7 +205,7 @@ export default function Profile() {
   }
 
   const statusColors = {
-    pending:   'bg-yellow-500/20 text-yellow-400',
+    pending_payment: 'bg-yellow-500/20 text-yellow-400',
     confirmed: 'bg-blue-500/20 text-blue-400',
     active:    'bg-green-500/20 text-green-400',
     returning: 'bg-emerald-500/20 text-emerald-400',
@@ -215,7 +215,7 @@ export default function Profile() {
   };
 
   const statusIcons = {
-    pending:   Clock,
+    pending_payment: Clock,
     confirmed: CheckCircle,
     active:    CheckCircle,
     returning: PackageCheck,
@@ -310,7 +310,7 @@ export default function Profile() {
               )}
 
               {/* Cancel */}
-              {['pending', 'confirmed'].includes(booking.status) && (
+              {['pending_payment', 'confirmed'].includes(booking.status) && (
                 <Button size="sm" variant="outline" className="border-red-800 text-red-400 hover:bg-red-950/40 text-xs"
                   onClick={() => { setCancelBooking(booking); setCancelledByRole(role); }}>
                   <XCircle className="w-3 h-3 mr-1" />

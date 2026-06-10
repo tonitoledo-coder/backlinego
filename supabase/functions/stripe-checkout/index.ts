@@ -1,7 +1,7 @@
 // supabase/functions/stripe-checkout/index.ts
 // ─────────────────────────────────────────────
 // Acciones:
-//   create_checkout  → Crea booking (pending) + Stripe Checkout Session
+//   create_checkout  → Crea booking (pending_payment) + Stripe Checkout Session
 //   verify_payment   → Verifica estado de una session tras redirect
 //   customer_portal  → Genera link al Stripe Customer Portal
 // ─────────────────────────────────────────────
@@ -141,7 +141,7 @@ async function handleCreateCheckout(
       .eq('id', user.id)
   }
 
-  // ── 6. Crear booking (status: pending) ──
+  // ── 6. Crear booking (status: pending_payment) ──
   const { data: booking, error: bErr } = await supabase
     .from('booking')
     .insert({
@@ -159,7 +159,7 @@ async function handleCreateCheckout(
       deposit_cents: Math.round(depositAmount * 100),
       total_charged_cents: Math.round(totalCharged * 100),
       owner_payout_cents: Math.round(ownerPayout * 100),
-      status: 'pending',
+      status: 'pending_payment',
       protection_plan: protection_plan || null,
       deposit_status: 'none',
     })
@@ -216,7 +216,7 @@ async function handleCreateCheckout(
   // ── 9. Log ──
   await supabase.from('payment_log').insert({
     booking_id: booking.id,
-    event_type: 'checkout_created',
+    event_type: 'charge',
     stripe_event_id: session.id,
     amount_cents: Math.round(totalCharged * 100),
     status: 'pending',

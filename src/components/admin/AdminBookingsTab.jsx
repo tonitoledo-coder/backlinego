@@ -32,7 +32,7 @@ const DEPOSIT_STATUS = {
 };
 
 function StatusBadge({ status, map }) {
-  const s = map[status] || map.pending;
+  const s = map[status] || map.pending_payment || Object.values(map)[0];
   return (
     <span className="text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap"
       style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>

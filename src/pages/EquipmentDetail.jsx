@@ -136,7 +136,7 @@ export default function EquipmentDetail() {
   const bookedDatesSet = useMemo(() => {
     const set = new Set();
     existingBookings
-      .filter(b => ['pending', 'confirmed', 'active'].includes(b.status))
+      .filter(b => ['pending_payment', 'confirmed', 'active'].includes(b.status))
       .forEach(b => {
         try {
           const start = parseISO(b.start_date);
