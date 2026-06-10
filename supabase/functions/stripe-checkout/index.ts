@@ -128,8 +128,20 @@ async function handleCreateCheckout(
   const ownerPayout = round2(basePrice - platformFee)
 
   // ── 5. Crear o reusar Stripe Customer ──
+  // Verifica que el customer guardado exista realmente en Stripe. Un ID
+  // inválido (borrado, o de otro entorno test/live) provoca "No such customer"
+  // al crear la session; en ese caso creamos uno nuevo y lo persistimos.
   let stripeCustomerId = renter.stripe_customer_id
-  if (!stripeCustomerId) {
+  let customerValid = false
+  if (stripeCustomerId) {
+    try {
+      const existing = await stripe.customers.retrieve(stripeCustomerId)
+      customerValid = !(existing as { deleted?: boolean }).deleted
+    } catch (_) {
+      customerValid = false
+    }
+  }
+  if (!customerValid) {
     const customer = await stripe.customers.create({
       email: renter.email,
       metadata: { backlinego_user_id: user.id },
