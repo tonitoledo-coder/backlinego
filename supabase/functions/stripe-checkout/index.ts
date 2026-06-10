@@ -225,8 +225,8 @@ async function handleCreateCheckout(
     .update({ stripe_payment_intent_id: session.payment_intent as string })
     .eq('id', booking.id)
 
-  // ── 9. Log ──
-  await supabase.from('payment_log').insert({
+  // ── 9. Log (best-effort: no debe romper el checkout) ──
+  const { error: logErr } = await supabase.from('payment_log').insert({
     booking_id: booking.id,
     event_type: 'charge',
     stripe_event_id: session.id,
@@ -236,7 +236,8 @@ async function handleCreateCheckout(
       application_fee: applicationFee,
       deposit_amount_cents: Math.round(depositAmount * 100),
     },
-  }).catch(console.error)
+  })
+  if (logErr) console.error('[stripe-checkout] payment_log insert failed:', logErr)
 
   return json({
     checkout_url: session.url,
