@@ -117,7 +117,7 @@ export default function Profile() {
 
   const { data: renterEquipmentList = [] } = useQuery({
     queryKey: ['equipment', 'renter-bookings', renterEquipmentIds],
-    queryFn: () => db.entities.Equipment.filter({ id__in: renterEquipmentIds }),
+    queryFn: () => db.entities.Equipment.filter({ id: renterEquipmentIds }),
     enabled: renterEquipmentIds.length > 0,
   });
 
