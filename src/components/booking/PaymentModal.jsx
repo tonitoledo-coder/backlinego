@@ -33,7 +33,7 @@ export default function PaymentModal({ open, onClose, equipment, startDate, endD
           end_date: endDate,
           days: pricing.days,
           protection_plan: 'damage_waiver',
-          success_url: `${window.location.origin}/bookings?success=true`,
+          success_url: `${window.location.origin}/Profile?success=true`,
           cancel_url: `${window.location.origin}/equipment/${equipment.id}?cancelled=true`,
         },
       });
