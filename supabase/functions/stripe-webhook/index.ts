@@ -126,7 +126,7 @@ serve(async (req: Request) => {
           }
         }
 
-        await logEvent(bookingId, 'checkout_completed', event.id, session.amount_total || 0, 'succeeded')
+        await logEvent(bookingId, 'charge', event.id, session.amount_total || 0, 'succeeded')
         break
       }
 
@@ -141,7 +141,7 @@ serve(async (req: Request) => {
           .update({ status: 'cancelled', cancellation_reason: 'payment_failed' })
           .eq('id', bookingId)
 
-        await logEvent(bookingId, 'payment_failed', event.id, pi.amount, 'failed')
+        await logEvent(bookingId, 'charge', event.id, pi.amount, 'failed')
         break
       }
 
@@ -156,7 +156,7 @@ serve(async (req: Request) => {
           .update({ deposit_status: 'held' })
           .eq('id', bookingId)
 
-        await logEvent(bookingId, 'deposit_held', event.id, pi.amount_capturable, 'succeeded')
+        await logEvent(bookingId, 'deposit_hold', event.id, pi.amount_capturable, 'succeeded')
         break
       }
 
@@ -168,10 +168,10 @@ serve(async (req: Request) => {
 
         await supabase
           .from('booking')
-          .update({ deposit_status: 'refunded' })
+          .update({ deposit_status: 'released' })
           .eq('id', bookingId)
 
-        await logEvent(bookingId, 'deposit_refunded', event.id, charge.amount_refunded, 'succeeded')
+        await logEvent(bookingId, 'deposit_release', event.id, charge.amount_refunded, 'succeeded')
         break
       }
 
@@ -223,14 +223,15 @@ async function logEvent(
   status: string,
   metadata?: Record<string, unknown>,
 ) {
-  await supabase.from('payment_log').insert({
+  const { error } = await supabase.from('payment_log').insert({
     booking_id: bookingId,
     event_type: eventType,
     stripe_event_id: stripeEventId,
     amount_cents: amountCents,
     status,
     metadata: metadata || {},
-  }).catch((err) => console.error('[webhook] Log insert failed:', err.message))
+  })
+  if (error) console.error('[webhook] Log insert failed:', error.message)
 }
 
 const corsHeaders = {
