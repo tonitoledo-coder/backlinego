@@ -34,7 +34,7 @@ export default function PaymentModal({ open, onClose, equipment, startDate, endD
           days: pricing.days,
           protection_plan: 'damage_waiver',
           success_url: `${window.location.origin}/Profile?success=true`,
-          cancel_url: `${window.location.origin}/equipment/${equipment.id}?cancelled=true`,
+          cancel_url: `${window.location.origin}/EquipmentDetail?id=${equipment.id}&cancelled=true`,
         },
       });
       if (invokeError) throw invokeError;

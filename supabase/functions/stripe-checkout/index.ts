@@ -216,7 +216,7 @@ async function handleCreateCheckout(
       deposit_amount_cents: Math.round(depositAmount * 100).toString(),
     },
     success_url: success_url || `${Deno.env.get('SITE_URL')}/Profile?success=true`,
-    cancel_url: cancel_url || `${Deno.env.get('SITE_URL')}/equipment/${equipment_id}?cancelled=true`,
+    cancel_url: cancel_url || `${Deno.env.get('SITE_URL')}/EquipmentDetail?id=${equipment_id}&cancelled=true`,
   })
 
   // ── 8. Guardar session ID en booking ──
