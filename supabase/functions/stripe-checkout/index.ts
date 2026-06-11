@@ -200,6 +200,10 @@ async function handleCreateCheckout(
     ],
     payment_intent_data: {
       application_fee_amount: applicationFee,
+      // Guarda el método de pago en el customer para poder retener la fianza
+      // off-session después (hold de depósito en el webhook). Checkout muestra
+      // el mandato de guardado automáticamente.
+      setup_future_usage: 'off_session',
       transfer_data: {
         destination: owner.stripe_connect_account_id,
       },

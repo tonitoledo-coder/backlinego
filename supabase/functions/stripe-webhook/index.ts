@@ -95,16 +95,22 @@ serve(async (req: Request) => {
 
             if (renter?.stripe_customer_id) {
               try {
+                // Reutiliza el método de pago del checkout (guardado off-session
+                // vía setup_future_usage) para crear el hold de la fianza.
+                const rentalPI = await stripe.paymentIntents.retrieve(paymentIntentId)
+                const paymentMethodId = typeof rentalPI.payment_method === 'string'
+                  ? rentalPI.payment_method
+                  : rentalPI.payment_method?.id
+                if (!paymentMethodId) throw new Error('No payment method on rental PaymentIntent')
+
                 const depositPI = await stripe.paymentIntents.create({
                   amount: depositCents,
                   currency: 'eur',
                   customer: renter.stripe_customer_id,
+                  payment_method: paymentMethodId,
                   capture_method: 'manual',
                   confirm: true,
-                  automatic_payment_methods: {
-                    enabled: true,
-                    allow_redirects: 'never',
-                  },
+                  off_session: true,
                   metadata: {
                     booking_id: bookingId,
                     type: 'deposit',
