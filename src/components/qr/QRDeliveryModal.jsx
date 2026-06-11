@@ -8,7 +8,7 @@ import {
   Camera, X, ImageIcon, AlertTriangle, Loader2
 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { db } from '@/lib/db';
+import { db, supabase } from '@/lib/db';
 import { sendBookingEmail } from '@/utils/sendBookingEmail';
 
 // ── QRDisplay ─────────────────────────────────────────────────────────────────
@@ -135,6 +135,7 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
   const [uploading,      setUploading]= useState(false);
   const [disputeNote,    setDispute]  = useState('');
   const [showDispute,    setShowDisp] = useState(false);
+  const [releasing,      setReleasing]= useState(false);
 
   const isRenter = booking?.renter_id === currentUserId;
   const isOwner  = booking?.owner_id  === currentUserId;
@@ -195,8 +196,21 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
     });
   };
 
-  const handleOwnerReleaseEscrow = () => {
-    updateMutation.mutate({ status: 'completed', deposit_status: 'released' });
+  const handleOwnerReleaseEscrow = async () => {
+    setReleasing(true);
+    try {
+      // Libera el hold de la fianza en Stripe antes de cerrar la reserva.
+      const { error } = await supabase.functions.invoke('stripe-deposit', {
+        body: { action: 'release', booking_id: booking.id },
+      });
+      if (error) throw error;
+      updateMutation.mutate({ status: 'completed', deposit_status: 'released' });
+    } catch (err) {
+      console.error('Deposit release failed:', err);
+      alert('No se pudo liberar la fianza. Inténtalo de nuevo o contacta con soporte.');
+    } finally {
+      setReleasing(false);
+    }
   };
 
   const handleOwnerDispute = () => {
@@ -399,10 +413,12 @@ export default function QRDeliveryModal({ booking, open, onClose, currentUserId 
                     <div className="grid grid-cols-2 gap-3">
                       <Button
                         onClick={handleOwnerReleaseEscrow}
-                        disabled={updateMutation.isPending}
+                        disabled={updateMutation.isPending || releasing}
                         className="bg-green-600 hover:bg-green-700 h-11 text-sm"
                       >
-                        <CheckCircle className="w-4 h-4 mr-1.5" />
+                        {releasing
+                          ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                          : <CheckCircle className="w-4 h-4 mr-1.5" />}
                         Todo correcto
                       </Button>
                       <Button

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { db } from '@/lib/db';
+import { db, supabase } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -52,13 +52,26 @@ function DisputeRow({ dispute, adminId, onResolved }) {
   const openerLabel = opener?.display_name || opener?.username || opener?.email || dispute.opened_by?.slice(0, 8);
 
   const resolveMutation = useMutation({
-    mutationFn: ({ action }) => db.entities.Dispute.update(dispute.id, {
-      status:           action === null ? 'dismissed' : 'resolved',
-      resolution_notes: notes,
-      resolved_by:      adminId,
-      resolved_at:      new Date().toISOString(),
-      deposit_action:   action ?? 'pending',
-    }),
+    mutationFn: async ({ action }) => {
+      // 1. Mover la fianza en Stripe ANTES de cerrar la disputa, para no
+      //    marcarla resuelta si el movimiento de dinero falla.
+      if (action === 'capture_to_owner' || action === 'release_to_renter' || action === 'split') {
+        const { error } = await supabase.functions.invoke('stripe-deposit', {
+          body: { action, booking_id: dispute.booking_id },
+        });
+        if (error) throw error;
+      }
+      // 2. Registrar la resolución de la disputa.
+      await db.entities.Dispute.update(dispute.id, {
+        status:           action === null ? 'dismissed' : 'resolved',
+        resolution_notes: notes,
+        resolved_by:      adminId,
+        resolved_at:      new Date().toISOString(),
+        deposit_action:   action ?? 'pending',
+      });
+      // 3. Sacar la reserva del estado 'disputed'.
+      return db.entities.Booking.update(dispute.booking_id, { status: 'completed' });
+    },
     onSuccess: (_data, { action }) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'disputes'] });
       // Fetch the booking + party profiles for the notification email
