@@ -133,6 +133,8 @@ serve(async (req: Request) => {
         }
 
         await logEvent(bookingId, 'charge', event.id, session.amount_total || 0, 'succeeded')
+        await sendEmailEvent('booking_confirmed', bookingId)
+        await sendEmailEvent('booking_created', bookingId)
         break
       }
 
@@ -148,6 +150,7 @@ serve(async (req: Request) => {
           .eq('id', bookingId)
 
         await logEvent(bookingId, 'charge', event.id, pi.amount, 'failed')
+        await sendEmailEvent('booking_cancelled', bookingId)
         break
       }
 
@@ -219,6 +222,24 @@ serve(async (req: Request) => {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dispara un email transaccional vía la edge function send-email (best-effort).
+async function sendEmailEvent(event: string, bookingId: string, extra: Record<string, unknown> = {}) {
+  try {
+    const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ event, booking_id: bookingId, extra }),
+    })
+    if (!res.ok) console.error('[webhook] send-email failed:', res.status, await res.text())
+  } catch (err) {
+    console.error('[webhook] send-email error:', err.message)
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 async function logEvent(
