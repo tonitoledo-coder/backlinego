@@ -36,3 +36,4 @@ dist-ssr
 **/.goose/
 **/skills-lock.json
 supabase/functions/.claude/
+base44/.app.jsonc
