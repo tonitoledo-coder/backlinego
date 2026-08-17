@@ -1,0 +1,55 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "quote_request_id": {
+      "type": "string",
+      "description": "ID del QuoteRequest al que pertenece el mensaje"
+    },
+    "sender_email": {
+      "type": "string",
+      "description": "Email del remitente"
+    },
+    "sender_name": {
+      "type": "string"
+    },
+    "sender_role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "specialist"
+      ],
+      "description": "Rol del remitente"
+    },
+    "content": {
+      "type": "string",
+      "description": "Texto del mensaje"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de im\u00e1genes adjuntas"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "photo",
+        "quote_offer",
+        "system"
+      ],
+      "default": "text"
+    },
+    "quote_amount": {
+      "type": "number",
+      "description": "Si es una oferta de presupuesto, importe propuesto"
+    }
+  },
+  "required": [
+    "quote_request_id",
+    "sender_email",
+    "sender_role"
+  ]
+}

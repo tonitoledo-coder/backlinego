@@ -1,0 +1,88 @@
+{
+  "name": "Specialist",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del especialista o taller"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Descripci\u00f3n y experiencia"
+    },
+    "specialty": {
+      "type": "string",
+      "enum": [
+        "luthier_cuerda",
+        "tecnico_valvulas",
+        "reparacion_dj",
+        "mantenimiento_pianos"
+      ],
+      "description": "Especialidad principal"
+    },
+    "extra_specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Especialidades adicionales"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "workshop": {
+      "type": "boolean",
+      "default": false,
+      "description": "Tiene taller f\u00edsico"
+    },
+    "remote_service": {
+      "type": "boolean",
+      "default": true,
+      "description": "Ofrece servicio a domicilio"
+    },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        },
+        "city": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        }
+      }
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "reviews_count": {
+      "type": "number",
+      "default": 0
+    },
+    "avg_response_hours": {
+      "type": "number",
+      "description": "Tiempo medio de respuesta en horas"
+    }
+  },
+  "required": [
+    "name",
+    "specialty"
+  ]
+}

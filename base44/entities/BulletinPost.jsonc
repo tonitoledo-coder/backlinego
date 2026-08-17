@@ -28,6 +28,13 @@
       },
       "description": "URLs de im\u00e1genes adjuntas"
     },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de videos o redes sociales"
+    },
     "city": {
       "type": "string",
       "description": "Ciudad del anuncio"

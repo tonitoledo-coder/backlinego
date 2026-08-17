@@ -1,0 +1,46 @@
+{
+  "name": "PaymentLog",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "ID del usuario (relaci\u00f3n con User)"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email del usuario para referencia"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Importe en la moneda indicada"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR",
+      "description": "C\u00f3digo de moneda ISO 4217"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "Estado del pago"
+    },
+    "stripe_payment_id": {
+      "type": "string",
+      "description": "ID del PaymentIntent o Session de Stripe"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del concepto del pago"
+    }
+  },
+  "required": [
+    "user_id",
+    "amount"
+  ]
+}

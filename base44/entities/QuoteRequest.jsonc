@@ -1,0 +1,70 @@
+{
+  "name": "QuoteRequest",
+  "type": "object",
+  "properties": {
+    "specialist_id": {
+      "type": "string",
+      "description": "ID del especialista"
+    },
+    "specialist_email": {
+      "type": "string"
+    },
+    "specialist_name": {
+      "type": "string"
+    },
+    "requester_name": {
+      "type": "string"
+    },
+    "requester_email": {
+      "type": "string"
+    },
+    "requester_phone": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n de la aver\u00eda o trabajo"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de fotos de la aver\u00eda"
+    },
+    "equipment_type": {
+      "type": "string",
+      "description": "Tipo de equipo a reparar"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "urgente"
+      ],
+      "default": "normal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "viewed",
+        "quoted",
+        "accepted",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "quote_amount": {
+      "type": "number",
+      "description": "Presupuesto ofrecido por el especialista"
+    },
+    "quote_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "specialist_id",
+    "description"
+  ]
+}

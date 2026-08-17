@@ -1,0 +1,189 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "default": "user"
+    },
+    "avatar_url": {
+      "type": "string",
+      "description": "URL de la foto de perfil"
+    },
+    "username": {
+      "type": "string",
+      "description": "Slug p\u00fablico del perfil, sin espacios, solo letras min\u00fasculas y guiones"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Descripci\u00f3n corta, m\u00e1x. 300 caracteres"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "URL del sitio web personal o profesional"
+    },
+    "social_links": {
+      "type": "object",
+      "description": "Redes sociales: instagram, spotify, soundcloud, youtube, linkedin"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Perfil verificado por el equipo de BacklineGo"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state_province": {
+      "type": "string"
+    },
+    "postal_code": {
+      "type": "string"
+    },
+    "address_line_1": {
+      "type": "string"
+    },
+    "address_line_2": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "Europe/Madrid"
+    },
+    "language": {
+      "type": "string",
+      "default": "es"
+    },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "musico",
+        "artista",
+        "promotor",
+        "manager",
+        "empresa",
+        "coleccionista"
+      ],
+      "description": "Tipo de usuario / perfil profesional"
+    },
+    "professional_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "G\u00e9neros, estilos, instrumentos, especialidades"
+    },
+    "portfolio_url": {
+      "type": "string",
+      "description": "URL del portfolio (artistas y m\u00fasicos)"
+    },
+    "agency_or_company_name": {
+      "type": "string",
+      "description": "Nombre de la agencia o empresa (managers y empresas)"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "NIF/CIF/VAT para facturaci\u00f3n"
+    },
+    "commission_open": {
+      "type": "boolean",
+      "default": false,
+      "description": "El usuario acepta encargos ahora mismo"
+    },
+    "billing_name": {
+      "type": "string",
+      "description": "Nombre fiscal o raz\u00f3n social"
+    },
+    "billing_email": {
+      "type": "string",
+      "description": "Email de facturas"
+    },
+    "billing_type": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "autonomo",
+        "empresa"
+      ],
+      "description": "Tipo de facturaci\u00f3n"
+    },
+    "billing_address": {
+      "type": "object",
+      "description": "Direcci\u00f3n fiscal: line1, line2, city, state, postal_code, country"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "ID del cliente en Stripe"
+    },
+    "stripe_account_id": {
+      "type": "string",
+      "description": "ID de cuenta Stripe Connect para recibir pagos"
+    },
+    "stripe_onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "default_currency": {
+      "type": "string",
+      "default": "EUR"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "onboarding_step": {
+      "type": "number",
+      "default": 1,
+      "description": "Paso del onboarding donde se qued\u00f3 el usuario"
+    },
+    "profile_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "contacts_only",
+        "private"
+      ],
+      "default": "public"
+    },
+    "notifications_prefs": {
+      "type": "object",
+      "description": "Preferencias de notificaciones: email_marketing, email_transaccional, push_notificaciones"
+    }
+  },
+  "required": [
+    "avatar_url",
+    "username",
+    "bio",
+    "website_url",
+    "social_links",
+    "phone",
+    "country",
+    "city",
+    "state_province",
+    "postal_code",
+    "address_line_1",
+    "address_line_2",
+    "user_type",
+    "professional_tags",
+    "portfolio_url",
+    "agency_or_company_name",
+    "tax_id",
+    "billing_name",
+    "billing_email",
+    "billing_type",
+    "billing_address",
+    "stripe_customer_id",
+    "stripe_account_id",
+    "notifications_prefs"
+  ]
+}

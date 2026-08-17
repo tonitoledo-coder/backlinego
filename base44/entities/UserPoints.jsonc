@@ -1,0 +1,56 @@
+{
+  "name": "UserPoints",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email del usuario"
+    },
+    "total_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Puntos totales acumulados"
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold",
+        "platinum"
+      ],
+      "default": "bronze",
+      "description": "Nivel de fidelidad"
+    },
+    "bookings_count": {
+      "type": "number",
+      "default": 0
+    },
+    "equipment_listed": {
+      "type": "number",
+      "default": 0
+    },
+    "reviews_given": {
+      "type": "number",
+      "default": 0
+    },
+    "is_partner": {
+      "type": "boolean",
+      "default": false,
+      "description": "Es partner destacado"
+    },
+    "partner_badge": {
+      "type": "string",
+      "enum": [
+        "none",
+        "rising_star",
+        "top_lender",
+        "community_hero"
+      ],
+      "default": "none"
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

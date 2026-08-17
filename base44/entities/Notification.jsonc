@@ -1,0 +1,43 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email del destinatario"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "quote_request",
+        "booking_confirmed",
+        "chat_message",
+        "equipment_available",
+        "general"
+      ],
+      "default": "general"
+    },
+    "title": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "link_page": {
+      "type": "string",
+      "description": "Nombre de la p\u00e1gina a la que enlaza"
+    },
+    "link_params": {
+      "type": "string",
+      "description": "Par\u00e1metros de URL (ej: ?id=123)"
+    },
+    "read": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_email",
+    "title"
+  ]
+}
